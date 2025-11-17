@@ -30,6 +30,21 @@ export class SpecialistProfile {
   @Prop({ type: [String], default: [] })
   languages: string[];
 
+  @Prop({ type: [String], default: [] })
+  categories: string[];
+
+  @Prop({ type: Number, default: 0 })
+  rating: number;
+
+  @Prop({ type: Number, default: 0 })
+  total_reviews: number;
+
+  @Prop({ type: Number, default: 0 })
+  experience_years: number;
+
+  @Prop()
+  profile_photo?: string;
+
   @Prop({ type: [{ degree: String, institute_name: String }], default: [] })
   education: Array<{ degree: string; institute_name: string }>;
 
@@ -47,6 +62,7 @@ export const SpecialistProfileSchema = SchemaFactory.createForClass(SpecialistPr
 
 SpecialistProfileSchema.index({ user_id: 1 });
 SpecialistProfileSchema.index({ specializations: 1 });
+SpecialistProfileSchema.index({ categories: 1 });
 SpecialistProfileSchema.index({ location: 1 });
 SpecialistProfileSchema.index({ is_verified: 1 });
 

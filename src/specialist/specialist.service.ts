@@ -37,6 +37,11 @@ export class SpecialistService {
       currency: dto.basic_info.currency,
       specializations: dto.basic_info.specializations,
       languages: dto.basic_info.languages,
+      categories: dto.basic_info.categories,
+      rating: 0,
+      total_reviews: 0,
+      experience_years: dto.basic_info.experience_years ?? 0,
+      profile_photo: dto.basic_info.profile_photo,
       education: dto.education || [],
       certifications: dto.certifications || [],
       profile_completed: !!(dto.basic_info && dto.education && dto.certifications),
@@ -68,6 +73,13 @@ export class SpecialistService {
       profile.currency = dto.basic_info.currency;
       profile.specializations = dto.basic_info.specializations;
       profile.languages = dto.basic_info.languages;
+      profile.categories = dto.basic_info.categories;
+      if (dto.basic_info.experience_years !== undefined) {
+        profile.experience_years = dto.basic_info.experience_years;
+      }
+      if (dto.basic_info.profile_photo !== undefined) {
+        profile.profile_photo = dto.basic_info.profile_photo;
+      }
     }
 
     if (dto.education !== undefined) {
@@ -121,6 +133,11 @@ export class SpecialistService {
         currency: profile.currency,
         specializations: profile.specializations,
         languages: profile.languages,
+        categories: profile.categories,
+        rating: profile.rating,
+        total_reviews: profile.total_reviews,
+        experience_years: profile.experience_years,
+        profile_photo: profile.profile_photo || null,
       },
       education: profile.education,
       certifications: profile.certifications,

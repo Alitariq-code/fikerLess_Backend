@@ -576,7 +576,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 500,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\"],\n        \"languages\": [\"English\", \"Urdu\"]\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        }\n    ],\n    \"certifications\": [\n        {\n            \"certificate_title\": \"Licensed Clinical Psychologist\",\n            \"provider\": \"Pakistan Psychological Association\"\n        }\n    ]\n}"
+							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 500,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\"],\n        \"languages\": [\"English\", \"Urdu\"],\n        \"categories\": [\"Mindfulness & Meditation\", \"Life Coaching\"],\n        \"experience_years\": 8,\n        \"profile_photo\": \"https://cdn.example.com/profiles/sarah-ahmed.jpg\"\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        }\n    ],\n    \"certifications\": [\n        {\n            \"certificate_title\": \"Licensed Clinical Psychologist\",\n            \"provider\": \"Pakistan Psychological Association\"\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "http://localhost:5002/api/v1/specialist/profile",
@@ -636,7 +636,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 600,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\", \"Depression\"],\n        \"languages\": [\"English\", \"Urdu\"]\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        },\n        {\n            \"degree\": \"M.Sc. in Psychology\",\n            \"institute_name\": \"Karachi University\"\n        }\n    ]\n}"
+							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 600,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\", \"Depression\"],\n        \"languages\": [\"English\", \"Urdu\"],\n        \"categories\": [\"Mindfulness & Meditation\", \"Life Coaching\"],\n        \"experience_years\": 10,\n        \"profile_photo\": \"https://cdn.example.com/profiles/sarah-ahmed.jpg\"\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        },\n        {\n            \"degree\": \"M.Sc. in Psychology\",\n            \"institute_name\": \"Karachi University\"\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "http://localhost:5002/api/v1/specialist/profile",
@@ -925,6 +925,49 @@
 								{
 									"key": "id",
 									"value": "mood_entry_id_here"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Spiritual Hub",
+			"item": [
+				{
+					"name": "Get Mindfulness Practitioners",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/spiritual/practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"spiritual",
+								"practitioners"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Mindfulness & Meditation",
+									"description": "Filter by practitioner category"
+								},
+								{
+									"key": "location",
+									"value": "Lahore",
+									"description": "Filter by location"
+								},
+								{
+									"key": "min_rating",
+									"value": "4",
+									"description": "Minimum rating"
 								}
 							]
 						}

@@ -41,6 +41,19 @@ export class BasicInfoDto {
   @IsArray()
   @IsString({ each: true })
   languages: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  categories: string[];
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  experience_years?: number;
+
+  @IsString()
+  @IsOptional()
+  profile_photo?: string;
 }
 
 export class CreateSpecialistProfileDto {

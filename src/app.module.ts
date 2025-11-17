@@ -7,6 +7,7 @@ import { MailModule } from './mail/mail.module';
 import { ActivityModule } from './activity/activity.module';
 import { SpecialistModule } from './specialist/specialist.module';
 import { MoodModule } from './mood/mood.module';
+import { SpiritualModule } from './spiritual/spiritual.module';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { MoodModule } from './mood/mood.module';
         const password = process.env.MONGODB_PASSWORD;
 
         let uri = `mongodb://${host}:${port}/${db}`;
-        
+
         if (username && password) {
           uri = `mongodb://${encodeURIComponent(username)}:${encodeURIComponent(password)}@${host}:${port}/${db}?authSource=admin`;
         } else {
@@ -35,13 +36,14 @@ import { MoodModule } from './mood/mood.module';
         };
       },
     }),
-        AuthModule,
-        DemographicsModule,
-        MailModule,
-        ActivityModule,
-        SpecialistModule,
-        MoodModule,
-      ],
-    })
-    export class AppModule {}
+    AuthModule,
+    DemographicsModule,
+    MailModule,
+    ActivityModule,
+    SpecialistModule,
+    MoodModule,
+    SpiritualModule,
+  ],
+})
+export class AppModule {}
 
