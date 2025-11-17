@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Delete, Body, Param, Query, Headers, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Param, Query, Headers, HttpCode, HttpStatus, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { StepsService } from './steps.service';
 import { SyncStepsDto } from './dto/sync-steps.dto';
 import { CreateStepsDto } from './dto/create-steps.dto';
@@ -17,11 +17,11 @@ export class StepsController {
 
   private async getUserIdFromToken(token: string): Promise<string> {
     if (!token) {
-      throw new Error('Please log in to access this feature');
+      throw new UnauthorizedException('Please log in to access this feature');
     }
     const result = await getUserFromToken(token, this.userModel);
     if (!result.success || !result.user) {
-      throw new Error(result.error || 'Invalid token');
+      throw new UnauthorizedException(result.error || 'Your session is invalid. Please log in again.');
     }
     return result.user._id.toString();
   }

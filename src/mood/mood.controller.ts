@@ -10,6 +10,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { MoodService } from './mood.service';
 import { CreateMoodDto } from './dto/create-mood.dto';
@@ -28,11 +29,11 @@ export class MoodController {
 
   private async getUserIdFromToken(token: string): Promise<string> {
     if (!token) {
-      throw new Error('Please log in to access this feature');
+      throw new UnauthorizedException('Please log in to access this feature');
     }
     const result = await getUserFromToken(token, this.userModel);
     if (!result.success || !result.user) {
-      throw new Error(result.error || 'Invalid token');
+      throw new UnauthorizedException(result.error || 'Your session is invalid. Please log in again.');
     }
     return result.user._id.toString();
   }

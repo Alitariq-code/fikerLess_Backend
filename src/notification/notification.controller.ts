@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
@@ -27,11 +28,11 @@ export class NotificationController {
 
   private async getUserIdFromToken(token: string): Promise<string> {
     if (!token) {
-      throw new Error('Please log in to access this feature');
+      throw new UnauthorizedException('Please log in to access this feature');
     }
     const result = await getUserFromToken(token, this.userModel);
     if (!result.success || !result.user) {
-      throw new Error(result.error || 'Invalid token');
+      throw new UnauthorizedException(result.error || 'Your session is invalid. Please log in again.');
     }
     return result.user._id.toString();
   }
