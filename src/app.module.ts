@@ -8,6 +8,7 @@ import { ActivityModule } from './activity/activity.module';
 import { SpecialistModule } from './specialist/specialist.module';
 import { MoodModule } from './mood/mood.module';
 import { SpiritualModule } from './spiritual/spiritual.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { SpiritualModule } from './spiritual/spiritual.module';
     SpecialistModule,
     MoodModule,
     SpiritualModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

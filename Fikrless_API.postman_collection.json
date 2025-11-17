@@ -1119,6 +1119,323 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "User - List Notifications",
+					"request": {
+						"method": "GET",
+						"description": "Lists notifications for the authenticated user. Supports filtering by status/type and pagination.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications?status=all&page=1&limit=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "all",
+									"description": "all | unread | read"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Page size (max 50)"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Get Notification Detail",
+					"request": {
+						"method": "GET",
+						"description": "Returns full payload for a single notification (title, body, metadata).",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/{{notification_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"{{notification_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Update Notification Status",
+					"request": {
+						"method": "PATCH",
+						"description": "Marks a notification as read/unread/archived.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"read\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/{{notification_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"{{notification_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Mark All Read",
+					"request": {
+						"method": "POST",
+						"description": "Marks every notification for the authenticated user as read.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/mark-all-read",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"mark-all-read"
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Delete Notification",
+					"request": {
+						"method": "DELETE",
+						"description": "Soft deletes a single notification for the user (used for swipe-to-dismiss).",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/{{notification_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"{{notification_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Clear All Notifications",
+					"request": {
+						"method": "DELETE",
+						"description": "Clears all notifications for the user (used for dropdown \"Clear All\").",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications"
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Unread Count",
+					"request": {
+						"method": "GET",
+						"description": "Returns the unread count for the badge/dot on the UI.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/unread-count",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"unread-count"
+							]
+						}
+					}
+				},
+				{
+					"name": "Admin - Create Notification Template",
+					"request": {
+						"method": "POST",
+						"description": "Admin-only endpoint to create a reusable notification template.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Free Online Session\",\n    \"body\": \"Join our free session to learn mindfulness.\",\n    \"type\": \"event\",\n    \"metadata\": {\n        \"icon\": \"event\",\n        \"category\": \"Mindfulness\"\n    },\n    \"cta_text\": \"Learn More\",\n    \"cta_url\": \"fikrless://events/123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/admin/templates",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"admin",
+								"templates"
+							]
+						}
+					}
+				},
+				{
+					"name": "Admin - List Notification Templates",
+					"request": {
+						"method": "GET",
+						"description": "Returns all notification templates (admin dashboard use).",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/admin/templates",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"admin",
+								"templates"
+							]
+						}
+					}
+				},
+				{
+					"name": "Admin - Broadcast Template",
+					"request": {
+						"method": "POST",
+						"description": "Triggers delivery of a template to all users or a subset of user IDs.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"template_id\": \"{{template_id}}\",\n    \"user_ids\": [\n        \"{{user_id}}\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/notifications/admin/broadcast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"admin",
+								"broadcast"
+							]
+						}
+					}
+				}
+			]
 		}
 	],
 	"variable": [
@@ -1129,6 +1446,11 @@
 		},
 		{
 			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
 			"value": "",
 			"type": "string"
 		}
