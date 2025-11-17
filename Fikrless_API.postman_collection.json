@@ -13,6 +13,7 @@
 					"name": "Signup",
 					"request": {
 						"method": "POST",
+						"description": "Registers a new user (regular, specialist, or admin). Expects email, password, and user_type. Sends OTP for email verification.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -40,6 +41,7 @@
 					"name": "Login",
 					"request": {
 						"method": "POST",
+						"description": "Authenticates an existing user with email/password and returns a JWT token. Requires email verification + demographics completion depending on flow.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -67,6 +69,7 @@
 					"name": "Email Verify",
 					"request": {
 						"method": "POST",
+						"description": "Verifies the OTP sent to the user’s email during signup and returns a JWT token once verification succeeds.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -94,6 +97,7 @@
 					"name": "Forgot Password",
 					"request": {
 						"method": "POST",
+						"description": "Triggers password reset flow. Sends a fresh OTP/reset code to the specified email if it exists.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -121,6 +125,7 @@
 					"name": "Change Password",
 					"request": {
 						"method": "POST",
+						"description": "Allows an authenticated user to set a new password by passing JWT in Authorization header.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -158,6 +163,7 @@
 					"name": "Save Demographics",
 					"request": {
 						"method": "POST",
+						"description": "Stores onboarding/demographic information for a user after signup. Must be called once per user to unlock the rest of the app.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -190,6 +196,7 @@
 					"name": "Batch Sync Steps",
 					"request": {
 						"method": "POST",
+						"description": "Preferred mobile sync endpoint. Accepts an array of daily entries (steps, calories, distance) and upserts aggregated values per day.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -225,6 +232,7 @@
 					"name": "Create Single Steps Entry",
 					"request": {
 						"method": "POST",
+						"description": "Creates or upserts a single day’s steps record. Useful for manual entry/edit from the client.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -259,6 +267,7 @@
 					"name": "Get Steps (Today)",
 					"request": {
 						"method": "GET",
+						"description": "Returns the authenticated user’s steps entry for today (server date). 404 if no data exists.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -285,6 +294,7 @@
 					"name": "Get Steps (Specific Date)",
 					"request": {
 						"method": "GET",
+						"description": "Returns steps summary for a given YYYY-MM-DD date. Includes goal progress, calories, distance.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -317,6 +327,7 @@
 					"name": "Get Steps History (Daily)",
 					"request": {
 						"method": "GET",
+						"description": "Paginated daily history ordered by date desc. Supports limit/page to power history screens.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -358,6 +369,7 @@
 					"name": "Get Steps History (Weekly)",
 					"request": {
 						"method": "GET",
+						"description": "Aggregates steps by ISO weeks (Sun-Sat) to power weekly charts.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -391,6 +403,7 @@
 					"name": "Get Steps History (Monthly)",
 					"request": {
 						"method": "GET",
+						"description": "Aggregates steps per calendar month for trend charts.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -424,6 +437,7 @@
 					"name": "Update Steps",
 					"request": {
 						"method": "PUT",
+						"description": "Updates a specific steps entry by ID (steps, calories, distance). Requires Authorization header.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -465,6 +479,7 @@
 					"name": "Delete Steps",
 					"request": {
 						"method": "DELETE",
+						"description": "Deletes a steps entry by ID. Returns success flag.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -498,6 +513,7 @@
 					"name": "Get Steps Statistics",
 					"request": {
 						"method": "GET",
+						"description": "Calculates aggregated stats (totals, averages, streaks) for the last N days (default 30). Drives insights cards.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -532,6 +548,7 @@
 					"name": "Get Current Streak",
 					"request": {
 						"method": "GET",
+						"description": "Returns the user’s current step streak and longest streak metrics.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -564,6 +581,7 @@
 					"name": "Create Specialist Profile",
 					"request": {
 						"method": "POST",
+						"description": "Specialist-only endpoint. Creates profile with basic info, categories, experience, education, certifications. Must be called once after signup.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -598,6 +616,7 @@
 					"name": "Get Specialist Profile",
 					"request": {
 						"method": "GET",
+						"description": "Returns the authenticated specialist’s own profile. Requires Authorization header.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -624,6 +643,7 @@
 					"name": "Update Specialist Profile",
 					"request": {
 						"method": "PUT",
+						"description": "Allows a specialist to update basic info, categories, education, and certifications.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -658,9 +678,10 @@
 					"name": "Get All Specialists",
 					"request": {
 						"method": "GET",
+						"description": "Public listing endpoint used by the specialist search screen. Supports filters (verified, location, specialization, category, search, min_rating, min_experience) and pagination.",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT",
+							"raw": "http://localhost:5002/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT&category=Mindfulness%20%26%20Meditation&search=Anxiety&min_rating=4&min_experience=5&page=1&limit=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -687,7 +708,123 @@
 									"key": "specialization",
 									"value": "CBT",
 									"description": "Filter by specialization"
+								},
+								{
+									"key": "category",
+									"value": "Mindfulness & Meditation",
+									"description": "Filter by practitioner category"
+								},
+								{
+									"key": "search",
+									"value": "Anxiety",
+									"description": "Text search across name/designation/specializations"
+								},
+								{
+									"key": "min_rating",
+									"value": "4",
+									"description": "Minimum rating"
+								},
+								{
+									"key": "min_experience",
+									"value": "5",
+									"description": "Minimum years of experience"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Page size (max 50)"
 								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specialist Highlights",
+					"request": {
+						"method": "GET",
+						"description": "Returns top-rated specialists for quick display on the home screen. Can be limited and optionally filtered by location.",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/highlights?location=Lahore&limit=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"highlights"
+							],
+							"query": [
+								{
+									"key": "location",
+									"value": "Lahore",
+									"description": "Optional location filter"
+								},
+								{
+									"key": "limit",
+									"value": "3",
+									"description": "Number of highlights to return"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specialist Suggestions",
+					"request": {
+						"method": "GET",
+						"description": "Provides auto-complete suggestions (names, specializations, categories) based on the search term typed by the user.",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/suggestions?term=Mind",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"suggestions"
+							],
+							"query": [
+								{
+									"key": "term",
+									"value": "Mind",
+									"description": "Term to search for suggestions"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specialist Public Profile",
+					"request": {
+						"method": "GET",
+						"description": "Fetches the public profile of a specialist by profile ID. Does not require authentication and is used for detail view before booking.",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/profiles/{{specialist_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"profiles",
+								"{{specialist_id}}"
 							]
 						}
 					}
@@ -701,6 +838,7 @@
 					"name": "Save/Update Today's Mood",
 					"request": {
 						"method": "POST",
+						"description": "Upserts the user’s mood for today. Accepts optional journal entry and backend will store one record per day.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -734,6 +872,7 @@
 					"name": "Save Mood for Specific Date",
 					"request": {
 						"method": "POST",
+						"description": "Use when syncing historical moods. Provide date + mood + optional journal text.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -767,6 +906,7 @@
 					"name": "Get Today's Mood",
 					"request": {
 						"method": "GET",
+						"description": "Fetches today’s mood entry for the authenticated user. 404 if not recorded.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -792,6 +932,7 @@
 					"name": "Get Mood for Specific Date",
 					"request": {
 						"method": "GET",
+						"description": "Returns the recorded mood + journal entry for a supplied date (YYYY-MM-DD).",
 						"header": [
 							{
 								"key": "Authorization",
@@ -824,6 +965,7 @@
 					"name": "Get Mood History",
 					"request": {
 						"method": "GET",
+						"description": "Paginated reverse-chronological list of moods to power the recent moods view.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -862,6 +1004,7 @@
 					"name": "Update Mood Entry",
 					"request": {
 						"method": "PUT",
+						"description": "Allows editing an existing mood entry by ID (change mood type or journal text).",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -902,6 +1045,7 @@
 					"name": "Delete Mood Entry",
 					"request": {
 						"method": "DELETE",
+						"description": "Deletes a mood entry by ID. Useful for “remove journal” flow.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -939,6 +1083,7 @@
 					"name": "Get Mindfulness Practitioners",
 					"request": {
 						"method": "GET",
+						"description": "Reads specialists filtered specifically for the Spiritual Hub. Same data as specialist listing but tailored for mindfulness filters (category/location/min_rating).",
 						"header": [],
 						"url": {
 							"raw": "http://localhost:5002/api/v1/spiritual/practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4",

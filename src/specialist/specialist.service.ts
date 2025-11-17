@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { SpecialistProfile, SpecialistProfileDocument } from '../models/schemas/specialist-profile.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateSpecialistProfileDto } from './dto/create-specialist-profile.dto';
@@ -101,30 +101,175 @@ export class SpecialistService {
     return this.formatProfile(profile);
   }
 
-  async getAllSpecialists(verified?: boolean, location?: string, specialization?: string) {
-    const query: any = {};
+  async getAllSpecialists(filters: {
+    verified?: boolean;
+    location?: string;
+    specialization?: string;
+    category?: string;
+    search?: string;
+    min_experience?: number;
+    min_rating?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    const query: FilterQuery<SpecialistProfileDocument> = {};
 
-    if (verified !== undefined) {
-      query.is_verified = verified;
+    if (filters.verified !== undefined) {
+      query.is_verified = filters.verified;
     }
 
+    if (filters.location) {
+      query.location = { $regex: filters.location, $options: 'i' };
+    }
+
+    if (filters.specialization) {
+      query.specializations = { $in: [filters.specialization] };
+    }
+
+    if (filters.category) {
+      query.categories = { $in: [filters.category] };
+    }
+
+    if (filters.min_experience !== undefined) {
+      query.experience_years = { $gte: filters.min_experience };
+    }
+
+    if (filters.min_rating !== undefined) {
+      query.rating = { $gte: filters.min_rating };
+    }
+
+    if (filters.search) {
+      const searchRegex = { $regex: filters.search, $options: 'i' };
+      query.$or = [
+        { full_name: searchRegex },
+        { designation: searchRegex },
+        { specializations: searchRegex },
+      ];
+    }
+
+    const page = filters.page && filters.page > 0 ? filters.page : 1;
+    const limit = filters.limit && filters.limit > 0 && filters.limit <= 50 ? filters.limit : 10;
+    const skip = (page - 1) * limit;
+
+    const [results, total] = await Promise.all([
+      this.specialistModel
+        .find(query)
+        .sort({ rating: -1, total_reviews: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.specialistModel.countDocuments(query),
+    ]);
+
+    return {
+      results: results.map((profile) => this.formatProfile(profile)),
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getSpecialistById(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Specialist not found');
+    }
+
+    const profile = await this.specialistModel.findById(id);
+    if (!profile) {
+      throw new NotFoundException('Specialist not found');
+    }
+
+    return this.formatProfile(profile);
+  }
+
+  async getHighlights(limit: number = 3, location?: string) {
+    const query: FilterQuery<SpecialistProfileDocument> = {};
     if (location) {
       query.location = { $regex: location, $options: 'i' };
     }
 
-    if (specialization) {
-      query.specializations = { $in: [specialization] };
+    const specialists = await this.specialistModel
+      .find(query)
+      .sort({ rating: -1, total_reviews: -1, createdAt: -1 })
+      .limit(limit);
+
+    return specialists.map((profile) => this.formatProfile(profile));
+  }
+
+  async getSuggestions(term: string) {
+    if (!term) {
+      return { names: [], specializations: [], categories: [] };
     }
 
-    const specialists = await this.specialistModel.find(query).sort({ createdAt: -1 });
+    const regexQuery = { $regex: term, $options: 'i' };
+    const regex = new RegExp(term, 'i');
+    const results = await this.specialistModel
+      .find({
+        $or: [
+          { full_name: regexQuery },
+          { designation: regexQuery },
+          { specializations: regexQuery },
+          { categories: regexQuery },
+        ],
+      })
+      .limit(10)
+      .select('full_name specializations categories -_id');
 
-    return specialists.map(profile => this.formatProfile(profile));
+    const names = new Set<string>();
+    const specializations = new Set<string>();
+    const categories = new Set<string>();
+
+    results.forEach((result) => {
+      if (regex.test(result.full_name)) {
+        names.add(result.full_name);
+      }
+      result.specializations.forEach((spec) => {
+        if (regex.test(spec)) {
+          specializations.add(spec);
+        }
+      });
+      result.categories.forEach((cat) => {
+        if (regex.test(cat)) {
+          categories.add(cat);
+        }
+      });
+    });
+
+    return {
+      names: Array.from(names),
+      specializations: Array.from(specializations),
+      categories: Array.from(categories),
+    };
   }
 
   private formatProfile(profile: SpecialistProfileDocument) {
-    return {
+    const base = {
       id: profile._id.toString(),
       user_id: profile.user_id.toString(),
+      full_name: profile.full_name,
+      designation: profile.designation,
+      location: profile.location,
+      hourly_rate: profile.hourly_rate,
+      currency: profile.currency,
+      specializations: profile.specializations,
+      languages: profile.languages,
+      categories: profile.categories,
+      rating: profile.rating,
+      total_reviews: profile.total_reviews,
+      experience_years: profile.experience_years,
+      profile_photo: profile.profile_photo || null,
+      education: profile.education,
+      certifications: profile.certifications,
+      profile_completed: profile.profile_completed,
+      is_verified: profile.is_verified,
+      created_at: (profile as any).createdAt,
+      updated_at: (profile as any).updatedAt,
+    };
+
+    return {
+      ...base,
       basic_info: {
         full_name: profile.full_name,
         designation: profile.designation,
@@ -139,12 +284,6 @@ export class SpecialistService {
         experience_years: profile.experience_years,
         profile_photo: profile.profile_photo || null,
       },
-      education: profile.education,
-      certifications: profile.certifications,
-      profile_completed: profile.profile_completed,
-      is_verified: profile.is_verified,
-      created_at: (profile as any).createdAt,
-      updated_at: (profile as any).updatedAt,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Body, Query, Headers, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Put, Body, Query, Headers, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { SpecialistService } from './specialist.service';
 import { CreateSpecialistProfileDto } from './dto/create-specialist-profile.dto';
 import { UpdateSpecialistProfileDto } from './dto/update-specialist-profile.dto';
@@ -66,12 +66,60 @@ export class SpecialistController {
     @Query('verified') verified?: string,
     @Query('location') location?: string,
     @Query('specialization') specialization?: string,
+    @Query('category') category?: string,
+    @Query('search') search?: string,
+    @Query('min_experience') minExperience?: string,
+    @Query('min_rating') minRating?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     const verifiedBool = verified === 'true' ? true : verified === 'false' ? false : undefined;
-    const result = await this.specialistService.getAllSpecialists(verifiedBool, location, specialization);
+    const result = await this.specialistService.getAllSpecialists({
+      verified: verifiedBool,
+      location,
+      specialization,
+      category,
+      search,
+      min_experience: minExperience ? parseFloat(minExperience) : undefined,
+      min_rating: minRating ? parseFloat(minRating) : undefined,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    });
+    return {
+      success: true,
+      data: result.results,
+      pagination: result.pagination,
+    };
+  }
+
+  @Get('profiles/:id')
+  @HttpCode(HttpStatus.OK)
+  async getPublicProfile(@Param('id') id: string) {
+    const result = await this.specialistService.getSpecialistById(id);
     return {
       success: true,
       data: result,
+    };
+  }
+
+  @Get('highlights')
+  @HttpCode(HttpStatus.OK)
+  async getHighlights(@Query('location') location?: string, @Query('limit') limit?: string) {
+    const limitNum = limit ? Math.min(parseInt(limit, 10) || 3, 10) : 3;
+    const data = await this.specialistService.getHighlights(limitNum, location);
+    return {
+      success: true,
+      data,
+    };
+  }
+
+  @Get('suggestions')
+  @HttpCode(HttpStatus.OK)
+  async getSuggestions(@Query('term') term: string) {
+    const data = await this.specialistService.getSuggestions(term);
+    return {
+      success: true,
+      data,
     };
   }
 }
