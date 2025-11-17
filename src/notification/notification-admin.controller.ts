@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, HttpCode, HttpStatus, Get, Param, Query } from '@nestjs/common';
+import { Controller, Post, Body, Headers, HttpCode, HttpStatus, Get, Param, Query, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationTemplateDto } from './dto/create-notification-template.dto';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto';
@@ -16,14 +16,14 @@ export class NotificationAdminController {
 
   private async ensureAdmin(token: string): Promise<void> {
     if (!token) {
-      throw new Error('Please log in to access this feature');
+      throw new UnauthorizedException('Please log in to access this feature');
     }
     const result = await getUserFromToken(token, this.userModel);
     if (!result.success || !result.user) {
-      throw new Error(result.error || 'Invalid token');
+      throw new UnauthorizedException(result.error || 'Your session is invalid. Please log in again.');
     }
     if (result.user.user_type !== 'admin') {
-      throw new Error('Only admins can perform this action');
+      throw new ForbiddenException('Only admins can perform this action');
     }
   }
 
