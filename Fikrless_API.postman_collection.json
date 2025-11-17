@@ -1,0 +1,710 @@
+{
+	"info": {
+		"_postman_id": "fikrless-api-collection",
+		"name": "Fikrless API",
+		"description": "Fikrless Backend API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"user_type\": \"user\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"signup"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Email Verify",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/email-verify",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"email-verify"
+							]
+						}
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/forgot-password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"forgot-password"
+							]
+						}
+					}
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login or email-verify"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"new_password\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/change-password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"change-password"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Demographics",
+			"item": [
+				{
+					"name": "Save Demographics",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"user_id_here\",\n    \"demographics\": {\n        \"age_range\": \"18-25\",\n        \"gender_identity\": \"Male\",\n        \"country_of_residence\": \"Karachi, Pakistan\",\n        \"relationship_status\": \"Single\",\n        \"what_brings_you_here\": [\"Anxiety or stress\", \"Depression or low mood\"],\n        \"goals_for_using_app\": [\"Reduce stress/anxiety\", \"Improve mood & motivation\"],\n        \"mental_health_diagnosis\": \"No\",\n        \"seeing_professional\": \"No\",\n        \"suicidal_thoughts\": \"Never\",\n        \"exercise_frequency\": \"Weekly\",\n        \"substance_use\": \"Never\",\n        \"support_system\": \"Yes\",\n        \"preferred_support_type\": [\"Self-help tools\", \"Chat with professional\"],\n        \"preferred_therapist_gender\": \"No preference\",\n        \"preferred_language\": \"English\",\n        \"understands_emergency_disclaimer\": true\n    }\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/demographics",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"demographics"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Activity - Steps",
+			"item": [
+				{
+					"name": "Batch Sync Steps",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entries\": [\n        {\n            \"steps\": 20,\n            \"date\": \"2025-12-17\",\n            \"timestamp\": \"2025-12-17T10:02:24Z\",\n            \"calories_burned\": 1,\n            \"distance_km\": 0.02\n        },\n        {\n            \"steps\": 50,\n            \"date\": \"2025-12-17\",\n            \"timestamp\": \"2025-12-17T11:59:48Z\",\n            \"calories_burned\": 2,\n            \"distance_km\": 0.04\n        },\n        {\n            \"steps\": 70,\n            \"date\": \"2025-12-18\",\n            \"timestamp\": \"2025-12-18T00:00:00Z\",\n            \"calories_burned\": 3,\n            \"distance_km\": 0.05\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/sync",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								"sync"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Single Steps Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"steps\": 3456,\n    \"date\": \"2025-12-17\",\n    \"calories_burned\": 120,\n    \"distance_km\": 2.63\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Steps (Today)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Steps (Specific Date)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps?date=2025-12-17",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-12-17"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Steps History (Daily)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/history?period=daily&limit=30&page=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								"history"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "daily"
+								},
+								{
+									"key": "limit",
+									"value": "30"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Steps History (Weekly)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/history?period=weekly",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								"history"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "weekly"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Steps History (Monthly)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/history?period=monthly",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								"history"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "monthly"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Steps",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"steps\": 5000,\n    \"calories_burned\": 175,\n    \"distance_km\": 3.81\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "steps_entry_id_here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Steps",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "steps_entry_id_here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Steps Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/stats?period=30",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								"stats"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "30",
+									"description": "Number of days (default: 30)"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Current Streak",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/activity/steps/current-streak",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"activity",
+								"steps",
+								"current-streak"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Specialist",
+			"item": [
+				{
+					"name": "Create Specialist Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 500,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\"],\n        \"languages\": [\"English\", \"Urdu\"]\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        }\n    ],\n    \"certifications\": [\n        {\n            \"certificate_title\": \"Licensed Clinical Psychologist\",\n            \"provider\": \"Pakistan Psychological Association\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"profile"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specialist Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"profile"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Specialist Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 600,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\", \"Depression\"],\n        \"languages\": [\"English\", \"Urdu\"]\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        },\n        {\n            \"degree\": \"M.Sc. in Psychology\",\n            \"institute_name\": \"Karachi University\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"profile"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Specialists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"specialist",
+								"specialists"
+							],
+							"query": [
+								{
+									"key": "verified",
+									"value": "true",
+									"description": "Filter by verification status"
+								},
+								{
+									"key": "location",
+									"value": "Karachi",
+									"description": "Filter by location"
+								},
+								{
+									"key": "specialization",
+									"value": "CBT",
+									"description": "Filter by specialization"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5002",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

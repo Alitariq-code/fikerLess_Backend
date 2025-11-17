@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: fikrless-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    command: mongod --noauth
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - fikrless-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  fikrless-network:
+    driver: bridge
+
