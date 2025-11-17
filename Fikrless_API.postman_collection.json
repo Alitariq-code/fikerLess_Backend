@@ -190,7 +190,7 @@
 							"raw": "{\n    \"user_id\": \"user_id_here\",\n    \"demographics\": {\n        \"age_range\": \"18-25\",\n        \"gender_identity\": \"Male\",\n        \"country_of_residence\": \"Karachi, Pakistan\",\n        \"relationship_status\": \"Single\",\n        \"what_brings_you_here\": [\"Anxiety or stress\", \"Depression or low mood\"],\n        \"goals_for_using_app\": [\"Reduce stress/anxiety\", \"Improve mood & motivation\"],\n        \"mental_health_diagnosis\": \"No\",\n        \"seeing_professional\": \"No\",\n        \"suicidal_thoughts\": \"Never\",\n        \"exercise_frequency\": \"Weekly\",\n        \"substance_use\": \"Never\",\n        \"support_system\": \"Yes\",\n        \"preferred_support_type\": [\"Self-help tools\", \"Chat with professional\"],\n        \"preferred_therapist_gender\": \"No preference\",\n        \"preferred_language\": \"English\",\n        \"understands_emergency_disclaimer\": true\n    }\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/demographics",
+							"raw": "https://fikrless.com/api/v1/demographics",
 							"protocol": "https",
 							"host": [
 								"fikrless",
@@ -198,6 +198,7 @@
 							],
 							"path": [
 								"api",
+								"v1",
 								"demographics"
 							]
 						}
