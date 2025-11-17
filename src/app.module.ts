@@ -6,6 +6,7 @@ import { DemographicsModule } from './demographics/demographics.module';
 import { MailModule } from './mail/mail.module';
 import { ActivityModule } from './activity/activity.module';
 import { SpecialistModule } from './specialist/specialist.module';
+import { MoodModule } from './mood/mood.module';
 
 @Module({
   imports: [
@@ -34,12 +35,13 @@ import { SpecialistModule } from './specialist/specialist.module';
         };
       },
     }),
-    AuthModule,
-    DemographicsModule,
-    MailModule,
-    ActivityModule,
-    SpecialistModule,
-  ],
-})
-export class AppModule {}
+        AuthModule,
+        DemographicsModule,
+        MailModule,
+        ActivityModule,
+        SpecialistModule,
+        MoodModule,
+      ],
+    })
+    export class AppModule {}
 

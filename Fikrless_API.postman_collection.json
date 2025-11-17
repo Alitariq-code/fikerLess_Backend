@@ -693,6 +693,244 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Mood",
+			"item": [
+				{
+					"name": "Save/Update Today's Mood",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mood\": \"happy\",\n    \"journal_entry\": \"Feeling great today!\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood"
+							]
+						}
+					}
+				},
+				{
+					"name": "Save Mood for Specific Date",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mood\": \"sad\",\n    \"date\": \"2025-12-16\",\n    \"journal_entry\": \"Had a difficult day\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Today's Mood",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Mood for Specific Date",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood?date=2025-12-16",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-12-16",
+									"description": "Date in YYYY-MM-DD format"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Mood History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood/history?limit=10&page=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood",
+								"history"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of records per page (default: 10)"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Mood Entry",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mood\": \"calm\",\n    \"journal_entry\": \"Updated: Feeling more relaxed now\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "mood_entry_id_here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Mood Entry",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5002/api/v1/mood/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5002",
+							"path": [
+								"api",
+								"v1",
+								"mood",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "mood_entry_id_here"
+								}
+							]
+						}
+					}
+				}
+			]
 		}
 	],
 	"variable": [

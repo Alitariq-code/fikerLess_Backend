@@ -26,7 +26,7 @@ export class DemographicsService {
       throw new BadRequestException('demographics data is required');
     }
 
-    const userObjectId = typeof userId === 'string' ? userId : userId.toString();
+    const userObjectId = userId.toString();
     let demographics = await this.demographicsModel.findOne({ user_id: userObjectId }).exec();
 
     if (!demographics) {
