@@ -25,7 +25,7 @@
 							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"user_type\": \"user\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/signup",
+							"raw": "https://fikrless.com/api/signup",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -53,7 +53,7 @@
 							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/login",
+							"raw": "https://fikrless.com/api/login",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -81,7 +81,7 @@
 							"raw": "{\n    \"token\": \"1234\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/email-verify",
+							"raw": "https://fikrless.com/api/email-verify",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -109,7 +109,7 @@
 							"raw": "{\n    \"email\": \"test@example.com\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/forgot-password",
+							"raw": "https://fikrless.com/api/forgot-password",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -142,7 +142,7 @@
 							"raw": "{\n    \"new_password\": \"newpassword123\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/change-password",
+							"raw": "https://fikrless.com/api/change-password",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -175,7 +175,7 @@
 							"raw": "{\n    \"user_id\": \"user_id_here\",\n    \"demographics\": {\n        \"age_range\": \"18-25\",\n        \"gender_identity\": \"Male\",\n        \"country_of_residence\": \"Karachi, Pakistan\",\n        \"relationship_status\": \"Single\",\n        \"what_brings_you_here\": [\"Anxiety or stress\", \"Depression or low mood\"],\n        \"goals_for_using_app\": [\"Reduce stress/anxiety\", \"Improve mood & motivation\"],\n        \"mental_health_diagnosis\": \"No\",\n        \"seeing_professional\": \"No\",\n        \"suicidal_thoughts\": \"Never\",\n        \"exercise_frequency\": \"Weekly\",\n        \"substance_use\": \"Never\",\n        \"support_system\": \"Yes\",\n        \"preferred_support_type\": [\"Self-help tools\", \"Chat with professional\"],\n        \"preferred_therapist_gender\": \"No preference\",\n        \"preferred_language\": \"English\",\n        \"understands_emergency_disclaimer\": true\n    }\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/demographics",
+							"raw": "https://fikrless.com/api/demographics",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -212,7 +212,7 @@
 							"raw": "{\n    \"entries\": [\n        {\n            \"steps\": 20,\n            \"date\": \"2025-12-17\",\n            \"timestamp\": \"2025-12-17T10:02:24Z\",\n            \"calories_burned\": 1,\n            \"distance_km\": 0.02\n        },\n        {\n            \"steps\": 50,\n            \"date\": \"2025-12-17\",\n            \"timestamp\": \"2025-12-17T11:59:48Z\",\n            \"calories_burned\": 2,\n            \"distance_km\": 0.04\n        },\n        {\n            \"steps\": 70,\n            \"date\": \"2025-12-18\",\n            \"timestamp\": \"2025-12-18T00:00:00Z\",\n            \"calories_burned\": 3,\n            \"distance_km\": 0.05\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/sync",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/sync",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -248,7 +248,7 @@
 							"raw": "{\n    \"steps\": 3456,\n    \"date\": \"2025-12-17\",\n    \"calories_burned\": 120,\n    \"distance_km\": 2.63\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -275,7 +275,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -302,7 +302,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps?date=2025-12-17",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps?date=2025-12-17",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -335,7 +335,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/history?period=daily&limit=30&page=1",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/history?period=daily&limit=30&page=1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -377,7 +377,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/history?period=weekly",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/history?period=weekly",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -411,7 +411,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/history?period=monthly",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/history?period=monthly",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -453,7 +453,7 @@
 							"raw": "{\n    \"steps\": 5000,\n    \"calories_burned\": 175,\n    \"distance_km\": 3.81\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/:id",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -487,7 +487,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/:id",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -521,7 +521,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/stats?period=30",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/stats?period=30",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -556,7 +556,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/activity/steps/current-streak",
+							"raw": "https://fikrless.com/api/api/v1/activity/steps/current-streak",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -597,7 +597,7 @@
 							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 500,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\"],\n        \"languages\": [\"English\", \"Urdu\"],\n        \"categories\": [\"Mindfulness & Meditation\", \"Life Coaching\"],\n        \"experience_years\": 8,\n        \"profile_photo\": \"https://cdn.example.com/profiles/sarah-ahmed.jpg\"\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        }\n    ],\n    \"certifications\": [\n        {\n            \"certificate_title\": \"Licensed Clinical Psychologist\",\n            \"provider\": \"Pakistan Psychological Association\"\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/profile",
+							"raw": "https://fikrless.com/api/api/v1/specialist/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -624,7 +624,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/profile",
+							"raw": "https://fikrless.com/api/api/v1/specialist/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -659,7 +659,7 @@
 							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 600,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\", \"Depression\"],\n        \"languages\": [\"English\", \"Urdu\"],\n        \"categories\": [\"Mindfulness & Meditation\", \"Life Coaching\"],\n        \"experience_years\": 10,\n        \"profile_photo\": \"https://cdn.example.com/profiles/sarah-ahmed.jpg\"\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        },\n        {\n            \"degree\": \"M.Sc. in Psychology\",\n            \"institute_name\": \"Karachi University\"\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/profile",
+							"raw": "https://fikrless.com/api/api/v1/specialist/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -681,7 +681,7 @@
 						"description": "Public listing endpoint used by the specialist search screen. Supports filters (verified, location, specialization, category, search, min_rating, min_experience) and pagination.",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT&category=Mindfulness%20%26%20Meditation&search=Anxiety&min_rating=4&min_experience=5&page=1&limit=10",
+							"raw": "https://fikrless.com/api/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT&category=Mindfulness%20%26%20Meditation&search=Anxiety&min_rating=4&min_experience=5&page=1&limit=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -750,7 +750,7 @@
 						"description": "Returns top-rated specialists for quick display on the home screen. Can be limited and optionally filtered by location.",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/highlights?location=Lahore&limit=3",
+							"raw": "https://fikrless.com/api/api/v1/specialist/highlights?location=Lahore&limit=3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -784,7 +784,7 @@
 						"description": "Provides auto-complete suggestions (names, specializations, categories) based on the search term typed by the user.",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/suggestions?term=Mind",
+							"raw": "https://fikrless.com/api/api/v1/specialist/suggestions?term=Mind",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -813,7 +813,7 @@
 						"description": "Fetches the public profile of a specialist by profile ID. Does not require authentication and is used for detail view before booking.",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/specialist/profiles/{{specialist_id}}",
+							"raw": "https://fikrless.com/api/api/v1/specialist/profiles/{{specialist_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -854,7 +854,7 @@
 							"raw": "{\n    \"mood\": \"happy\",\n    \"journal_entry\": \"Feeling great today!\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood",
+							"raw": "https://fikrless.com/api/api/v1/mood",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -888,7 +888,7 @@
 							"raw": "{\n    \"mood\": \"sad\",\n    \"date\": \"2025-12-16\",\n    \"journal_entry\": \"Had a difficult day\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood",
+							"raw": "https://fikrless.com/api/api/v1/mood",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -914,7 +914,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood",
+							"raw": "https://fikrless.com/api/api/v1/mood",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -940,7 +940,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood?date=2025-12-16",
+							"raw": "https://fikrless.com/api/api/v1/mood?date=2025-12-16",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -973,7 +973,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood/history?limit=10&page=1",
+							"raw": "https://fikrless.com/api/api/v1/mood/history?limit=10&page=1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1020,7 +1020,7 @@
 							"raw": "{\n    \"mood\": \"calm\",\n    \"journal_entry\": \"Updated: Feeling more relaxed now\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood/:id",
+							"raw": "https://fikrless.com/api/api/v1/mood/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1053,7 +1053,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/mood/:id",
+							"raw": "https://fikrless.com/api/api/v1/mood/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1086,7 +1086,7 @@
 						"description": "Reads specialists filtered specifically for the Spiritual Hub. Same data as specialist listing but tailored for mindfulness filters (category/location/min_rating).",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/spiritual/practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4",
+							"raw": "https://fikrless.com/api/api/v1/spiritual/practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1135,7 +1135,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications?status=all&page=1&limit=20",
+							"raw": "https://fikrless.com/api/api/v1/notifications?status=all&page=1&limit=20",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1178,7 +1178,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/{{notification_id}}",
+							"raw": "https://fikrless.com/api/api/v1/notifications/{{notification_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1213,7 +1213,7 @@
 							"raw": "{\n    \"status\": \"read\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/{{notification_id}}",
+							"raw": "https://fikrless.com/api/api/v1/notifications/{{notification_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1240,7 +1240,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/mark-all-read",
+							"raw": "https://fikrless.com/api/api/v1/notifications/mark-all-read",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1267,7 +1267,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/{{notification_id}}",
+							"raw": "https://fikrless.com/api/api/v1/notifications/{{notification_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1294,7 +1294,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications",
+							"raw": "https://fikrless.com/api/api/v1/notifications",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1320,7 +1320,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/unread-count",
+							"raw": "https://fikrless.com/api/api/v1/notifications/unread-count",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1355,7 +1355,7 @@
 							"raw": "{\n    \"title\": \"Free Online Session\",\n    \"body\": \"Join our free session to learn mindfulness.\",\n    \"type\": \"event\",\n    \"metadata\": {\n        \"icon\": \"event\",\n        \"category\": \"Mindfulness\"\n    },\n    \"cta_text\": \"Learn More\",\n    \"cta_url\": \"fikrless://events/123\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/admin/templates",
+							"raw": "https://fikrless.com/api/api/v1/notifications/admin/templates",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1383,7 +1383,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/admin/templates",
+							"raw": "https://fikrless.com/api/api/v1/notifications/admin/templates",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1419,7 +1419,7 @@
 							"raw": "{\n    \"template_id\": \"{{template_id}}\",\n    \"user_ids\": [\n        \"{{user_id}}\"\n    ]\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5002/api/v1/notifications/admin/broadcast",
+							"raw": "https://fikrless.com/api/api/v1/notifications/admin/broadcast",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1441,7 +1441,7 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:5002",
+			"value": "https://fikrless.com/api",
 			"type": "string"
 		},
 		{
