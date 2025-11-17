@@ -25,13 +25,16 @@
 							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"user_type\": \"user\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/signup",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/auth/signup",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
+								"api",
+								"v1",
+								"auth",
 								"signup"
 							]
 						}
@@ -53,13 +56,16 @@
 							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/login",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/auth/login",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
+								"api",
+								"v1",
+								"auth",
 								"login"
 							]
 						}
@@ -69,7 +75,7 @@
 					"name": "Email Verify",
 					"request": {
 						"method": "POST",
-						"description": "Verifies the OTP sent to the user’s email during signup and returns a JWT token once verification succeeds.",
+						"description": "Verifies the OTP sent to the user\u2019s email during signup and returns a JWT token once verification succeeds.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -81,13 +87,16 @@
 							"raw": "{\n    \"token\": \"1234\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/email-verify",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/auth/email-verify",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
+								"api",
+								"v1",
+								"auth",
 								"email-verify"
 							]
 						}
@@ -109,13 +118,16 @@
 							"raw": "{\n    \"email\": \"test@example.com\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/forgot-password",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/auth/forgot-password",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
+								"api",
+								"v1",
+								"auth",
 								"forgot-password"
 							]
 						}
@@ -142,13 +154,16 @@
 							"raw": "{\n    \"new_password\": \"newpassword123\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/change-password",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/auth/change-password",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
+								"api",
+								"v1",
+								"auth",
 								"change-password"
 							]
 						}
@@ -176,12 +191,13 @@
 						},
 						"url": {
 							"raw": "https://fikrless.com/api/demographics",
-							"protocol": "http",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
+								"api",
 								"demographics"
 							]
 						}
@@ -212,12 +228,12 @@
 							"raw": "{\n    \"entries\": [\n        {\n            \"steps\": 20,\n            \"date\": \"2025-12-17\",\n            \"timestamp\": \"2025-12-17T10:02:24Z\",\n            \"calories_burned\": 1,\n            \"distance_km\": 0.02\n        },\n        {\n            \"steps\": 50,\n            \"date\": \"2025-12-17\",\n            \"timestamp\": \"2025-12-17T11:59:48Z\",\n            \"calories_burned\": 2,\n            \"distance_km\": 0.04\n        },\n        {\n            \"steps\": 70,\n            \"date\": \"2025-12-18\",\n            \"timestamp\": \"2025-12-18T00:00:00Z\",\n            \"calories_burned\": 3,\n            \"distance_km\": 0.05\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/sync",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/sync",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -232,7 +248,7 @@
 					"name": "Create Single Steps Entry",
 					"request": {
 						"method": "POST",
-						"description": "Creates or upserts a single day’s steps record. Useful for manual entry/edit from the client.",
+						"description": "Creates or upserts a single day\u2019s steps record. Useful for manual entry/edit from the client.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -248,12 +264,12 @@
 							"raw": "{\n    \"steps\": 3456,\n    \"date\": \"2025-12-17\",\n    \"calories_burned\": 120,\n    \"distance_km\": 2.63\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -267,7 +283,7 @@
 					"name": "Get Steps (Today)",
 					"request": {
 						"method": "GET",
-						"description": "Returns the authenticated user’s steps entry for today (server date). 404 if no data exists.",
+						"description": "Returns the authenticated user\u2019s steps entry for today (server date). 404 if no data exists.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -275,12 +291,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -302,17 +318,17 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps?date=2025-12-17",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps?date=2025-12-17",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"activity",
-								"steps"
+								"steps?date=2025-12-17"
 							],
 							"query": [
 								{
@@ -335,18 +351,18 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/history?period=daily&limit=30&page=1",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/history?period=daily&limit=30&page=1",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"activity",
 								"steps",
-								"history"
+								"history?period=daily&limit=30&page=1"
 							],
 							"query": [
 								{
@@ -377,18 +393,18 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/history?period=weekly",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/history?period=weekly",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"activity",
 								"steps",
-								"history"
+								"history?period=weekly"
 							],
 							"query": [
 								{
@@ -411,18 +427,18 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/history?period=monthly",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/history?period=monthly",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"activity",
 								"steps",
-								"history"
+								"history?period=monthly"
 							],
 							"query": [
 								{
@@ -453,12 +469,12 @@
 							"raw": "{\n    \"steps\": 5000,\n    \"calories_burned\": 175,\n    \"distance_km\": 3.81\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/:id",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/:id",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -487,12 +503,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/:id",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/:id",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -521,18 +537,18 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/stats?period=30",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/stats?period=30",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"activity",
 								"steps",
-								"stats"
+								"stats?period=30"
 							],
 							"query": [
 								{
@@ -548,7 +564,7 @@
 					"name": "Get Current Streak",
 					"request": {
 						"method": "GET",
-						"description": "Returns the user’s current step streak and longest streak metrics.",
+						"description": "Returns the user\u2019s current step streak and longest streak metrics.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -556,12 +572,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/activity/steps/current-streak",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/activity/steps/current-streak",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -597,12 +613,12 @@
 							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 500,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\"],\n        \"languages\": [\"English\", \"Urdu\"],\n        \"categories\": [\"Mindfulness & Meditation\", \"Life Coaching\"],\n        \"experience_years\": 8,\n        \"profile_photo\": \"https://cdn.example.com/profiles/sarah-ahmed.jpg\"\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        }\n    ],\n    \"certifications\": [\n        {\n            \"certificate_title\": \"Licensed Clinical Psychologist\",\n            \"provider\": \"Pakistan Psychological Association\"\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/profile",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/profile",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -616,7 +632,7 @@
 					"name": "Get Specialist Profile",
 					"request": {
 						"method": "GET",
-						"description": "Returns the authenticated specialist’s own profile. Requires Authorization header.",
+						"description": "Returns the authenticated specialist\u2019s own profile. Requires Authorization header.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -624,12 +640,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/profile",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/profile",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -659,12 +675,12 @@
 							"raw": "{\n    \"basic_info\": {\n        \"full_name\": \"Dr. Sarah Ahmed\",\n        \"designation\": \"Clinical Psychologist\",\n        \"location\": \"Karachi, Pakistan\",\n        \"hourly_rate\": 600,\n        \"currency\": \"PKR\",\n        \"specializations\": [\"CBT\", \"Anxiety\", \"Depression\"],\n        \"languages\": [\"English\", \"Urdu\"],\n        \"categories\": [\"Mindfulness & Meditation\", \"Life Coaching\"],\n        \"experience_years\": 10,\n        \"profile_photo\": \"https://cdn.example.com/profiles/sarah-ahmed.jpg\"\n    },\n    \"education\": [\n        {\n            \"degree\": \"Ph.D. in Clinical Psychology\",\n            \"institute_name\": \"University of Karachi\"\n        },\n        {\n            \"degree\": \"M.Sc. in Psychology\",\n            \"institute_name\": \"Karachi University\"\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/profile",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/profile",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -681,17 +697,17 @@
 						"description": "Public listing endpoint used by the specialist search screen. Supports filters (verified, location, specialization, category, search, min_rating, min_experience) and pagination.",
 						"header": [],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT&category=Mindfulness%20%26%20Meditation&search=Anxiety&min_rating=4&min_experience=5&page=1&limit=10",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/specialists?verified=true&location=Karachi&specialization=CBT&category=Mindfulness%20%26%20Meditation&search=Anxiety&min_rating=4&min_experience=5&page=1&limit=10",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"specialist",
-								"specialists"
+								"specialists?verified=true&location=Karachi&specialization=CBT&category=Mindfulness%20%26%20Meditation&search=Anxiety&min_rating=4&min_experience=5&page=1&limit=10"
 							],
 							"query": [
 								{
@@ -750,17 +766,17 @@
 						"description": "Returns top-rated specialists for quick display on the home screen. Can be limited and optionally filtered by location.",
 						"header": [],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/highlights?location=Lahore&limit=3",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/highlights?location=Lahore&limit=3",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"specialist",
-								"highlights"
+								"highlights?location=Lahore&limit=3"
 							],
 							"query": [
 								{
@@ -784,17 +800,17 @@
 						"description": "Provides auto-complete suggestions (names, specializations, categories) based on the search term typed by the user.",
 						"header": [],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/suggestions?term=Mind",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/suggestions?term=Mind",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"specialist",
-								"suggestions"
+								"suggestions?term=Mind"
 							],
 							"query": [
 								{
@@ -813,12 +829,12 @@
 						"description": "Fetches the public profile of a specialist by profile ID. Does not require authentication and is used for detail view before booking.",
 						"header": [],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/specialist/profiles/{{specialist_id}}",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/specialist/profiles/{{specialist_id}}",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -838,7 +854,7 @@
 					"name": "Save/Update Today's Mood",
 					"request": {
 						"method": "POST",
-						"description": "Upserts the user’s mood for today. Accepts optional journal entry and backend will store one record per day.",
+						"description": "Upserts the user\u2019s mood for today. Accepts optional journal entry and backend will store one record per day.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -854,12 +870,12 @@
 							"raw": "{\n    \"mood\": \"happy\",\n    \"journal_entry\": \"Feeling great today!\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -888,12 +904,12 @@
 							"raw": "{\n    \"mood\": \"sad\",\n    \"date\": \"2025-12-16\",\n    \"journal_entry\": \"Had a difficult day\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -906,7 +922,7 @@
 					"name": "Get Today's Mood",
 					"request": {
 						"method": "GET",
-						"description": "Fetches today’s mood entry for the authenticated user. 404 if not recorded.",
+						"description": "Fetches today\u2019s mood entry for the authenticated user. 404 if not recorded.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -914,12 +930,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -940,16 +956,16 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood?date=2025-12-16",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood?date=2025-12-16",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
-								"mood"
+								"mood?date=2025-12-16"
 							],
 							"query": [
 								{
@@ -973,17 +989,17 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood/history?limit=10&page=1",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood/history?limit=10&page=1",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"mood",
-								"history"
+								"history?limit=10&page=1"
 							],
 							"query": [
 								{
@@ -1020,12 +1036,12 @@
 							"raw": "{\n    \"mood\": \"calm\",\n    \"journal_entry\": \"Updated: Feeling more relaxed now\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood/:id",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood/:id",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1045,7 +1061,7 @@
 					"name": "Delete Mood Entry",
 					"request": {
 						"method": "DELETE",
-						"description": "Deletes a mood entry by ID. Useful for “remove journal” flow.",
+						"description": "Deletes a mood entry by ID. Useful for \u201cremove journal\u201d flow.",
 						"header": [
 							{
 								"key": "Authorization",
@@ -1053,12 +1069,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/mood/:id",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/mood/:id",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1086,17 +1102,17 @@
 						"description": "Reads specialists filtered specifically for the Spiritual Hub. Same data as specialist listing but tailored for mindfulness filters (category/location/min_rating).",
 						"header": [],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/spiritual/practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/spiritual/practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
 								"spiritual",
-								"practitioners"
+								"practitioners?category=Mindfulness%20%26%20Meditation&location=Lahore&min_rating=4"
 							],
 							"query": [
 								{
@@ -1135,16 +1151,16 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications?status=all&page=1&limit=20",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications?status=all&page=1&limit=20",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
-								"notifications"
+								"notifications?status=all&page=1&limit=20"
 							],
 							"query": [
 								{
@@ -1178,12 +1194,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/{{notification_id}}",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/{{notification_id}}",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1213,12 +1229,12 @@
 							"raw": "{\n    \"status\": \"read\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/{{notification_id}}",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/{{notification_id}}",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1240,12 +1256,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/mark-all-read",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/mark-all-read",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1267,12 +1283,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/{{notification_id}}",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/{{notification_id}}",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1294,12 +1310,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1320,12 +1336,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/unread-count",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/unread-count",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1355,12 +1371,12 @@
 							"raw": "{\n    \"title\": \"Free Online Session\",\n    \"body\": \"Join our free session to learn mindfulness.\",\n    \"type\": \"event\",\n    \"metadata\": {\n        \"icon\": \"event\",\n        \"category\": \"Mindfulness\"\n    },\n    \"cta_text\": \"Learn More\",\n    \"cta_url\": \"fikrless://events/123\"\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/admin/templates",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/admin/templates",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1383,12 +1399,12 @@
 							}
 						],
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/admin/templates",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/admin/templates",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
@@ -1419,12 +1435,12 @@
 							"raw": "{\n    \"template_id\": \"{{template_id}}\",\n    \"user_ids\": [\n        \"{{user_id}}\"\n    ]\n}"
 						},
 						"url": {
-							"raw": "https://fikrless.com/api/api/v1/notifications/admin/broadcast",
-							"protocol": "http",
+							"raw": "https://fikrless.com/api/v1/notifications/admin/broadcast",
+							"protocol": "https",
 							"host": [
-								"localhost"
+								"fikrless",
+								"com"
 							],
-							"port": "5002",
 							"path": [
 								"api",
 								"v1",
