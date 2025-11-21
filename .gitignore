@@ -50,5 +50,14 @@ lerna-debug.log*
 # MongoDB data
 /data
 
+# Firebase credentials
+src/config/service-account.json
+**/service-account.json
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!nest-cli.json
+
 # QA Reports (optional - keep if you want to track test reports)
 # /QA_TEST_REPORT.md

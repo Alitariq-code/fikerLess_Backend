@@ -130,5 +130,6 @@ export class NotificationController {
       message: 'All notifications cleared',
     };
   }
+
 }
 

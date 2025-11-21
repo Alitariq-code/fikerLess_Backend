@@ -7,6 +7,9 @@ import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateNotificationTemplateDto } from './dto/create-notification-template.dto';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
+import { NotificationRequestDto } from './dto/notification-request.dto';
+import { FirebaseService } from '../firebase/firebase.service';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class NotificationService {
@@ -14,6 +17,7 @@ export class NotificationService {
     @InjectModel(NotificationTemplate.name) private templateModel: Model<NotificationTemplateDocument>,
     @InjectModel(UserNotification.name) private userNotificationModel: Model<UserNotificationDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   async createTemplate(dto: CreateNotificationTemplateDto) {
@@ -205,6 +209,36 @@ export class NotificationService {
       status: 'unread',
     });
     return { count };
+  }
+
+  async sendNotificationToToken(request: NotificationRequestDto): Promise<string> {
+    if (!request.token || !request.token.trim()) {
+      throw new BadRequestException('Token is required and cannot be empty');
+    }
+
+    const messaging = this.firebaseService.getMessaging();
+
+    const message: admin.messaging.Message = {
+      data: {
+        FCM: 'https://firebase.google.com/docs/cloud-messaging',
+        flutter: 'https://flutter.dev/',
+        ...(request.data || {}),
+      },
+      notification: {
+        title: request.title,
+        body: request.body,
+      },
+      token: request.token.trim(),
+    };
+
+    try {
+      const response = await messaging.send(message);
+      console.log('Notification sent: ', response);
+      return response;
+    } catch (error) {
+      console.error('Error sending notification: ', error);
+      throw error;
+    }
   }
 }
 
