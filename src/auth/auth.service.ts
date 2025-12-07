@@ -98,7 +98,7 @@ export class AuthService {
     }
 
     if (user.user_type === 'specialist') {
-      const profile = await this.specialistModel.findOne({ user_id: user._id.toString() });
+      const profile = await this.specialistModel.findOne({ user_id: user._id });
       if (!profile) {
         throw new UnauthorizedException('Please complete your specialist profile');
       }
