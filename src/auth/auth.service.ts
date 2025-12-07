@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +9,8 @@ import { generateJwtToken, validateEmail, validatePassword, generateRandomToken,
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(SpecialistProfile.name) private specialistModel: Model<SpecialistProfileDocument>,
@@ -73,8 +75,19 @@ export class AuthService {
         user_id: newUser._id.toString(),
       };
     } catch (error) {
-      await this.userModel.deleteOne({ _id: newUser._id }).exec();
-      throw new BadRequestException('Internal Server Error');
+      // Clean up the user if creation failed
+      try {
+        await this.userModel.deleteOne({ _id: newUser._id }).exec();
+      } catch (deleteError) {
+        this.logger.error(`Failed to cleanup user ${newUser._id} after signup error:`, deleteError);
+      }
+      
+      // Log the actual error for debugging
+      this.logger.error(`Signup failed for ${email}:`, error);
+      
+      // Return a more helpful error message
+      const errorMessage = error?.message || 'Failed to create account. Please try again.';
+      throw new BadRequestException(errorMessage);
     }
   }
 
