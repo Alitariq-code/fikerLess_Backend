@@ -3130,6 +3130,604 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Journal",
+			"item": [
+				{
+					"name": "Create/Update Journal Entry",
+					"request": {
+						"method": "POST",
+						"description": "Authenticated endpoint. Creates a new journal entry for a specific date, or updates an existing entry if one already exists for that date. Date must be in YYYY-MM-DD format. Content is required (1-10000 characters). Mood is optional (happy, sad, anxious, tired, angry, calm, neutral). If an entry already exists for the date, it will be updated instead of creating a duplicate. Use this when user clicks 'Save Today's Entry' button in the Journal Write screen.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"date\": \"2025-09-05\",\n    \"content\": \"Had a good conversation with friends today. Feeling positive and grateful.\",\n    \"mood\": \"happy\"\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"date\": \"2025-09-05\",\n    \"content\": \"Had a good conversation with friends today.\",\n    \"mood\": \"happy\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Journal entry created successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"date\": \"2025-09-05\",\n        \"content\": \"Had a good conversation with friends today. Feeling positive and grateful.\",\n        \"mood\": \"happy\",\n        \"created_at\": \"2025-09-05T10:30:00.000Z\",\n        \"updated_at\": \"2025-09-05T10:30:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Today's Journal",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns today's journal entry if it exists, or null if no entry has been created for today. Use this to populate the 'Today's Journal' section in the Journal screen. If data is null, show the empty state with 'Tap Write to add a private journal entry' message.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/today",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"today"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200 - With Entry",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/today",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "today"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"date\": \"2025-09-05\",\n        \"content\": \"Had a good conversation with friends today. Feeling positive and grateful.\",\n        \"mood\": \"happy\",\n        \"created_at\": \"2025-09-05T10:30:00.000Z\",\n        \"updated_at\": \"2025-09-05T10:30:00.000Z\"\n    }\n}"
+						},
+						{
+							"name": "Success 200 - No Entry",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/today",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "today"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": null,\n    \"message\": \"No journal entry for today\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Journal by Date",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns journal entry for a specific date in YYYY-MM-DD format. Use this when user selects a date from the calendar in the Journal screen. Returns null if no entry exists for that date. Date parameter must be in YYYY-MM-DD format (e.g., 2025-09-05).",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/date/2025-09-05",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"date",
+								"2025-09-05"
+							],
+							"variable": [
+								{
+									"key": "date",
+									"value": "2025-09-05",
+									"description": "Date in YYYY-MM-DD format"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/date/2025-09-05",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "date", "2025-09-05"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"date\": \"2025-09-05\",\n        \"content\": \"Had a good conversation with friends today.\",\n        \"mood\": \"happy\",\n        \"created_at\": \"2025-09-05T10:30:00.000Z\",\n        \"updated_at\": \"2025-09-05T10:30:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Previous Entries",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns paginated list of previous journal entries, sorted by date descending (newest first). Use this to populate the 'Previous Entries' section in the Journal screen. Each entry includes date, content, mood, and timestamps. Response includes pagination metadata. Entries are displayed with mood icons (happy face, sad face, etc.) based on the mood field.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/entries?page=1&limit=10",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"entries"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of entries per page (default: 10, max: 100)"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/entries?page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "entries"],
+									"query": [
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"date\": \"2025-09-05\",\n            \"content\": \"Had a good conversation with friends today.\",\n            \"mood\": \"happy\",\n            \"created_at\": \"2025-09-05T10:30:00.000Z\",\n            \"updated_at\": \"2025-09-05T10:30:00.000Z\"\n        },\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"date\": \"2025-09-04\",\n            \"content\": \"Had a good conversation with friends\",\n            \"mood\": \"sad\",\n            \"created_at\": \"2025-09-04T09:00:00.000Z\",\n            \"updated_at\": \"2025-09-04T09:00:00.000Z\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 2,\n        \"total_pages\": 1\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Journal by Month",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns all journal entries for a specific month. Use this to populate the calendar view in the Journal screen, showing which dates have entries. Year and month are query parameters (month: 1-12). If not provided, defaults to current year and month. Response includes count of entries for the month.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/month?year=2025&month=9",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"month"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2025",
+									"description": "Year (default: current year)"
+								},
+								{
+									"key": "month",
+									"value": "9",
+									"description": "Month 1-12 (default: current month)"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/month?year=2025&month=9",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "month"],
+									"query": [
+										{"key": "year", "value": "2025"},
+										{"key": "month", "value": "9"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"date\": \"2025-09-05\",\n            \"content\": \"Had a good conversation with friends today.\",\n            \"mood\": \"happy\",\n            \"created_at\": \"2025-09-05T10:30:00.000Z\",\n            \"updated_at\": \"2025-09-05T10:30:00.000Z\"\n        },\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"date\": \"2025-09-04\",\n            \"content\": \"Had a good conversation with friends\",\n            \"mood\": \"sad\",\n            \"created_at\": \"2025-09-04T09:00:00.000Z\",\n            \"updated_at\": \"2025-09-04T09:00:00.000Z\"\n        }\n    ],\n    \"count\": 2\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Journal by ID",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns a specific journal entry by its ID. Use this to retrieve full details of a journal entry. Only the entry owner can access their own entries. Returns 404 if entry not found or 403 if trying to access another user's entry.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/{{journal_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"{{journal_id}}"
+							],
+							"variable": [
+								{
+									"key": "journal_id",
+									"value": "65a1b2c3d4e5f6789012345",
+									"description": "Journal entry ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/{{journal_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "{{journal_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"date\": \"2025-09-05\",\n        \"content\": \"Had a good conversation with friends today. Feeling positive and grateful.\",\n        \"mood\": \"happy\",\n        \"created_at\": \"2025-09-05T10:30:00.000Z\",\n        \"updated_at\": \"2025-09-05T10:30:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Journal Entry",
+					"request": {
+						"method": "PUT",
+						"description": "Authenticated endpoint. Updates an existing journal entry by ID. Only the entry owner can update their entries. Content and mood are optional - only include fields you want to update. Content must be 1-10000 characters if provided. Returns the updated entry.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Updated: Had a great conversation with friends today. Feeling very positive!\",\n    \"mood\": \"happy\"\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/{{journal_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"{{journal_id}}"
+							],
+							"variable": [
+								{
+									"key": "journal_id",
+									"value": "65a1b2c3d4e5f6789012345",
+									"description": "Journal entry ID to update"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"content\": \"Updated: Had a great conversation with friends today. Feeling very positive!\",\n    \"mood\": \"happy\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/{{journal_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "{{journal_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Journal entry updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"date\": \"2025-09-05\",\n        \"content\": \"Updated: Had a great conversation with friends today. Feeling very positive!\",\n        \"mood\": \"happy\",\n        \"created_at\": \"2025-09-05T10:30:00.000Z\",\n        \"updated_at\": \"2025-09-05T11:00:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Journal Entry",
+					"request": {
+						"method": "DELETE",
+						"description": "Authenticated endpoint. Permanently deletes a journal entry by ID. Only the entry owner can delete their entries. Use with caution as this action cannot be undone. Returns success message on successful deletion.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/journal/{{journal_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"journal",
+								"{{journal_id}}"
+							],
+							"variable": [
+								{
+									"key": "journal_id",
+									"value": "65a1b2c3d4e5f6789012345",
+									"description": "Journal entry ID to delete"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/journal/{{journal_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "journal", "{{journal_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Journal entry deleted successfully\"\n}"
+						}
+					]
+				}
+			]
 		}
 	],
 	"variable": [
@@ -3171,6 +3769,12 @@
 			"value": "",
 			"type": "string",
 			"description": "Comment ID for testing comment endpoints"
+		},
+		{
+			"key": "journal_id",
+			"value": "",
+			"type": "string",
+			"description": "Journal entry ID for testing journal endpoints"
 		}
 	]
 }

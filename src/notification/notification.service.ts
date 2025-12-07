@@ -249,19 +249,18 @@ export class NotificationService {
     metadata?: Record<string, any>,
     cta_url?: string,
   ): Promise<void> {
-    // Create or get a generic template for direct notifications
-    let template = await this.templateModel.findOne({ type: 'direct_notification' }).exec();
+    // Create a unique template for each notification to avoid unique constraint issues
+    // The unique index on template_id + user_id means we need a unique template per notification
+    const uniqueTemplateType = `direct_${type}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     
-    if (!template) {
-      template = await this.templateModel.create({
-        title: 'Direct Notification',
-        body: 'Direct notification',
-        type: 'direct_notification',
-        is_active: true,
-      });
-    }
+    const template = await this.templateModel.create({
+      title: title.substring(0, 100), // Template title (max length)
+      body: body.substring(0, 200), // Template body (max length)
+      type: uniqueTemplateType,
+      is_active: true,
+    });
 
-    // Create notification directly
+    // Create notification with the unique template
     await this.userNotificationModel.create({
       template_id: template._id,
       user_id: new Types.ObjectId(userId),
