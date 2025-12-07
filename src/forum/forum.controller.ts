@@ -61,10 +61,12 @@ export class ForumController {
     @Query('category') category?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Headers('authorization') token?: string,
   ) {
+    const userId = await this.getUserIdFromToken(token);
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    const result = await this.forumService.getPosts(category, pageNum, limitNum);
+    const result = await this.forumService.getPosts(category, pageNum, limitNum, userId);
     return {
       success: true,
       ...result,
@@ -77,10 +79,12 @@ export class ForumController {
     @Query('q') query?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Headers('authorization') token?: string,
   ) {
+    const userId = await this.getUserIdFromToken(token);
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    const result = await this.forumService.searchPosts(query || '', pageNum, limitNum);
+    const result = await this.forumService.searchPosts(query || '', pageNum, limitNum, userId);
     return {
       success: true,
       ...result,

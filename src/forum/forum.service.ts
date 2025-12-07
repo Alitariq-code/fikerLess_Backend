@@ -32,7 +32,7 @@ export class ForumService {
     return this.formatPostResponse(post);
   }
 
-  async getPosts(category?: string, page: number = 1, limit: number = 10): Promise<any> {
+  async getPosts(category?: string, page: number = 1, limit: number = 10, userId?: string): Promise<any> {
     // Validate and sanitize pagination params
     const pageNum = Math.max(1, page);
     const limitNum = Math.min(100, Math.max(1, limit)); // Max 100, min 1
@@ -54,8 +54,25 @@ export class ForumService {
       this.forumPostModel.countDocuments(filter).exec(),
     ]);
 
+    // If userId is provided, check which posts are liked by this user
+    let likedPostIds: Set<string> = new Set();
+    if (userId) {
+      const postIds = posts.map(post => post._id.toString());
+      const likes = await this.forumLikeModel.find({
+        post_id: { $in: postIds },
+        user_id: userId,
+      }).exec();
+      likedPostIds = new Set(likes.map(like => like.post_id.toString()));
+    }
+
     return {
-      data: posts.map(post => this.formatPostResponse(post)),
+      data: posts.map(post => {
+        const formatted = this.formatPostResponse(post);
+        if (userId) {
+          formatted.is_liked = likedPostIds.has(post._id.toString());
+        }
+        return formatted;
+      }),
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -99,7 +116,7 @@ export class ForumService {
     return response;
   }
 
-  async searchPosts(query: string, page: number = 1, limit: number = 10): Promise<any> {
+  async searchPosts(query: string, page: number = 1, limit: number = 10, userId?: string): Promise<any> {
     // Validate and sanitize pagination params
     const pageNum = Math.max(1, page);
     const limitNum = Math.min(100, Math.max(1, limit)); // Max 100, min 1
@@ -127,8 +144,25 @@ export class ForumService {
       this.forumPostModel.countDocuments(filter).exec(),
     ]);
 
+    // If userId is provided, check which posts are liked by this user
+    let likedPostIds: Set<string> = new Set();
+    if (userId) {
+      const postIds = posts.map(post => post._id.toString());
+      const likes = await this.forumLikeModel.find({
+        post_id: { $in: postIds },
+        user_id: userId,
+      }).exec();
+      likedPostIds = new Set(likes.map(like => like.post_id.toString()));
+    }
+
     return {
-      data: posts.map(post => this.formatPostResponse(post)),
+      data: posts.map(post => {
+        const formatted = this.formatPostResponse(post);
+        if (userId) {
+          formatted.is_liked = likedPostIds.has(post._id.toString());
+        }
+        return formatted;
+      }),
       count: total,
       pagination: {
         page: pageNum,
@@ -475,8 +509,20 @@ export class ForumService {
       this.forumPostModel.countDocuments(filter).exec(),
     ]);
 
+    // Check which posts are liked by this user
+    const postIds = posts.map(post => post._id.toString());
+    const likes = await this.forumLikeModel.find({
+      post_id: { $in: postIds },
+      user_id: userId,
+    }).exec();
+    const likedPostIds = new Set(likes.map(like => like.post_id.toString()));
+
     return {
-      data: posts.map(post => this.formatPostResponse(post)),
+      data: posts.map(post => {
+        const formatted = this.formatPostResponse(post);
+        formatted.is_liked = likedPostIds.has(post._id.toString());
+        return formatted;
+      }),
       pagination: {
         page: pageNum,
         limit: limitNum,

@@ -1478,7 +1478,32 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/categories",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "categories"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        \"Sleep\",\n        \"Exercise\",\n        \"Meditation\",\n        \"Mood Tracking\",\n        \"Fitness\",\n        \"Yoga\",\n        \"Anxiety\",\n        \"Depression\",\n        \"Stress Management\",\n        \"Self-Care\",\n        \"Relationships\",\n        \"Nutrition\",\n        \"Mindfulness\",\n        \"Therapy & Counseling\",\n        \"Personal Growth\",\n        \"Work-Life Balance\",\n        \"Addiction Recovery\",\n        \"Trauma Healing\",\n        \"Parenting & Family\",\n        \"Grief & Loss\",\n        \"Cognitive Behavioral Therapy (CBT)\",\n        \"Other\"\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "Create Article",
@@ -1514,7 +1539,45 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Small Victory: I talked to someone today\",\n    \"category\": \"Meditation\",\n    \"content\": \"This is a comprehensive article about meditation and mindfulness.\",\n    \"featured_image_url\": \"https://example.com/article-image.jpg\",\n    \"status\": \"draft\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Article created successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n        \"title\": \"Small Victory: I talked to someone today\",\n        \"category\": \"Meditation\",\n        \"content\": \"This is a comprehensive article about meditation and mindfulness.\",\n        \"featured_image_url\": \"https://example.com/article-image.jpg\",\n        \"status\": \"draft\",\n        \"published_at\": null,\n        \"views\": 0,\n        \"likes\": 0,\n        \"read_time\": 1,\n        \"created_at\": \"2025-01-21T10:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T10:30:00.000Z\",\n        \"specialist\": {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"full_name\": \"Dr. John Smith\",\n            \"designation\": \"Therapist\",\n            \"profile_photo\": \"https://example.com/profile.jpg\"\n        }\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Get My Articles",
@@ -1560,7 +1623,42 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/my-articles?status=all&page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "my-articles"],
+									"query": [
+										{"key": "status", "value": "all"},
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n            \"title\": \"Understanding Meditation\",\n            \"category\": \"Meditation\",\n            \"content\": \"This is a comprehensive article about meditation...\",\n            \"featured_image_url\": \"https://example.com/image.jpg\",\n            \"status\": \"published\",\n            \"published_at\": \"2025-01-20T10:00:00.000Z\",\n            \"views\": 150,\n            \"likes\": 25,\n            \"read_time\": 5,\n            \"created_at\": \"2025-01-20T09:00:00.000Z\",\n            \"updated_at\": \"2025-01-20T10:00:00.000Z\",\n            \"specialist\": {\n                \"_id\": \"65a1b2c3d4e5f6789012346\",\n                \"full_name\": \"Dr. John Smith\",\n                \"designation\": \"Therapist\",\n                \"profile_photo\": \"https://example.com/profile.jpg\"\n            }\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 15,\n        \"totalPages\": 2\n    },\n    \"total\": 15,\n    \"published_count\": 12\n}"
+						}
+					]
 				},
 				{
 					"name": "Get All Articles",
@@ -1604,7 +1702,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles?category=Meditation&page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles"],
+									"query": [
+										{"key": "category", "value": "Meditation"},
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n            \"title\": \"The Power of Daily Meditation\",\n            \"category\": \"Meditation\",\n            \"content\": \"Meditation is a powerful practice that can transform your mental health...\",\n            \"featured_image_url\": \"https://example.com/meditation.jpg\",\n            \"status\": \"published\",\n            \"published_at\": \"2025-01-21T08:00:00.000Z\",\n            \"views\": 320,\n            \"likes\": 45,\n            \"read_time\": 8,\n            \"created_at\": \"2025-01-21T08:00:00.000Z\",\n            \"updated_at\": \"2025-01-21T08:00:00.000Z\",\n            \"specialist\": {\n                \"_id\": \"65a1b2c3d4e5f6789012346\",\n                \"full_name\": \"Dr. Sarah Johnson\",\n                \"designation\": \"Mindfulness Coach\",\n                \"profile_photo\": \"https://example.com/profile.jpg\"\n            }\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 25,\n        \"totalPages\": 3\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Get Featured Articles",
@@ -1634,7 +1762,35 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/featured?limit=6",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "featured"],
+									"query": [
+										{"key": "limit", "value": "6"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n            \"title\": \"Top 10 Mental Health Tips\",\n            \"category\": \"Self-Care\",\n            \"content\": \"Here are the top 10 mental health tips that can help you...\",\n            \"featured_image_url\": \"https://example.com/featured.jpg\",\n            \"status\": \"published\",\n            \"published_at\": \"2025-01-20T12:00:00.000Z\",\n            \"views\": 1250,\n            \"likes\": 180,\n            \"read_time\": 10,\n            \"created_at\": \"2025-01-20T12:00:00.000Z\",\n            \"updated_at\": \"2025-01-20T12:00:00.000Z\",\n            \"specialist\": {\n                \"_id\": \"65a1b2c3d4e5f6789012346\",\n                \"full_name\": \"Dr. Michael Brown\",\n                \"designation\": \"Psychologist\",\n                \"profile_photo\": \"https://example.com/profile.jpg\"\n            }\n        }\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "Search Articles",
@@ -1674,7 +1830,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/search?q=meditation&page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "search"],
+									"query": [
+										{"key": "q", "value": "meditation"},
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n            \"title\": \"Meditation Techniques for Beginners\",\n            \"category\": \"Meditation\",\n            \"content\": \"Meditation is a practice that involves focusing your mind...\",\n            \"featured_image_url\": \"https://example.com/image.jpg\",\n            \"status\": \"published\",\n            \"published_at\": \"2025-01-19T10:00:00.000Z\",\n            \"views\": 200,\n            \"likes\": 30,\n            \"read_time\": 6,\n            \"created_at\": \"2025-01-19T10:00:00.000Z\",\n            \"updated_at\": \"2025-01-19T10:00:00.000Z\",\n            \"specialist\": {\n                \"_id\": \"65a1b2c3d4e5f6789012346\",\n                \"full_name\": \"Dr. Emily Davis\",\n                \"designation\": \"Meditation Instructor\",\n                \"profile_photo\": \"https://example.com/profile.jpg\"\n            }\n        }\n    ],\n    \"count\": 5,\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 5,\n        \"totalPages\": 1\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Get Article by ID",
@@ -1704,7 +1890,32 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/{{article_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "{{article_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n        \"title\": \"Complete Guide to Meditation\",\n        \"category\": \"Meditation\",\n        \"content\": \"This is the full article content with detailed information about meditation practices, benefits, and techniques. It includes comprehensive guidance for beginners and advanced practitioners alike.\",\n        \"featured_image_url\": \"https://example.com/article-image.jpg\",\n        \"status\": \"published\",\n        \"published_at\": \"2025-01-21T09:00:00.000Z\",\n        \"views\": 450,\n        \"likes\": 65,\n        \"read_time\": 12,\n        \"created_at\": \"2025-01-20T08:00:00.000Z\",\n        \"updated_at\": \"2025-01-21T09:00:00.000Z\",\n        \"specialist\": {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"full_name\": \"Dr. John Smith\",\n            \"designation\": \"Therapist\",\n            \"profile_photo\": \"https://example.com/profile.jpg\"\n        }\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Update Article",
@@ -1748,7 +1959,45 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Updated Article Title\",\n    \"content\": \"Updated content...\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/{{article_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "{{article_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Article updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n        \"title\": \"Updated Article Title\",\n        \"category\": \"Meditation\",\n        \"content\": \"Updated content with new information...\",\n        \"featured_image_url\": \"https://example.com/updated-image.jpg\",\n        \"status\": \"published\",\n        \"published_at\": \"2025-01-21T10:00:00.000Z\",\n        \"views\": 450,\n        \"likes\": 65,\n        \"read_time\": 8,\n        \"created_at\": \"2025-01-20T08:00:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:00:00.000Z\",\n        \"specialist\": {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"full_name\": \"Dr. John Smith\",\n            \"designation\": \"Therapist\",\n            \"profile_photo\": \"https://example.com/profile.jpg\"\n        }\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Publish Article",
@@ -1785,7 +2034,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/{{article_id}}/publish",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "{{article_id}}", "publish"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Article published successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"specialist_id\": \"65a1b2c3d4e5f6789012346\",\n        \"title\": \"Understanding Meditation\",\n        \"category\": \"Meditation\",\n        \"content\": \"Full article content...\",\n        \"featured_image_url\": \"https://example.com/image.jpg\",\n        \"status\": \"published\",\n        \"published_at\": \"2025-01-21T12:00:00.000Z\",\n        \"views\": 0,\n        \"likes\": 0,\n        \"read_time\": 5,\n        \"created_at\": \"2025-01-21T10:00:00.000Z\",\n        \"updated_at\": \"2025-01-21T12:00:00.000Z\",\n        \"specialist\": {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"full_name\": \"Dr. John Smith\",\n            \"designation\": \"Therapist\",\n            \"profile_photo\": \"https://example.com/profile.jpg\"\n        }\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Delete Article",
@@ -1821,7 +2100,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/articles/{{article_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "articles", "{{article_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Article deleted successfully\"\n}"
+						}
+					]
 				}
 			]
 		},
@@ -1849,7 +2158,32 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/categories",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "categories"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\"category\": \"Depression\", \"count\": 15},\n        {\"category\": \"Anxiety\", \"count\": 23},\n        {\"category\": \"Stress Management\", \"count\": 8},\n        {\"category\": \"Meditation\", \"count\": 12},\n        {\"category\": \"Sleep\", \"count\": 5}\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "Create Post",
@@ -1886,7 +2220,45 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Small Victory: I talked to someone today\",\n    \"description\": \"I've been struggling with social anxiety for months, but today I managed to have a conversation with a colleague.\",\n    \"category\": \"Anxiety\",\n    \"is_anonymous\": false\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Post created successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Small Victory: I talked to someone today\",\n        \"description\": \"I've been struggling with social anxiety for months, but today I managed to have a conversation with a colleague.\",\n        \"category\": \"Anxiety\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"likes_count\": 0,\n        \"comments_count\": 0,\n        \"views\": 0,\n        \"created_at\": \"2025-01-21T10:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Get All Posts",
@@ -1932,7 +2304,42 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts?category=Depression&page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts"],
+									"query": [
+										{"key": "category", "value": "Depression"},
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"title\": \"Feeling overwhelmed today\",\n            \"description\": \"I've been feeling really overwhelmed with work and personal life. Does anyone have tips for managing stress?\",\n            \"category\": \"Depression\",\n            \"is_anonymous\": false,\n            \"author\": \"Jane Smith\",\n            \"likes_count\": 12,\n            \"comments_count\": 5,\n            \"views\": 45,\n            \"created_at\": \"2025-01-21T09:00:00.000Z\",\n            \"updated_at\": \"2025-01-21T09:00:00.000Z\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 15,\n        \"total_pages\": 2\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Get Single Post",
@@ -1969,7 +2376,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Feeling overwhelmed today\",\n        \"description\": \"I've been feeling really overwhelmed with work and personal life. Does anyone have tips for managing stress?\",\n        \"category\": \"Depression\",\n        \"is_anonymous\": false,\n        \"author\": \"Jane Smith\",\n        \"likes_count\": 12,\n        \"comments_count\": 5,\n        \"views\": 46,\n        \"is_liked\": true,\n        \"created_at\": \"2025-01-21T09:00:00.000Z\",\n        \"updated_at\": \"2025-01-21T09:00:00.000Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Search Posts",
@@ -2010,7 +2447,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/search?q=anxiety&page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "search"],
+									"query": [
+										{"key": "q", "value": "anxiety"},
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"title\": \"Dealing with anxiety attacks\",\n            \"description\": \"I've been experiencing anxiety attacks lately and looking for support.\",\n            \"category\": \"Anxiety\",\n            \"is_anonymous\": false,\n            \"author\": \"John Doe\",\n            \"likes_count\": 8,\n            \"comments_count\": 3,\n            \"views\": 25,\n            \"created_at\": \"2025-01-20T14:00:00.000Z\",\n            \"updated_at\": \"2025-01-20T14:00:00.000Z\"\n        }\n    ],\n    \"count\": 5,\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 5,\n        \"total_pages\": 1\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Get My Posts",
@@ -2057,7 +2524,42 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/my-posts?category=Anxiety&page=1&limit=10",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "my-posts"],
+									"query": [
+										{"key": "category", "value": "Anxiety"},
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "10"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"title\": \"My anxiety journey\",\n            \"description\": \"I wanted to share my experience with anxiety and how I've been managing it.\",\n            \"category\": \"Anxiety\",\n            \"is_anonymous\": false,\n            \"author\": \"John Doe\",\n            \"likes_count\": 5,\n            \"comments_count\": 2,\n            \"views\": 18,\n            \"created_at\": \"2025-01-19T10:00:00.000Z\",\n            \"updated_at\": \"2025-01-19T10:00:00.000Z\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 3,\n        \"total_pages\": 1\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Update Post",
@@ -2102,7 +2604,45 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Updated Post Title\",\n    \"description\": \"This is an updated description with sufficient content.\",\n    \"category\": \"Stress Management\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Post updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Updated Post Title\",\n        \"description\": \"This is an updated description with sufficient content.\",\n        \"category\": \"Stress Management\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"likes_count\": 5,\n        \"comments_count\": 2,\n        \"views\": 18,\n        \"created_at\": \"2025-01-19T10:00:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Delete Post",
@@ -2139,7 +2679,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Post and all related data deleted successfully\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Like/Unlike Post",
@@ -2177,7 +2747,66 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200 - Liked",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/like",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "like"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"is_liked\": true,\n    \"likes_count\": 13\n}"
+						},
+						{
+							"name": "Success 200 - Unliked",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/like",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "like"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"is_liked\": false,\n    \"likes_count\": 12\n}"
+						}
+					]
 				},
 				{
 					"name": "Get Comments",
@@ -2221,7 +2850,36 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments?page=1&limit=20",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "comments"],
+									"query": [
+										{"key": "page", "value": "1"},
+										{"key": "limit", "value": "20"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"post_id\": \"65a1b2c3d4e5f6789012345\",\n            \"content\": \"This is a helpful comment. I can relate to your experience.\",\n            \"is_anonymous\": false,\n            \"author\": \"Jane Smith\",\n            \"created_at\": \"2025-01-21T11:00:00.000Z\",\n            \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n        },\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012347\",\n            \"post_id\": \"65a1b2c3d4e5f6789012345\",\n            \"content\": \"Thank you for sharing this. It really helps to know we're not alone.\",\n            \"is_anonymous\": true,\n            \"author\": \"Anonymous_user_234\",\n            \"created_at\": \"2025-01-21T10:30:00.000Z\",\n            \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 20,\n        \"total\": 5,\n        \"total_pages\": 1\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Create Comment",
@@ -2267,7 +2925,45 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n    \"is_anonymous\": false\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "comments"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment added successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012346\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"created_at\": \"2025-01-21T11:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:30:00.000Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Update Comment",
@@ -2319,7 +3015,45 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"content\": \"This is an updated comment with new content.\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments/{{comment_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "comments", "{{comment_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012346\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"content\": \"This is an updated comment with new content.\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"created_at\": \"2025-01-21T11:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T12:00:00.000Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Delete Comment",
@@ -2363,7 +3097,37 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments/{{comment_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "comments", "{{comment_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment deleted successfully\"\n}"
+						}
+					]
 				}
 			]
 		}
