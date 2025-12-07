@@ -240,5 +240,40 @@ export class NotificationService {
       throw error;
     }
   }
+
+  async createDirectNotification(
+    userId: string,
+    title: string,
+    body: string,
+    type: string = 'forum',
+    metadata?: Record<string, any>,
+    cta_url?: string,
+  ): Promise<void> {
+    // Create or get a generic template for direct notifications
+    let template = await this.templateModel.findOne({ type: 'direct_notification' }).exec();
+    
+    if (!template) {
+      template = await this.templateModel.create({
+        title: 'Direct Notification',
+        body: 'Direct notification',
+        type: 'direct_notification',
+        is_active: true,
+      });
+    }
+
+    // Create notification directly
+    await this.userNotificationModel.create({
+      template_id: template._id,
+      user_id: new Types.ObjectId(userId),
+      status: 'unread',
+      payload: {
+        title,
+        body,
+        type,
+        metadata: metadata || {},
+        cta_url,
+      },
+    });
+  }
 }
 

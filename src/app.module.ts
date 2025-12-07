@@ -9,6 +9,8 @@ import { SpecialistModule } from './specialist/specialist.module';
 import { MoodModule } from './mood/mood.module';
 import { SpiritualModule } from './spiritual/spiritual.module';
 import { NotificationModule } from './notification/notification.module';
+import { ArticleModule } from './article/article.module';
+import { ForumModule } from './forum/forum.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { NotificationModule } from './notification/notification.module';
     MoodModule,
     SpiritualModule,
     NotificationModule,
+    ArticleModule,
+    ForumModule,
   ],
 })
 export class AppModule {}
