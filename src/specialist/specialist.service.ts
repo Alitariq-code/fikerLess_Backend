@@ -28,6 +28,12 @@ export class SpecialistService {
       throw new BadRequestException('Profile already exists. Use update endpoint.');
     }
 
+    // Validate required fields for creation
+    if (!dto.basic_info?.full_name || !dto.basic_info?.designation || !dto.basic_info?.location || 
+        dto.basic_info?.hourly_rate === undefined || !dto.basic_info?.currency) {
+      throw new BadRequestException('Missing required fields: full_name, designation, location, hourly_rate, and currency are required');
+    }
+
     const profile = await this.specialistModel.create({
       user_id: userId,
       full_name: dto.basic_info.full_name,
@@ -35,9 +41,9 @@ export class SpecialistService {
       location: dto.basic_info.location,
       hourly_rate: dto.basic_info.hourly_rate,
       currency: dto.basic_info.currency,
-      specializations: dto.basic_info.specializations,
-      languages: dto.basic_info.languages,
-      categories: dto.basic_info.categories,
+      specializations: dto.basic_info.specializations || [],
+      languages: dto.basic_info.languages || [],
+      categories: dto.basic_info.categories || [],
       rating: 0,
       total_reviews: 0,
       experience_years: dto.basic_info.experience_years ?? 0,
@@ -66,14 +72,31 @@ export class SpecialistService {
     }
 
     if (dto.basic_info) {
-      profile.full_name = dto.basic_info.full_name;
-      profile.designation = dto.basic_info.designation;
-      profile.location = dto.basic_info.location;
-      profile.hourly_rate = dto.basic_info.hourly_rate;
-      profile.currency = dto.basic_info.currency;
-      profile.specializations = dto.basic_info.specializations;
-      profile.languages = dto.basic_info.languages;
-      profile.categories = dto.basic_info.categories;
+      // Only update fields that are actually provided (not undefined)
+      if (dto.basic_info.full_name !== undefined) {
+        profile.full_name = dto.basic_info.full_name;
+      }
+      if (dto.basic_info.designation !== undefined) {
+        profile.designation = dto.basic_info.designation;
+      }
+      if (dto.basic_info.location !== undefined) {
+        profile.location = dto.basic_info.location;
+      }
+      if (dto.basic_info.hourly_rate !== undefined) {
+        profile.hourly_rate = dto.basic_info.hourly_rate;
+      }
+      if (dto.basic_info.currency !== undefined) {
+        profile.currency = dto.basic_info.currency;
+      }
+      if (dto.basic_info.specializations !== undefined) {
+        profile.specializations = dto.basic_info.specializations;
+      }
+      if (dto.basic_info.languages !== undefined) {
+        profile.languages = dto.basic_info.languages;
+      }
+      if (dto.basic_info.categories !== undefined) {
+        profile.categories = dto.basic_info.categories;
+      }
       if (dto.basic_info.experience_years !== undefined) {
         profile.experience_years = dto.basic_info.experience_years;
       }

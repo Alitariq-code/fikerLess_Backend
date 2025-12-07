@@ -19,32 +19,40 @@ export class CertificationDto {
 
 export class BasicInfoDto {
   @IsString()
-  full_name: string;
+  @IsOptional()
+  full_name?: string;
 
   @IsString()
-  designation: string;
+  @IsOptional()
+  designation?: string;
 
   @IsString()
-  location: string;
+  @IsOptional()
+  location?: string;
 
   @IsNumber()
   @Min(0)
-  hourly_rate: number;
+  @IsOptional()
+  hourly_rate?: number;
 
   @IsString()
-  currency: string;
+  @IsOptional()
+  currency?: string;
 
   @IsArray()
   @IsString({ each: true })
-  specializations: string[];
+  @IsOptional()
+  specializations?: string[];
 
   @IsArray()
   @IsString({ each: true })
-  languages: string[];
+  @IsOptional()
+  languages?: string[];
 
   @IsArray()
   @IsString({ each: true })
-  categories: string[];
+  @IsOptional()
+  categories?: string[];
 
   @IsNumber()
   @Min(0)
