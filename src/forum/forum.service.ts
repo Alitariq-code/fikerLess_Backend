@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ForumPost, ForumPostDocument } from '../models/schemas/forum-post.schema';
@@ -14,6 +14,8 @@ import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class ForumService {
+  private readonly logger = new Logger(ForumService.name);
+
   constructor(
     @InjectModel(ForumPost.name) private forumPostModel: Model<ForumPostDocument>,
     @InjectModel(ForumLike.name) private forumLikeModel: Model<ForumLikeDocument>,
@@ -229,10 +231,10 @@ export class ForumService {
             { post_id: postId, liker_id: userId, liker_name: likerName },
             `/forum/posts/${postId}`,
           );
-        } catch (error) {
-          // Don't fail the like operation if notification fails
-          console.error('Failed to send like notification:', error);
-        }
+      } catch (error) {
+        // Don't fail the like operation if notification fails
+        this.logger.error(`Failed to send like notification for post ${postId} to user ${post.user_id}:`, error);
+      }
       }
 
       return { is_liked: true, likes_count: post.likes_count };
@@ -323,7 +325,7 @@ export class ForumService {
         );
       } catch (error) {
         // Don't fail the comment operation if notification fails
-        console.error('Failed to send comment notification:', error);
+        this.logger.error(`Failed to send comment notification for post ${postId} to user ${post.user_id}:`, error);
       }
     }
 
