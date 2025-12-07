@@ -199,7 +199,14 @@ export class SpecialistService {
       throw new NotFoundException('Specialist not found');
     }
 
-    const profile = await this.specialistModel.findById(id);
+    // Try to find by profile _id first
+    let profile = await this.specialistModel.findById(id);
+    
+    // If not found, try to find by user_id (in case frontend passes user ID)
+    if (!profile) {
+      profile = await this.specialistModel.findOne({ user_id: new Types.ObjectId(id) });
+    }
+    
     if (!profile) {
       throw new NotFoundException('Specialist not found');
     }
