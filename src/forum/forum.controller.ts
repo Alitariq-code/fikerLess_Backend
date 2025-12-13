@@ -162,10 +162,12 @@ export class ForumController {
     @Param('id') id: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Headers('authorization') token?: string,
   ) {
+    const userId = await this.getUserIdFromToken(token);
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
-    const result = await this.forumService.getComments(id, pageNum, limitNum);
+    const result = await this.forumService.getComments(id, pageNum, limitNum, userId);
     return {
       success: true,
       ...result,
@@ -224,6 +226,24 @@ export class ForumController {
     }
     
     const result = await this.forumService.deleteComment(userId, commentId);
+    return {
+      success: true,
+      ...result,
+    };
+  }
+
+  @Post('comments/:id/like')
+  @HttpCode(HttpStatus.OK)
+  async toggleCommentLike(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    if (!userId) {
+      throw new UnauthorizedException('Please log in to like a comment');
+    }
+    
+    const result = await this.forumService.toggleCommentLike(userId, id);
     return {
       success: true,
       ...result,

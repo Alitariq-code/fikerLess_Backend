@@ -202,19 +202,41 @@ export class AuthService {
     };
   }
 
-  async changePassword(token: string, newPassword: string) {
+  async changePassword(token: string, oldPassword: string, newPassword: string) {
     if (!token) {
       throw new UnauthorizedException('Please log in to access this feature.');
     }
 
     const result = await getUserFromToken(token, this.userModel);
-    if (!result.success) {
-      throw new UnauthorizedException(result.error);
+    if (!result.success || !result.user) {
+      throw new UnauthorizedException(result.error || 'Invalid session. Please log in again.');
     }
 
     const user = result.user;
+
+    // Validate old password
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException('Old password is incorrect. Please try again.');
+    }
+
+    // Check if new password is the same as old password
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      throw new BadRequestException('New password must be different from your current password.');
+    }
+
+    // Validate new password strength (same as signup)
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      throw new BadRequestException(passwordValidation.error);
+    }
+
+    // Hash and save new password
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
+
+    this.logger.log(`Password changed successfully for user ${user.email}`);
 
     return {
       message: 'Your password has been changed successfully!',

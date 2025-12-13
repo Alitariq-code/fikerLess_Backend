@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Headers, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -42,12 +43,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async changePassword(
     @Headers('authorization') token: string,
-    @Body() body: { new_password: string },
+    @Body() dto: ChangePasswordDto,
   ) {
-    if (!body || !body.new_password) {
-      throw new BadRequestException('Please provide your new password to continue.');
+    if (!dto || !dto.old_password || !dto.new_password) {
+      throw new BadRequestException('Both old password and new password are required.');
     }
-    return this.authService.changePassword(token, body.new_password);
+    return this.authService.changePassword(token, dto.old_password, dto.new_password);
   }
 }
 

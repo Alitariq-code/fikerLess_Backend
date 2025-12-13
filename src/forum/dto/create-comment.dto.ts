@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsBoolean, MinLength, MaxLength, IsMongoId } from 'class-validator';
 
 export class CreateCommentDto {
   @IsNotEmpty({ message: 'Comment content is required' })
@@ -10,5 +10,9 @@ export class CreateCommentDto {
   @IsOptional()
   @IsBoolean()
   is_anonymous?: boolean;
+
+  @IsOptional()
+  @IsMongoId({ message: 'Invalid parent comment ID format' })
+  parent_comment_id?: string;
 }
 

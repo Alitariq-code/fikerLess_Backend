@@ -18,10 +18,21 @@ export class ForumComment {
 
   @Prop({ type: Boolean, default: false })
   is_anonymous: boolean;
+
+  // Reply functionality
+  @Prop({ type: Types.ObjectId, ref: 'ForumComment', index: true })
+  parent_comment_id?: Types.ObjectId;
+
+  // Likes functionality
+  @Prop({ type: Number, default: 0 })
+  likes_count: number;
 }
 
 export const ForumCommentSchema = SchemaFactory.createForClass(ForumComment);
 
-ForumCommentSchema.index({ post_id: 1, createdAt: -1 });
+// Indexes for efficient queries
+ForumCommentSchema.index({ post_id: 1, parent_comment_id: 1, createdAt: -1 }); // For getting top-level comments and replies
+ForumCommentSchema.index({ post_id: 1, createdAt: -1 }); // For getting all comments on a post
+ForumCommentSchema.index({ parent_comment_id: 1, createdAt: 1 }); // For getting replies to a comment
 ForumCommentSchema.index({ user_id: 1 });
 

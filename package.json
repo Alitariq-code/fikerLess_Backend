@@ -20,7 +20,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "import:quotes": "ts-node scripts/import-quotes.ts",
     "seed:achievements": "ts-node scripts/seed-achievements.ts",
-    "test:achievements": "ts-node scripts/test-achievements.ts"
+    "test:achievements": "ts-node scripts/test-achievements.ts",
+    "test:forum-comments": "ts-node scripts/test-forum-comments.ts",
+    "test:forum-complete": "ts-node scripts/test-forum-complete.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

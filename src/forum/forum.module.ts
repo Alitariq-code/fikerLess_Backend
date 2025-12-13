@@ -5,6 +5,7 @@ import { ForumService } from './forum.service';
 import { ForumPost, ForumPostSchema } from '../models/schemas/forum-post.schema';
 import { ForumLike, ForumLikeSchema } from '../models/schemas/forum-like.schema';
 import { ForumComment, ForumCommentSchema } from '../models/schemas/forum-comment.schema';
+import { ForumCommentLike, ForumCommentLikeSchema } from '../models/schemas/forum-comment-like.schema';
 import { User, UserSchema } from '../models/schemas/user.schema';
 import { NotificationModule } from '../notification/notification.module';
 import { AchievementModule } from '../achievement/achievement.module';
@@ -15,6 +16,7 @@ import { AchievementModule } from '../achievement/achievement.module';
       { name: ForumPost.name, schema: ForumPostSchema },
       { name: ForumLike.name, schema: ForumLikeSchema },
       { name: ForumComment.name, schema: ForumCommentSchema },
+      { name: ForumCommentLike.name, schema: ForumCommentLikeSchema },
       { name: User.name, schema: UserSchema },
     ]),
     NotificationModule,

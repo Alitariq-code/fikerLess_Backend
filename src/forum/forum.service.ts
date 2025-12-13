@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger, Inject, forwardRef, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ForumPost, ForumPostDocument } from '../models/schemas/forum-post.schema';
 import { ForumLike, ForumLikeDocument } from '../models/schemas/forum-like.schema';
 import { ForumComment, ForumCommentDocument } from '../models/schemas/forum-comment.schema';
+import { ForumCommentLike, ForumCommentLikeDocument } from '../models/schemas/forum-comment-like.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateForumPostDto } from './dto/create-forum-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -21,6 +22,7 @@ export class ForumService {
     @InjectModel(ForumPost.name) private forumPostModel: Model<ForumPostDocument>,
     @InjectModel(ForumLike.name) private forumLikeModel: Model<ForumLikeDocument>,
     @InjectModel(ForumComment.name) private forumCommentModel: Model<ForumCommentDocument>,
+    @InjectModel(ForumCommentLike.name) private forumCommentLikeModel: Model<ForumCommentLikeDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly notificationService: NotificationService,
     @Inject(forwardRef(() => AchievementService))
@@ -244,7 +246,7 @@ export class ForumService {
     }
   }
 
-  async getComments(postId: string, page: number = 1, limit: number = 20): Promise<any> {
+  async getComments(postId: string, page: number = 1, limit: number = 20, userId?: string): Promise<any> {
     // Validate ObjectId format
     if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
       throw new NotFoundException('Invalid post ID format');
@@ -261,19 +263,64 @@ export class ForumService {
       throw new NotFoundException('Post not found');
     }
 
-    const [comments, total] = await Promise.all([
+    // Get top-level comments only (no parent_comment_id)
+    const [topLevelComments, total] = await Promise.all([
       this.forumCommentModel
-        .find({ post_id: postId })
+        .find({ post_id: postId, parent_comment_id: { $exists: false } })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)
         .populate('user_id', 'first_name last_name email')
         .exec(),
-      this.forumCommentModel.countDocuments({ post_id: postId }).exec(),
+      this.forumCommentModel.countDocuments({ post_id: postId, parent_comment_id: { $exists: false } }).exec(),
     ]);
 
+    // Get all comment IDs to check likes
+    const allCommentIds = topLevelComments.map(c => c._id.toString());
+    
+    // Get user's liked comments if userId provided
+    let likedCommentIds: Set<string> = new Set();
+    if (userId) {
+      const likes = await this.forumCommentLikeModel.find({
+        comment_id: { $in: allCommentIds },
+        user_id: userId,
+      }).exec();
+      likedCommentIds = new Set(likes.map(like => like.comment_id.toString()));
+    }
+
+    // Build nested structure with replies
+    const nestedComments = await Promise.all(
+      topLevelComments.map(async (comment) => {
+        const formatted = await this.formatCommentResponse(comment, userId, likedCommentIds);
+        
+        // Get replies for this comment
+        const replies = await this.forumCommentModel
+          .find({ parent_comment_id: comment._id })
+          .sort({ createdAt: 1 }) // Oldest first for replies
+          .populate('user_id', 'first_name last_name email')
+          .exec();
+
+        // Get liked reply IDs
+        const replyIds = replies.map(r => r._id.toString());
+        let likedReplyIds: Set<string> = new Set();
+        if (userId && replyIds.length > 0) {
+          const replyLikes = await this.forumCommentLikeModel.find({
+            comment_id: { $in: replyIds },
+            user_id: userId,
+          }).exec();
+          likedReplyIds = new Set(replyLikes.map(like => like.comment_id.toString()));
+        }
+
+        formatted.replies = await Promise.all(
+          replies.map(reply => this.formatCommentResponse(reply, userId, likedReplyIds))
+        );
+
+        return formatted;
+      })
+    );
+
     return {
-      data: comments.map(comment => this.formatCommentResponse(comment)),
+      data: nestedComments,
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -294,48 +341,107 @@ export class ForumService {
       throw new NotFoundException('Post not found');
     }
 
+    // If parent_comment_id is provided, validate it's a reply to a comment
+    let parentComment: ForumCommentDocument | null = null;
+    if (dto.parent_comment_id) {
+      if (!/^[0-9a-fA-F]{24}$/.test(dto.parent_comment_id)) {
+        throw new BadRequestException('Invalid parent comment ID format');
+      }
+
+      parentComment = await this.forumCommentModel.findById(dto.parent_comment_id).exec();
+      if (!parentComment) {
+        throw new NotFoundException('Parent comment not found');
+      }
+
+      // Ensure parent comment belongs to the same post
+      if (parentComment.post_id.toString() !== postId) {
+        throw new BadRequestException('Parent comment does not belong to this post');
+      }
+
+      // Prevent nested replies beyond one level (replies to replies)
+      if (parentComment.parent_comment_id) {
+        throw new BadRequestException('Cannot reply to a reply. Please reply to the original comment.');
+      }
+    }
+
     const comment = new this.forumCommentModel({
       post_id: postId,
       user_id: userId,
-      ...dto,
+      content: dto.content,
       is_anonymous: dto.is_anonymous || false,
+      parent_comment_id: dto.parent_comment_id ? new Types.ObjectId(dto.parent_comment_id) : undefined,
+      likes_count: 0,
     });
     await comment.save();
 
-    // Update comment count on post
-    post.comments_count += 1;
-    await post.save();
+    // Update comment count on post (only for top-level comments)
+    if (!dto.parent_comment_id) {
+      post.comments_count += 1;
+      await post.save();
+    }
 
-    // Send notification to post author (if not commenting on own post)
-    if (post.user_id.toString() !== userId) {
+    // Determine notification recipient
+    let notificationRecipientId: string | null = null;
+    let notificationType = 'forum_comment';
+    let notificationTitle = '';
+    let notificationBody = '';
+
+    if (dto.parent_comment_id && parentComment) {
+      // Reply to comment - notify comment author
+      notificationRecipientId = parentComment.user_id.toString();
+      notificationType = 'forum_comment_reply';
+      
+      const commenterUser = await this.userModel.findById(userId).exec();
+      const commenterName = commenterUser 
+        ? `${commenterUser.first_name} ${commenterUser.last_name}`.trim() || commenterUser.email.split('@')[0] || `User_${userId.slice(-6)}`
+        : `User_${userId.slice(-6)}`;
+      
+      const commentPreview = comment.content.length > 100 ? comment.content.substring(0, 100) + '...' : comment.content;
+      notificationTitle = `${commenterName} replied to your comment`;
+      notificationBody = `${commenterName}: "${commentPreview}"`;
+    } else if (post.user_id.toString() !== userId) {
+      // Top-level comment - notify post author
+      notificationRecipientId = post.user_id.toString();
+      notificationType = 'forum_comment';
+      
+      const commenterUser = await this.userModel.findById(userId).exec();
+      const commenterName = commenterUser 
+        ? `${commenterUser.first_name} ${commenterUser.last_name}`.trim() || commenterUser.email.split('@')[0] || `User_${userId.slice(-6)}`
+        : `User_${userId.slice(-6)}`;
+      
+      const commentPreview = comment.content.length > 100 ? comment.content.substring(0, 100) + '...' : comment.content;
+      notificationTitle = `${commenterName} commented on your post`;
+      notificationBody = `${commenterName}: "${commentPreview}"`;
+    }
+
+    // Send notification if recipient exists and is not the commenter
+    if (notificationRecipientId && notificationRecipientId !== userId) {
       try {
-        // Fetch the user who commented
-        const commenterUser = await this.userModel.findById(userId).exec();
-        const commenterName = commenterUser 
-          ? `${commenterUser.first_name} ${commenterUser.last_name}`.trim() || commenterUser.email.split('@')[0] || `User_${userId.slice(-6)}`
-          : `User_${userId.slice(-6)}`;
-        
-        const postTitle = post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title;
-        const commentPreview = comment.content.length > 100 ? comment.content.substring(0, 100) + '...' : comment.content;
-        
         await this.notificationService.createDirectNotification(
-          post.user_id.toString(),
-          `${commenterName} commented on your post`,
-          `${commenterName}: "${commentPreview}"`,
-          'forum_comment',
-          { post_id: postId, comment_id: comment._id.toString(), commenter_id: userId, commenter_name: commenterName },
+          notificationRecipientId,
+          notificationTitle,
+          notificationBody,
+          notificationType,
+          { 
+            post_id: postId, 
+            comment_id: comment._id.toString(),
+            parent_comment_id: dto.parent_comment_id || null,
+            commenter_id: userId,
+          },
           `/forum/posts/${postId}`,
         );
       } catch (error) {
         // Don't fail the comment operation if notification fails
-        this.logger.error(`Failed to send comment notification for post ${postId} to user ${post.user_id}:`, error);
+        this.logger.error(`Failed to send comment notification:`, error);
       }
+    }
 
-      // Check forum achievements (user is helping someone else)
+    // Check forum achievements (user is helping someone else) - only for top-level comments
+    if (!dto.parent_comment_id && post.user_id.toString() !== userId) {
       this.checkAchievementsAsync(userId);
     }
 
-    return this.formatCommentResponse(comment);
+    return await this.formatCommentResponse(comment, userId);
   }
 
   private async checkAchievementsAsync(userId: string): Promise<void> {
@@ -368,7 +474,7 @@ export class ForumService {
     }
     await comment.save();
     
-    return this.formatCommentResponse(comment);
+    return await this.formatCommentResponse(comment);
   }
 
   async deleteComment(userId: string, commentId: string): Promise<any> {
@@ -387,15 +493,68 @@ export class ForumService {
       throw new ForbiddenException('You can only delete your own comments');
     }
 
-    // Update comment count on post
-    const post = await this.forumPostModel.findById(comment.post_id).exec();
-    if (post) {
-      post.comments_count = Math.max(0, post.comments_count - 1);
-      await post.save();
+    // Update comment count on post (only for top-level comments)
+    if (!comment.parent_comment_id) {
+      const post = await this.forumPostModel.findById(comment.post_id).exec();
+      if (post) {
+        post.comments_count = Math.max(0, post.comments_count - 1);
+        await post.save();
+      }
     }
+
+    // Delete all replies to this comment first
+    await this.forumCommentModel.deleteMany({ parent_comment_id: comment._id }).exec();
+
+    // Delete all likes for this comment and its replies
+    const replyIds = await this.forumCommentModel.find({ parent_comment_id: comment._id }).distinct('_id').exec();
+    const allCommentIds = [comment._id, ...replyIds];
+    await this.forumCommentLikeModel.deleteMany({ comment_id: { $in: allCommentIds } }).exec();
 
     await comment.deleteOne();
     return { message: 'Comment deleted successfully' };
+  }
+
+  async toggleCommentLike(userId: string, commentId: string): Promise<any> {
+    // Validate ObjectId format
+    if (!/^[0-9a-fA-F]{24}$/.test(commentId)) {
+      throw new NotFoundException('Invalid comment ID format');
+    }
+
+    const comment = await this.forumCommentModel.findById(commentId).exec();
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    const existingLike = await this.forumCommentLikeModel.findOne({
+      comment_id: commentId,
+      user_id: userId,
+    }).exec();
+
+    if (existingLike) {
+      // Unlike: remove like and decrement count
+      await existingLike.deleteOne();
+      comment.likes_count = Math.max(0, (comment.likes_count || 0) - 1);
+      await comment.save();
+      return {
+        message: 'Comment unliked successfully',
+        is_liked: false,
+        likes_count: comment.likes_count,
+      };
+    } else {
+      // Like: add like and increment count
+      const newLike = new this.forumCommentLikeModel({
+        comment_id: commentId,
+        user_id: userId,
+      });
+      await newLike.save();
+      comment.likes_count = (comment.likes_count || 0) + 1;
+      await comment.save();
+      return {
+        message: 'Comment liked successfully',
+        is_liked: true,
+        likes_count: comment.likes_count,
+      };
+    }
   }
 
   private formatPostResponse(post: ForumPostDocument): any {
@@ -419,20 +578,42 @@ export class ForumService {
     };
   }
 
-  private formatCommentResponse(comment: ForumCommentDocument): any {
+  private async formatCommentResponse(
+    comment: ForumCommentDocument,
+    userId?: string,
+    likedCommentIds?: Set<string>
+  ): Promise<any> {
     const user = (comment as any).user_id;
     const authorName = comment.is_anonymous
       ? `Anonymous_user_${comment.user_id.toString().slice(-3)}`
       : user ? `${user.first_name} ${user.last_name}`.trim() || user.email : 'Unknown';
 
+    // Check if user liked this comment
+    let is_liked = false;
+    if (userId) {
+      if (likedCommentIds) {
+        is_liked = likedCommentIds.has(comment._id.toString());
+      } else {
+        const like = await this.forumCommentLikeModel.findOne({
+          comment_id: comment._id,
+          user_id: userId,
+        }).exec();
+        is_liked = !!like;
+      }
+    }
+
     return {
       _id: comment._id,
       post_id: comment.post_id,
+      parent_comment_id: comment.parent_comment_id ? comment.parent_comment_id.toString() : null,
       content: comment.content,
       is_anonymous: comment.is_anonymous,
       author: authorName,
+      likes_count: comment.likes_count || 0,
+      is_liked: is_liked,
       created_at: (comment as any).createdAt,
       updated_at: (comment as any).updatedAt,
+      replies: [], // Will be populated by getComments
     };
   }
 
