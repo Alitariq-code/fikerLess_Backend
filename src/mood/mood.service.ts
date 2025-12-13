@@ -1,14 +1,19 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Mood, MoodDocument } from '../models/schemas/mood.schema';
 import { CreateMoodDto } from './dto/create-mood.dto';
 import { UpdateMoodDto } from './dto/update-mood.dto';
+import { AchievementService } from '../achievement/achievement.service';
+import { Steps, StepsDocument } from '../models/schemas/steps.schema';
 
 @Injectable()
 export class MoodService {
   constructor(
     @InjectModel(Mood.name) private moodModel: Model<MoodDocument>,
+    @InjectModel(Steps.name) private stepsModel: Model<StepsDocument>,
+    @Inject(forwardRef(() => AchievementService))
+    private readonly achievementService: AchievementService,
   ) {}
 
   async createOrUpdateMood(userId: string, dto: CreateMoodDto) {
@@ -23,6 +28,9 @@ export class MoodService {
       if (dto.mood) existing.mood = dto.mood;
       if (dto.journal_entry !== undefined) existing.journal_entry = dto.journal_entry;
       await existing.save();
+
+      // Check achievements after updating mood (async, don't block response)
+      this.checkAchievementsAsync(userId);
 
       return {
         success: true,
@@ -40,11 +48,48 @@ export class MoodService {
 
     await mood.save();
 
+    // Check achievements after saving mood (async, don't block response)
+    this.checkAchievementsAsync(userId);
+
     return {
       success: true,
       message: 'Mood saved successfully',
       data: this.formatMoodResponse(mood),
     };
+  }
+
+  private async checkAchievementsAsync(userId: string): Promise<void> {
+    try {
+      // Calculate streak from steps (same logic as StepsService)
+      const streak = await this.calculateStreakFromSteps(userId);
+      await this.achievementService.checkStreakAchievements(userId, streak);
+    } catch (error) {
+      // Don't fail the main operation if achievement check fails
+      console.error('Error checking achievements:', error);
+    }
+  }
+
+  private async calculateStreakFromSteps(userId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let streak = 0;
+    let currentDate = new Date(today);
+
+    while (true) {
+      const steps = await this.stepsModel.findOne({
+        user_id: userId,
+        date: { $gte: currentDate, $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000) }
+      });
+
+      if (steps && steps.steps > 0) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    return streak;
   }
 
   async getMood(userId: string, date?: string) {

@@ -35,10 +35,14 @@ export class User {
 
   @Prop({ default: '' })
   last_name: string;
+
+  @Prop({ unique: true, sparse: true })
+  username?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.index({ email: 1 });
+UserSchema.index({ username: 1 });
 UserSchema.index({ created_at: 1 });
 

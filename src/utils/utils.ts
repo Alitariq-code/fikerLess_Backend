@@ -108,3 +108,59 @@ export function getUserFromToken(token: string, userModel: Model<UserDocument>):
   });
 }
 
+export async function generateUniqueUsername(
+  firstName: string,
+  lastName: string,
+  email: string,
+  userModel: Model<UserDocument>,
+  userId?: string
+): Promise<string> {
+  // Create base username from name or email
+  let baseUsername = '';
+  
+  if (firstName && lastName) {
+    // Combine first and last name: "John Doe" -> "johndoe"
+    baseUsername = `${firstName}${lastName}`.toLowerCase()
+      .replace(/[^a-z0-9]/g, '') // Remove special characters
+      .substring(0, 20); // Max 20 chars
+  } else if (firstName) {
+    baseUsername = firstName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20);
+  } else {
+    // Use email prefix: "john.doe@email.com" -> "johndoe"
+    baseUsername = email.split('@')[0]
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .substring(0, 20);
+  }
+
+  // Ensure minimum length
+  if (baseUsername.length < 3) {
+    baseUsername = baseUsername + Math.floor(Math.random() * 1000).toString();
+  }
+
+  // Check if username exists
+  let username = baseUsername;
+  let counter = 1;
+  const maxAttempts = 1000;
+
+  while (counter < maxAttempts) {
+    const query: any = { username };
+    if (userId) {
+      query._id = { $ne: userId }; // Exclude current user
+    }
+
+    const existing = await userModel.findOne(query).exec();
+    
+    if (!existing) {
+      return username; // Username is available
+    }
+
+    // Username taken, append number: johndoe -> johndoe1 -> johndoe2
+    username = `${baseUsername}${counter}`;
+    counter++;
+  }
+
+  // Fallback: use timestamp if all attempts fail
+  return `${baseUsername}${Date.now().toString().slice(-6)}`;
+}
+

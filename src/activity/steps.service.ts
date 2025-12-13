@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Steps, StepsDocument } from '../models/schemas/steps.schema';
@@ -7,12 +7,15 @@ import { SyncStepsDto } from './dto/sync-steps.dto';
 import { CreateStepsDto } from './dto/create-steps.dto';
 import { UpdateStepsDto } from './dto/update-steps.dto';
 import { StepsCalculator } from '../utils/steps-calculator';
+import { AchievementService } from '../achievement/achievement.service';
 
 @Injectable()
 export class StepsService {
   constructor(
     @InjectModel(Steps.name) private stepsModel: Model<StepsDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @Inject(forwardRef(() => AchievementService))
+    private readonly achievementService: AchievementService,
   ) {}
 
   async syncSteps(userId: string, dto: SyncStepsDto) {
@@ -80,6 +83,9 @@ export class StepsService {
       }
     }
 
+    // Check achievements after syncing steps (async, don't block response)
+    this.checkAchievementsAsync(userId);
+
     return {
       synced: results.length,
       created,
@@ -112,6 +118,9 @@ export class StepsService {
       existing.distance_km = distanceKm;
       await existing.save();
 
+      // Check achievements after updating steps (async, don't block response)
+      this.checkAchievementsAsync(userId);
+
       return {
         id: existing._id.toString(),
         user_id: userId,
@@ -137,6 +146,9 @@ export class StepsService {
       goal: (user as any).daily_steps_goal || 10000
     });
 
+    // Check achievements after saving steps (async, don't block response)
+    this.checkAchievementsAsync(userId);
+
     return {
       id: newEntry._id.toString(),
       user_id: userId,
@@ -151,6 +163,16 @@ export class StepsService {
       created_at: (newEntry as any).createdAt,
       updated_at: (newEntry as any).updatedAt
     };
+  }
+
+  private async checkAchievementsAsync(userId: string): Promise<void> {
+    try {
+      const streak = await this.calculateStreak(userId);
+      await this.achievementService.checkStreakAchievements(userId, streak);
+    } catch (error) {
+      // Don't fail the main operation if achievement check fails
+      console.error('Error checking achievements:', error);
+    }
   }
 
   async getSteps(userId: string, date?: string) {

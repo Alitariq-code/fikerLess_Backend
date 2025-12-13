@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ForumPost, ForumPostDocument } from '../models/schemas/forum-post.schema';
@@ -11,6 +11,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateForumPostDto } from './dto/update-forum-post.dto';
 import { ArticleCategory } from '../models/schemas/article.schema';
 import { NotificationService } from '../notification/notification.service';
+import { AchievementService } from '../achievement/achievement.service';
 
 @Injectable()
 export class ForumService {
@@ -22,6 +23,8 @@ export class ForumService {
     @InjectModel(ForumComment.name) private forumCommentModel: Model<ForumCommentDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly notificationService: NotificationService,
+    @Inject(forwardRef(() => AchievementService))
+    private readonly achievementService: AchievementService,
   ) {}
 
   async createPost(userId: string, dto: CreateForumPostDto): Promise<any> {
@@ -327,9 +330,21 @@ export class ForumService {
         // Don't fail the comment operation if notification fails
         this.logger.error(`Failed to send comment notification for post ${postId} to user ${post.user_id}:`, error);
       }
+
+      // Check forum achievements (user is helping someone else)
+      this.checkAchievementsAsync(userId);
     }
 
     return this.formatCommentResponse(comment);
+  }
+
+  private async checkAchievementsAsync(userId: string): Promise<void> {
+    try {
+      await this.achievementService.checkForumAchievements(userId);
+    } catch (error) {
+      // Don't fail the main operation if achievement check fails
+      this.logger.error(`Error checking forum achievements for user ${userId}:`, error);
+    }
   }
 
   async updateComment(userId: string, commentId: string, dto: UpdateCommentDto): Promise<any> {

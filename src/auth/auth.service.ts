@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { SpecialistProfile, SpecialistProfileDocument } from '../models/schemas/specialist-profile.schema';
 import { MailService } from '../mail/mail.service';
-import { generateJwtToken, validateEmail, validatePassword, generateRandomToken, findUserByEmail, getUserFromToken } from '../utils/utils';
+import { generateJwtToken, validateEmail, validatePassword, generateRandomToken, findUserByEmail, getUserFromToken, generateUniqueUsername } from '../utils/utils';
 
 @Injectable()
 export class AuthService {
@@ -36,11 +36,15 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = generateRandomToken();
 
+    // Generate initial username from email
+    const initialUsername = await generateUniqueUsername('', '', email, this.userModel);
+
     const newUser = new this.userModel({
       email,
       password: hashedPassword,
       otp_token: verificationToken,
       user_type: userType,
+      username: initialUsername,
     });
 
     try {
@@ -125,6 +129,7 @@ export class AuthService {
     return {
       user_id: user._id.toString(),
       email: user.email,
+      username: user.username || '',
       phone_number: user.phone_number,
       has_demographics: user.has_demographics,
       is_email_verified: user.is_email_verified,
@@ -153,6 +158,8 @@ export class AuthService {
 
     return {
       user_id: user._id.toString(),
+      email: user.email,
+      username: user.username || '',
       message: 'OTP successfully verified!',
       token: tokenResult.token,
     };

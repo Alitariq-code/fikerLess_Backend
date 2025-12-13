@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { Demographics, DemographicsDocument } from '../models/schemas/demographics.schema';
-import { parseJsonData } from '../utils/utils';
+import { parseJsonData, generateUniqueUsername } from '../utils/utils';
 
 @Injectable()
 export class DemographicsService {
@@ -97,6 +97,31 @@ export class DemographicsService {
         demographics.understands_emergency_disclaimer = disclaimer;
       } else if (typeof disclaimer === 'string') {
         demographics.understands_emergency_disclaimer = ['true', 'yes', '1'].includes(disclaimer.toLowerCase());
+      }
+    }
+
+    // Check if first_name or last_name are being set
+    if (demographicsData.first_name || demographicsData.last_name) {
+      const firstName = demographicsData.first_name || user.first_name || '';
+      const lastName = demographicsData.last_name || user.last_name || '';
+      
+      // Update user's first_name and last_name if provided
+      if (demographicsData.first_name) {
+        user.first_name = demographicsData.first_name.trim();
+      }
+      if (demographicsData.last_name) {
+        user.last_name = demographicsData.last_name.trim();
+      }
+
+      // Regenerate username from name if we have at least one name
+      if (firstName || lastName) {
+        user.username = await generateUniqueUsername(
+          firstName,
+          lastName,
+          user.email,
+          this.userModel,
+          userId
+        );
       }
     }
 

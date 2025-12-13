@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ForumController } from './forum.controller';
 import { ForumService } from './forum.service';
@@ -7,6 +7,7 @@ import { ForumLike, ForumLikeSchema } from '../models/schemas/forum-like.schema'
 import { ForumComment, ForumCommentSchema } from '../models/schemas/forum-comment.schema';
 import { User, UserSchema } from '../models/schemas/user.schema';
 import { NotificationModule } from '../notification/notification.module';
+import { AchievementModule } from '../achievement/achievement.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { NotificationModule } from '../notification/notification.module';
       { name: User.name, schema: UserSchema },
     ]),
     NotificationModule,
+    forwardRef(() => AchievementModule),
   ],
   controllers: [ForumController],
   providers: [ForumService],
