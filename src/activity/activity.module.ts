@@ -5,6 +5,7 @@ import { StepsService } from './steps.service';
 import { Steps, StepsSchema } from '../models/schemas/steps.schema';
 import { User, UserSchema } from '../models/schemas/user.schema';
 import { AchievementModule } from '../achievement/achievement.module';
+import { GoalsModule } from '../goals/goals.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AchievementModule } from '../achievement/achievement.module';
       { name: User.name, schema: UserSchema }
     ]),
     forwardRef(() => AchievementModule),
+    forwardRef(() => GoalsModule),
   ],
   controllers: [StepsController],
   providers: [StepsService],

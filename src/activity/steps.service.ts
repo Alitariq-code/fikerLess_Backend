@@ -8,6 +8,8 @@ import { CreateStepsDto } from './dto/create-steps.dto';
 import { UpdateStepsDto } from './dto/update-steps.dto';
 import { StepsCalculator } from '../utils/steps-calculator';
 import { AchievementService } from '../achievement/achievement.service';
+import { GoalsService } from '../goals/goals.service';
+import { GoalCategory } from '../models/schemas/goal.schema';
 
 @Injectable()
 export class StepsService {
@@ -16,6 +18,8 @@ export class StepsService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(forwardRef(() => AchievementService))
     private readonly achievementService: AchievementService,
+    @Inject(forwardRef(() => GoalsService))
+    private readonly goalsService: GoalsService,
   ) {}
 
   async syncSteps(userId: string, dto: SyncStepsDto) {
@@ -85,6 +89,9 @@ export class StepsService {
 
     // Check achievements after syncing steps (async, don't block response)
     this.checkAchievementsAsync(userId);
+    
+    // Update Exercise goals (async, don't block response)
+    this.updateGoalsAsync(userId);
 
     return {
       synced: results.length,
@@ -120,6 +127,9 @@ export class StepsService {
 
       // Check achievements after updating steps (async, don't block response)
       this.checkAchievementsAsync(userId);
+      
+      // Update Exercise goals (async, don't block response)
+      this.updateGoalsAsync(userId);
 
       return {
         id: existing._id.toString(),
@@ -148,6 +158,9 @@ export class StepsService {
 
     // Check achievements after saving steps (async, don't block response)
     this.checkAchievementsAsync(userId);
+    
+    // Update Exercise goals (async, don't block response)
+    this.updateGoalsAsync(userId);
 
     return {
       id: newEntry._id.toString(),
@@ -172,6 +185,15 @@ export class StepsService {
     } catch (error) {
       // Don't fail the main operation if achievement check fails
       console.error('Error checking achievements:', error);
+    }
+  }
+
+  private async updateGoalsAsync(userId: string): Promise<void> {
+    try {
+      await this.goalsService.updateGoalProgress(userId, GoalCategory.EXERCISE);
+    } catch (error) {
+      // Don't fail the main operation if goal update fails
+      console.error('Error updating goals:', error);
     }
   }
 

@@ -15,6 +15,9 @@ import { ArticleModule } from './article/article.module';
 import { ForumModule } from './forum/forum.module';
 import { JournalModule } from './journal/journal.module';
 import { AchievementModule } from './achievement/achievement.module';
+import { GoalsModule } from './goals/goals.module';
+import { QuoteModule } from './quote/quote.module';
+import { WellnessModule } from './wellness/wellness.module';
 
 @Module({
   imports: [
@@ -55,17 +58,20 @@ import { AchievementModule } from './achievement/achievement.module';
     MoodModule,
     SpiritualModule,
     NotificationModule,
-    ArticleModule,
-    ForumModule,
-    JournalModule,
+        ArticleModule,
+        ForumModule,
+        JournalModule,
     AchievementModule,
+    GoalsModule,
+    QuoteModule,
+    WellnessModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-  ],
-})
-export class AppModule {}
+      ],
+    })
+    export class AppModule {}
 

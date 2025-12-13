@@ -6,6 +6,8 @@ import { CreateMoodDto } from './dto/create-mood.dto';
 import { UpdateMoodDto } from './dto/update-mood.dto';
 import { AchievementService } from '../achievement/achievement.service';
 import { Steps, StepsDocument } from '../models/schemas/steps.schema';
+import { GoalsService } from '../goals/goals.service';
+import { GoalCategory } from '../models/schemas/goal.schema';
 
 @Injectable()
 export class MoodService {
@@ -14,6 +16,8 @@ export class MoodService {
     @InjectModel(Steps.name) private stepsModel: Model<StepsDocument>,
     @Inject(forwardRef(() => AchievementService))
     private readonly achievementService: AchievementService,
+    @Inject(forwardRef(() => GoalsService))
+    private readonly goalsService: GoalsService,
   ) {}
 
   async createOrUpdateMood(userId: string, dto: CreateMoodDto) {
@@ -31,6 +35,9 @@ export class MoodService {
 
       // Check achievements after updating mood (async, don't block response)
       this.checkAchievementsAsync(userId);
+      
+      // Update Mood Tracking goals (async, don't block response)
+      this.updateGoalsAsync(userId);
 
       return {
         success: true,
@@ -50,6 +57,9 @@ export class MoodService {
 
     // Check achievements after saving mood (async, don't block response)
     this.checkAchievementsAsync(userId);
+    
+    // Update Mood Tracking goals (async, don't block response)
+    this.updateGoalsAsync(userId);
 
     return {
       success: true,
@@ -66,6 +76,15 @@ export class MoodService {
     } catch (error) {
       // Don't fail the main operation if achievement check fails
       console.error('Error checking achievements:', error);
+    }
+  }
+
+  private async updateGoalsAsync(userId: string): Promise<void> {
+    try {
+      await this.goalsService.updateGoalProgress(userId, GoalCategory.MOOD_TRACKING);
+    } catch (error) {
+      // Don't fail the main operation if goal update fails
+      console.error('Error updating goals:', error);
     }
   }
 

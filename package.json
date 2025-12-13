@@ -22,7 +22,9 @@
     "seed:achievements": "ts-node scripts/seed-achievements.ts",
     "test:achievements": "ts-node scripts/test-achievements.ts",
     "test:forum-comments": "ts-node scripts/test-forum-comments.ts",
-    "test:forum-complete": "ts-node scripts/test-forum-complete.ts"
+    "test:forum-complete": "ts-node scripts/test-forum-complete.ts",
+    "test:wellness-complete": "ts-node scripts/test-wellness-complete.ts",
+    "test:complete-system": "ts-node scripts/test-complete-system.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

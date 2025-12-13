@@ -2313,7 +2313,7 @@
 					"name": "Get Categories",
 					"request": {
 						"method": "GET",
-						"description": "Public endpoint. Returns array of all available forum post categories with post counts. Use this to populate the category filter dropdown in the forum screen. Categories match the article categories (22 total). Response format: [{category: 'Depression', count: 5}, ...]. Use count to show 'N posts' badge next to each category.",
+						"description": "Public endpoint. Returns array of all available forum post categories with post counts. Use this to populate the category filter dropdown in the forum screen. Categories match the article categories (22 total). Use count to show 'N posts' badge next to each category.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\"category\": \"Depression\", \"count\": 15},\n    {\"category\": \"Anxiety\", \"count\": 23},\n    {\"category\": \"Stress Management\", \"count\": 8},\n    {\"category\": \"Meditation\", \"count\": 12},\n    {\"category\": \"Sleep\", \"count\": 5}\n  ]\n}\n```",
 						"header": [],
 						"url": {
 							"raw": "https://fikrless.com/api/v1/forum/categories",
@@ -2361,7 +2361,7 @@
 					"name": "Create Post",
 					"request": {
 						"method": "POST",
-						"description": "Authenticated endpoint. Creates a new forum post. All users can create posts. Set is_anonymous to true if user wants to post anonymously (author will show as 'Anonymous_user_XXX'). Title must be 3-200 characters, description must be at least 10 characters. Category must be one of the valid categories from Get Categories endpoint. Returns created post with all fields including _id, author name, likes_count (0), comments_count (0), views (0), and timestamps.",
+						"description": "Authenticated endpoint. Creates a new forum post. All users can create posts. Set is_anonymous to true if user wants to post anonymously (author will show as 'Anonymous_user_XXX'). Title must be 3-200 characters, description must be at least 10 characters. Category must be one of the valid categories from Get Categories endpoint.\n\n**Request Body:**\n- `title` (required): Post title (3-200 characters)\n- `description` (required): Post description (min 10 characters)\n- `category` (required): One of the valid categories from Get Categories\n- `is_anonymous` (optional): Boolean, default false\n\n**Response (201 Created):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Post created successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Small Victory: I talked to someone today\",\n    \"description\": \"I've been struggling with social anxiety...\",\n    \"category\": \"Anxiety\",\n    \"is_anonymous\": false,\n    \"author\": \"John Doe\",\n    \"likes_count\": 0,\n    \"comments_count\": 0,\n    \"views\": 0,\n    \"created_at\": \"2025-01-21T10:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n  }\n}\n```",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2436,7 +2436,7 @@
 					"name": "Get All Posts",
 					"request": {
 						"method": "GET",
-						"description": "Public endpoint. Returns paginated list of all forum posts sorted by newest first (createdAt descending). Use this for the main forum listing screen. Supports filtering by category (use exact category name from Get Categories). Optional Authorization header: if provided, response includes is_liked field for each post showing if the authenticated user liked it. Response includes pagination metadata (page, limit, total, total_pages).",
+						"description": "Public endpoint. Returns paginated list of all forum posts sorted by newest first (createdAt descending). Use this for the main forum listing screen. Supports filtering by category (use exact category name from Get Categories). Optional Authorization header: if provided, response includes is_liked field for each post showing if the authenticated user liked it.\n\n**Query Parameters:**\n- `category` (optional): Filter by category name\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Page size (default: 10, max: 100)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"65a1b2c3d4e5f6789012345\",\n      \"title\": \"Feeling overwhelmed today\",\n      \"description\": \"I've been feeling really overwhelmed...\",\n      \"category\": \"Depression\",\n      \"is_anonymous\": false,\n      \"author\": \"Jane Smith\",\n      \"likes_count\": 12,\n      \"comments_count\": 5,\n      \"views\": 45,\n      \"is_liked\": true,\n      \"created_at\": \"2025-01-21T09:00:00.000Z\",\n      \"updated_at\": \"2025-01-21T09:00:00.000Z\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 15,\n    \"total_pages\": 2\n  }\n}\n```",
 						"header": [
 							{
 								"key": "Authorization",
@@ -2455,7 +2455,7 @@
 								"api",
 								"v1",
 								"forum",
-								"posts?category=Depression&page=1&limit=10"
+								"posts"
 							],
 							"query": [
 								{
@@ -2517,7 +2517,7 @@
 					"name": "Get Single Post",
 					"request": {
 						"method": "GET",
-						"description": "Public endpoint. Returns full details of a single forum post including title, description, category, author (or Anonymous_user_XXX if anonymous), likes_count, comments_count, views, and timestamps. View count is automatically incremented on each request. Optional Authorization header: if provided, response includes is_liked field showing if the authenticated user liked this post. Use this for the post detail screen.",
+						"description": "Public endpoint. Returns full details of a single forum post including title, description, category, author (or Anonymous_user_XXX if anonymous), likes_count, comments_count, views, and timestamps. View count is automatically incremented on each request. Optional Authorization header: if provided, response includes is_liked field showing if the authenticated user liked this post. Use this for the post detail screen.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Feeling overwhelmed today\",\n    \"description\": \"I've been feeling really overwhelmed with work and personal life...\",\n    \"category\": \"Depression\",\n    \"is_anonymous\": false,\n    \"author\": \"Jane Smith\",\n    \"likes_count\": 12,\n    \"comments_count\": 5,\n    \"views\": 46,\n    \"is_liked\": true,\n    \"created_at\": \"2025-01-21T09:00:00.000Z\",\n    \"updated_at\": \"2025-01-21T09:00:00.000Z\"\n  }\n}\n```",
 						"header": [
 							{
 								"key": "Authorization",
@@ -2584,7 +2584,7 @@
 					"name": "Search Posts",
 					"request": {
 						"method": "GET",
-						"description": "Public endpoint. Searches forum posts by keyword across title and description fields. Returns paginated results sorted by newest first. Use this for the search functionality in the forum screen. If query is empty, returns all posts. Response includes pagination metadata and count field showing total matching results.",
+						"description": "Public endpoint. Searches forum posts by keyword across title and description fields. Returns paginated results sorted by newest first. Use this for the search functionality in the forum screen. If query is empty, returns all posts.\n\n**Query Parameters:**\n- `q` (required): Search query string\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Page size (default: 10, max: 100)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"65a1b2c3d4e5f6789012345\",\n      \"title\": \"Dealing with anxiety attacks\",\n      \"description\": \"I've been experiencing anxiety attacks lately...\",\n      \"category\": \"Anxiety\",\n      \"is_anonymous\": false,\n      \"author\": \"John Doe\",\n      \"likes_count\": 8,\n      \"comments_count\": 3,\n      \"views\": 25,\n      \"is_liked\": false,\n      \"created_at\": \"2025-01-20T14:00:00.000Z\",\n      \"updated_at\": \"2025-01-20T14:00:00.000Z\"\n    }\n  ],\n  \"count\": 5,\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 5,\n    \"total_pages\": 1\n  }\n}\n```",
 						"header": [],
 						"url": {
 							"raw": "https://fikrless.com/api/v1/forum/posts/search?q=anxiety&page=1&limit=10",
@@ -2598,7 +2598,7 @@
 								"v1",
 								"forum",
 								"posts",
-								"search?q=anxiety&page=1&limit=10"
+								"search"
 							],
 							"query": [
 								{
@@ -2655,7 +2655,7 @@
 					"name": "Get My Posts",
 					"request": {
 						"method": "GET",
-						"description": "Authenticated endpoint. Returns paginated list of the authenticated user's own forum posts. Use this for the 'My Posts' screen where users can see and manage their posts. Supports filtering by category. Posts are sorted by newest first. Response includes pagination metadata. Only returns posts created by the authenticated user.",
+						"description": "Authenticated endpoint. Returns paginated list of the authenticated user's own forum posts. Use this for the 'My Posts' screen where users can see and manage their posts. Supports filtering by category. Posts are sorted by newest first. Only returns posts created by the authenticated user.\n\n**Query Parameters:**\n- `category` (optional): Filter by category\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Page size (default: 10, max: 100)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"65a1b2c3d4e5f6789012345\",\n      \"title\": \"My anxiety journey\",\n      \"description\": \"I wanted to share my experience...\",\n      \"category\": \"Anxiety\",\n      \"is_anonymous\": false,\n      \"author\": \"John Doe\",\n      \"likes_count\": 5,\n      \"comments_count\": 2,\n      \"views\": 18,\n      \"is_liked\": false,\n      \"created_at\": \"2025-01-19T10:00:00.000Z\",\n      \"updated_at\": \"2025-01-19T10:00:00.000Z\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 3,\n    \"total_pages\": 1\n  }\n}\n```",
 						"header": [
 							{
 								"key": "Authorization",
@@ -2675,7 +2675,7 @@
 								"v1",
 								"forum",
 								"posts",
-								"my-posts?category=Anxiety&page=1&limit=10"
+								"my-posts"
 							],
 							"query": [
 								{
@@ -2737,7 +2737,7 @@
 					"name": "Update Post",
 					"request": {
 						"method": "PUT",
-						"description": "Authenticated endpoint. Updates an existing forum post owned by the authenticated user. All fields are optional - only include fields you want to update. You can only update your own posts (returns 403 if trying to update another user's post). Title must be 3-200 characters if provided, description must be at least 10 characters if provided. Category must be a valid category if provided. Returns updated post with all fields.",
+						"description": "Authenticated endpoint. Updates an existing forum post owned by the authenticated user. All fields are optional - only include fields you want to update. You can only update your own posts (returns 403 if trying to update another user's post). Title must be 3-200 characters if provided, description must be at least 10 characters if provided. Category must be a valid category if provided.\n\n**Request Body (all fields optional):**\n- `title`: Updated title (3-200 characters)\n- `description`: Updated description (min 10 characters)\n- `category`: Updated category\n- `is_anonymous`: Updated anonymous status\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Post updated successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Updated Post Title\",\n    \"description\": \"This is an updated description...\",\n    \"category\": \"Stress Management\",\n    \"is_anonymous\": false,\n    \"author\": \"John Doe\",\n    \"likes_count\": 5,\n    \"comments_count\": 2,\n    \"views\": 18,\n    \"created_at\": \"2025-01-19T10:00:00.000Z\",\n    \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n  }\n}\n```\n\n**Error Responses:**\n- `403 Forbidden`: Trying to update another user's post\n- `404 Not Found`: Post not found",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2820,7 +2820,7 @@
 					"name": "Delete Post",
 					"request": {
 						"method": "DELETE",
-						"description": "Authenticated endpoint. Permanently deletes a forum post owned by the authenticated user. This action also deletes all associated likes and comments (cascade deletion). Use with caution as this action cannot be undone. You can only delete your own posts (returns 403 if trying to delete another user's post). Returns success message on successful deletion.",
+						"description": "Authenticated endpoint. Permanently deletes a forum post owned by the authenticated user. This action also deletes all associated likes and comments (cascade deletion). Use with caution as this action cannot be undone. You can only delete your own posts.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Post and all related data deleted successfully\"\n}\n```\n\n**Error Responses:**\n- `403 Forbidden`: Trying to delete another user's post\n- `404 Not Found`: Post not found",
 						"header": [
 							{
 								"key": "Authorization",
@@ -2887,7 +2887,7 @@
 					"name": "Like/Unlike Post",
 					"request": {
 						"method": "POST",
-						"description": "Authenticated endpoint. Toggles like status on a forum post. If post is not liked, it will be liked (returns is_liked: true). If post is already liked, it will be unliked (returns is_liked: false). Response includes is_liked boolean and updated likes_count. When a user likes another user's post, a notification is automatically sent to the post author with format: '{username} liked your post'. No notification is sent if user likes their own post.",
+						"description": "Authenticated endpoint. Toggles like status on a forum post. If post is not liked, it will be liked (returns is_liked: true). If post is already liked, it will be unliked (returns is_liked: false). When a user likes another user's post, a notification is automatically sent to the post author. No notification is sent if user likes their own post.\n\n**Response (200 OK - Liked):**\n```json\n{\n  \"success\": true,\n  \"is_liked\": true,\n  \"likes_count\": 13\n}\n```\n\n**Response (200 OK - Unliked):**\n```json\n{\n  \"success\": true,\n  \"is_liked\": false,\n  \"likes_count\": 12\n}\n```\n\n**Error Responses:**\n- `401 Unauthorized`: Not authenticated\n- `404 Not Found`: Post not found",
 						"header": [
 							{
 								"key": "Authorization",
@@ -2984,8 +2984,14 @@
 					"name": "Get Comments",
 					"request": {
 						"method": "GET",
-						"description": "Public endpoint. Returns paginated list of comments for a specific forum post. Comments are sorted by newest first (createdAt descending). Response includes comment content, author (or Anonymous_user_XXX if anonymous), is_anonymous flag, and timestamps. Use this to display comments on the post detail screen. Response includes pagination metadata.",
-						"header": [],
+						"description": "Public endpoint. Returns paginated list of top-level comments for a specific forum post with nested replies (Facebook-like structure). Top-level comments are sorted by newest first (createdAt descending), replies are sorted by oldest first (createdAt ascending). Optional Authorization header: if provided, response includes is_liked field for each comment/reply showing if the authenticated user liked it. Use this to display comments on the post detail screen. Note: Only top-level comments are counted in pagination, replies are nested within their parent comments.\n\n**Query Parameters:**\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Page size (default: 20, max: 100)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"65a1b2c3d4e5f6789012346\",\n      \"post_id\": \"65a1b2c3d4e5f6789012345\",\n      \"parent_comment_id\": null,\n      \"content\": \"This is a helpful comment. I can relate to your experience.\",\n      \"is_anonymous\": false,\n      \"author\": \"Jane Smith\",\n      \"likes_count\": 3,\n      \"is_liked\": true,\n      \"created_at\": \"2025-01-21T11:00:00.000Z\",\n      \"updated_at\": \"2025-01-21T11:00:00.000Z\",\n      \"replies\": [\n        {\n          \"_id\": \"65a1b2c3d4e5f6789012348\",\n          \"post_id\": \"65a1b2c3d4e5f6789012345\",\n          \"parent_comment_id\": \"65a1b2c3d4e5f6789012346\",\n          \"content\": \"I completely agree with you!\",\n          \"is_anonymous\": false,\n          \"author\": \"John Doe\",\n          \"likes_count\": 1,\n          \"is_liked\": false,\n          \"created_at\": \"2025-01-21T11:15:00.000Z\",\n          \"updated_at\": \"2025-01-21T11:15:00.000Z\",\n          \"replies\": []\n        }\n      ]\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 2,\n    \"total_pages\": 1\n  }\n}\n```",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "Optional: JWT token to get is_liked status for each comment/reply"
+							}
+						],
 						"url": {
 							"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments?page=1&limit=20",
 							"protocol": "https",
@@ -2999,7 +3005,7 @@
 								"forum",
 								"posts",
 								"{{forum_post_id}}",
-								"comments?page=1&limit=20"
+								"comments"
 							],
 							"query": [
 								{
@@ -3049,7 +3055,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"post_id\": \"65a1b2c3d4e5f6789012345\",\n            \"content\": \"This is a helpful comment. I can relate to your experience.\",\n            \"is_anonymous\": false,\n            \"author\": \"Jane Smith\",\n            \"created_at\": \"2025-01-21T11:00:00.000Z\",\n            \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n        },\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012347\",\n            \"post_id\": \"65a1b2c3d4e5f6789012345\",\n            \"content\": \"Thank you for sharing this. It really helps to know we're not alone.\",\n            \"is_anonymous\": true,\n            \"author\": \"Anonymous_user_234\",\n            \"created_at\": \"2025-01-21T10:30:00.000Z\",\n            \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 20,\n        \"total\": 5,\n        \"total_pages\": 1\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"post_id\": \"65a1b2c3d4e5f6789012345\",\n            \"parent_comment_id\": null,\n            \"content\": \"This is a helpful comment. I can relate to your experience.\",\n            \"is_anonymous\": false,\n            \"author\": \"Jane Smith\",\n            \"likes_count\": 3,\n            \"is_liked\": true,\n            \"created_at\": \"2025-01-21T11:00:00.000Z\",\n            \"updated_at\": \"2025-01-21T11:00:00.000Z\",\n            \"replies\": [\n                {\n                    \"_id\": \"65a1b2c3d4e5f6789012348\",\n                    \"post_id\": \"65a1b2c3d4e5f6789012345\",\n                    \"parent_comment_id\": \"65a1b2c3d4e5f6789012346\",\n                    \"content\": \"I completely agree with you! This is a great point.\",\n                    \"is_anonymous\": false,\n                    \"author\": \"John Doe\",\n                    \"likes_count\": 1,\n                    \"is_liked\": false,\n                    \"created_at\": \"2025-01-21T11:15:00.000Z\",\n                    \"updated_at\": \"2025-01-21T11:15:00.000Z\",\n                    \"replies\": []\n                }\n            ]\n        },\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012347\",\n            \"post_id\": \"65a1b2c3d4e5f6789012345\",\n            \"parent_comment_id\": null,\n            \"content\": \"Thank you for sharing this. It really helps to know we're not alone.\",\n            \"is_anonymous\": true,\n            \"author\": \"Anonymous_user_234\",\n            \"likes_count\": 0,\n            \"is_liked\": false,\n            \"created_at\": \"2025-01-21T10:30:00.000Z\",\n            \"updated_at\": \"2025-01-21T10:30:00.000Z\",\n            \"replies\": []\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 20,\n        \"total\": 2,\n        \"total_pages\": 1\n    }\n}"
 						}
 					]
 				},
@@ -3057,7 +3063,7 @@
 					"name": "Create Comment",
 					"request": {
 						"method": "POST",
-						"description": "Authenticated endpoint. Creates a new comment on a forum post. Content must be 1-1000 characters. Set is_anonymous to true if user wants to comment anonymously (author will show as 'Anonymous_user_XXX'). When a user comments on another user's post, a notification is automatically sent to the post author with format: '{username} commented on your post' and body: '{username}: \"{comment preview}\"'. No notification is sent if user comments on their own post. Comment count on the post is automatically incremented.",
+						"description": "Authenticated endpoint. Creates a new comment on a forum post or a reply to an existing comment (Facebook-like functionality). Content must be 1-1000 characters. Set is_anonymous to true if user wants to comment anonymously (author will show as 'Anonymous_user_XXX'). To create a reply, include parent_comment_id with the ID of the comment you're replying to. Note: You can only reply to top-level comments (not replies to replies - only one level of nesting is allowed). When a user comments on another user's post, a notification is automatically sent to the post author. When a user replies to a comment, a notification is sent to the comment author. Comment count on the post is automatically incremented only for top-level comments (replies don't increment the post's comment count).\n\n**Request Body:**\n- `content` (required): Comment content (1-1000 characters)\n- `is_anonymous` (optional): Boolean, default false\n- `parent_comment_id` (optional): Comment ID to reply to (null for top-level comment)\n\n**Response (201 Created - Top-Level Comment):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Comment added successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012346\",\n    \"post_id\": \"65a1b2c3d4e5f6789012345\",\n    \"parent_comment_id\": null,\n    \"content\": \"This is a helpful comment on the post.\",\n    \"is_anonymous\": false,\n    \"author\": \"John Doe\",\n    \"likes_count\": 0,\n    \"is_liked\": false,\n    \"created_at\": \"2025-01-21T11:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T11:30:00.000Z\",\n    \"replies\": []\n  }\n}\n```\n\n**Response (201 Created - Reply):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Comment added successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012349\",\n    \"post_id\": \"65a1b2c3d4e5f6789012345\",\n    \"parent_comment_id\": \"65a1b2c3d4e5f6789012346\",\n    \"content\": \"I completely agree with your point!\",\n    \"is_anonymous\": false,\n    \"author\": \"Jane Smith\",\n    \"likes_count\": 0,\n    \"is_liked\": false,\n    \"created_at\": \"2025-01-21T11:45:00.000Z\",\n    \"updated_at\": \"2025-01-21T11:45:00.000Z\",\n    \"replies\": []\n  }\n}\n```\n\n**Error Responses:**\n- `400 Bad Request`: Cannot reply to a reply, invalid parent comment ID, or validation error\n- `404 Not Found\": Parent comment not found",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -3071,7 +3077,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n    \"is_anonymous\": false\n}"
+							"raw": "{\n    \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n    \"is_anonymous\": false,\n    \"parent_comment_id\": null\n}"
 						},
 						"url": {
 							"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments",
@@ -3114,7 +3120,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n    \"is_anonymous\": false\n}"
+									"raw": "{\n    \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n    \"is_anonymous\": false,\n    \"parent_comment_id\": null\n}"
 								},
 								"url": {
 									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments",
@@ -3133,7 +3139,81 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"message\": \"Comment added successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012346\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"created_at\": \"2025-01-21T11:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:30:00.000Z\"\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment added successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012346\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"parent_comment_id\": null,\n        \"content\": \"This is a helpful comment on the post. I can relate to your experience.\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"likes_count\": 0,\n        \"is_liked\": false,\n        \"created_at\": \"2025-01-21T11:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:30:00.000Z\",\n        \"replies\": []\n    }\n}"
+						},
+						{
+							"name": "Success 201 - Reply Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"content\": \"I completely agree with your point!\",\n    \"is_anonymous\": false,\n    \"parent_comment_id\": \"65a1b2c3d4e5f6789012346\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "comments"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment added successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012349\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"parent_comment_id\": \"65a1b2c3d4e5f6789012346\",\n        \"content\": \"I completely agree with your point!\",\n        \"is_anonymous\": false,\n        \"author\": \"Jane Smith\",\n        \"likes_count\": 0,\n        \"is_liked\": false,\n        \"created_at\": \"2025-01-21T11:45:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:45:00.000Z\",\n        \"replies\": []\n    }\n}"
+						},
+						{
+							"name": "Error 400 - Cannot Reply to Reply",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"content\": \"This should fail\",\n    \"parent_comment_id\": \"65a1b2c3d4e5f6789012349\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/posts/{{forum_post_id}}/comments",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "posts", "{{forum_post_id}}", "comments"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Cannot reply to a reply. Please reply to the original comment.\",\n    \"error\": \"Bad Request\"\n}"
 						}
 					]
 				},
@@ -3141,7 +3221,7 @@
 					"name": "Update Comment",
 					"request": {
 						"method": "PUT",
-						"description": "Authenticated endpoint. Updates an existing comment owned by the authenticated user. Only content field can be updated. Content must be 1-1000 characters if provided. You can only update your own comments (returns 403 if trying to update another user's comment). Returns updated comment with all fields including author name and timestamps.",
+						"description": "Authenticated endpoint. Updates an existing comment owned by the authenticated user. Only content field can be updated. Content must be 1-1000 characters if provided. You can only update your own comments.\n\n**Request Body:**\n- `content` (required): Updated comment content (1-1000 characters)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Comment updated successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012346\",\n    \"post_id\": \"65a1b2c3d4e5f6789012345\",\n    \"parent_comment_id\": null,\n    \"content\": \"This is an updated comment with new content.\",\n    \"is_anonymous\": false,\n    \"author\": \"John Doe\",\n    \"likes_count\": 3,\n    \"is_liked\": true,\n    \"created_at\": \"2025-01-21T11:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T12:00:00.000Z\",\n    \"replies\": []\n  }\n}\n```\n\n**Error Responses:**\n- `403 Forbidden`: Trying to update another user's comment\n- `404 Not Found\": Comment not found",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -3223,7 +3303,133 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"message\": \"Comment updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012346\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"content\": \"This is an updated comment with new content.\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"created_at\": \"2025-01-21T11:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T12:00:00.000Z\"\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012346\",\n        \"post_id\": \"65a1b2c3d4e5f6789012345\",\n        \"parent_comment_id\": null,\n        \"content\": \"This is an updated comment with new content.\",\n        \"is_anonymous\": false,\n        \"author\": \"John Doe\",\n        \"likes_count\": 3,\n        \"is_liked\": true,\n        \"created_at\": \"2025-01-21T11:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T12:00:00.000Z\",\n        \"replies\": []\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Like/Unlike Comment",
+					"request": {
+						"method": "POST",
+						"description": "Authenticated endpoint. Toggles like status on a comment (top-level comment or reply). If comment is not liked, it will be liked (returns is_liked: true). If comment is already liked, it will be unliked (returns is_liked: false). Works for both top-level comments and nested replies. Use this when user clicks the like button on any comment.\n\n**Response (200 OK - Liked):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Comment liked successfully\",\n  \"is_liked\": true,\n  \"likes_count\": 1\n}\n```\n\n**Response (200 OK - Unliked):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Comment unliked successfully\",\n  \"is_liked\": false,\n  \"likes_count\": 0\n}\n```\n\n**Error Responses:**\n- `401 Unauthorized\": Not authenticated\n- `404 Not Found\": Comment not found",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/forum/comments/{{comment_id}}/like",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forum",
+								"comments",
+								"{{comment_id}}",
+								"like"
+							],
+							"variable": [
+								{
+									"key": "comment_id",
+									"value": "comment_id_here",
+									"description": "Comment ID to like/unlike (can be top-level comment or reply)"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200 - Liked",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/comments/{{comment_id}}/like",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "comments", "{{comment_id}}", "like"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment liked successfully\",\n    \"is_liked\": true,\n    \"likes_count\": 1\n}"
+						},
+						{
+							"name": "Success 200 - Unliked",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/comments/{{comment_id}}/like",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "comments", "{{comment_id}}", "like"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Comment unliked successfully\",\n    \"is_liked\": false,\n    \"likes_count\": 0\n}"
+						},
+						{
+							"name": "Error 404 - Comment Not Found",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/forum/comments/invalid-id/like",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "forum", "comments", "invalid-id", "like"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Comment not found\",\n    \"error\": \"Not Found\"\n}"
 						}
 					]
 				},
@@ -3231,7 +3437,7 @@
 					"name": "Delete Comment",
 					"request": {
 						"method": "DELETE",
-						"description": "Authenticated endpoint. Permanently deletes a comment owned by the authenticated user. Comment count on the post is automatically decremented. You can only delete your own comments (returns 403 if trying to delete another user's comment). Returns success message on successful deletion.",
+						"description": "Authenticated endpoint. Permanently deletes a comment owned by the authenticated user. If deleting a top-level comment, all its replies are also deleted (cascade deletion). Comment count on the post is automatically decremented only for top-level comments. You can only delete your own comments.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Comment deleted successfully\"\n}\n```\n\n**Error Responses:**\n- `403 Forbidden\": Trying to delete another user's comment\n- `404 Not Found\": Comment not found",
 						"header": [
 							{
 								"key": "Authorization",
@@ -3298,6 +3504,803 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"success\": true,\n    \"message\": \"Comment deleted successfully\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Goals",
+			"item": [
+				{
+					"name": "Create Goal",
+					"request": {
+						"method": "POST",
+						"description": "Authenticated endpoint. Creates a new goal for the authenticated user. Users can set goals for Exercise, Read an Article, Meditation, or Mood Tracking with Daily or Weekly frequency. Progress is automatically tracked when users complete related activities (e.g., mood check-in updates Mood Tracking goals, steps sync updates Exercise goals).\n\n**Request Body:**\n- `title` (required): Goal title (1-200 characters)\n- `category` (required): One of: \"Exercise\", \"Read an Article\", \"Meditation\", \"Mood Tracking\"\n- `frequency` (required): \"Daily\" or \"Weekly\"\n- `target_streak` (optional): Target streak number\n\n**Response (201 Created):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Goal created successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Daily Mood Check-in\",\n    \"category\": \"Mood Tracking\",\n    \"frequency\": \"Daily\",\n    \"status\": \"in_progress\",\n    \"current_streak\": 0,\n    \"target_streak\": null,\n    \"completed_at\": null,\n    \"last_completed_date\": null,\n    \"created_at\": \"2025-01-21T10:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n  }\n}\n```",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Daily Mood Check-in\",\n    \"category\": \"Mood Tracking\",\n    \"frequency\": \"Daily\"\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/goals",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"goals"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Daily Mood Check-in\",\n    \"category\": \"Mood Tracking\",\n    \"frequency\": \"Daily\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Goal created successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Daily Mood Check-in\",\n        \"category\": \"Mood Tracking\",\n        \"frequency\": \"Daily\",\n        \"status\": \"in_progress\",\n        \"current_streak\": 0,\n        \"target_streak\": null,\n        \"completed_at\": null,\n        \"last_completed_date\": null,\n        \"created_at\": \"2025-01-21T10:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Goals",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns all goals for the authenticated user with summary statistics. Use this for the Goals screen to display in-progress and completed goals. Progress is automatically tracked when users complete related activities.\n\n**Query Parameters:**\n- `status` (optional): Filter by status\n  - `in_progress`: Only in-progress goals (default)\n  - `completed`: Only completed goals\n  - `all`: All goals\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"summary\": {\n    \"active_goals\": 3,\n    \"total_goals\": 10\n  },\n  \"data\": [\n    {\n      \"_id\": \"65a1b2c3d4e5f6789012345\",\n      \"title\": \"Daily Mood Check-in\",\n      \"category\": \"Mood Tracking\",\n      \"frequency\": \"Daily\",\n      \"status\": \"in_progress\",\n      \"current_streak\": 7,\n      \"target_streak\": null,\n      \"completed_at\": null,\n      \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n      \"created_at\": \"2025-01-14T10:30:00.000Z\",\n      \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n    },\n    {\n      \"_id\": \"65a1b2c3d4e5f6789012346\",\n      \"title\": \"Meditation\",\n      \"category\": \"Meditation\",\n      \"frequency\": \"Daily\",\n      \"status\": \"in_progress\",\n      \"current_streak\": 6,\n      \"target_streak\": null,\n      \"completed_at\": null,\n      \"last_completed_date\": \"2025-01-20T00:00:00.000Z\",\n      \"created_at\": \"2025-01-15T10:30:00.000Z\",\n      \"updated_at\": \"2025-01-20T10:30:00.000Z\"\n    }\n  ]\n}\n```",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/goals?status=in_progress",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"goals"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "in_progress",
+									"description": "Filter by status: in_progress, completed, or all"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals?status=in_progress",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals"],
+									"query": [
+										{"key": "status", "value": "in_progress"}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"summary\": {\n        \"active_goals\": 3,\n        \"total_goals\": 10\n    },\n    \"data\": [\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012345\",\n            \"title\": \"Daily Mood Check-in\",\n            \"category\": \"Mood Tracking\",\n            \"frequency\": \"Daily\",\n            \"status\": \"in_progress\",\n            \"current_streak\": 7,\n            \"target_streak\": null,\n            \"completed_at\": null,\n            \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n            \"created_at\": \"2025-01-14T10:30:00.000Z\",\n            \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n        },\n        {\n            \"_id\": \"65a1b2c3d4e5f6789012346\",\n            \"title\": \"Meditation\",\n            \"category\": \"Meditation\",\n            \"frequency\": \"Daily\",\n            \"status\": \"in_progress\",\n            \"current_streak\": 6,\n            \"target_streak\": null,\n            \"completed_at\": null,\n            \"last_completed_date\": \"2025-01-20T00:00:00.000Z\",\n            \"created_at\": \"2025-01-15T10:30:00.000Z\",\n            \"updated_at\": \"2025-01-20T10:30:00.000Z\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Single Goal",
+					"request": {
+						"method": "GET",
+						"description": "Authenticated endpoint. Returns full details of a single goal by ID. Use this to display goal details on the goal detail screen.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Daily Mood Check-in\",\n    \"category\": \"Mood Tracking\",\n    \"frequency\": \"Daily\",\n    \"status\": \"in_progress\",\n    \"current_streak\": 7,\n    \"target_streak\": null,\n    \"completed_at\": null,\n    \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n    \"created_at\": \"2025-01-14T10:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n  }\n}\n```\n\n**Error Responses:**\n- `404 Not Found\": Goal not found\n- `403 Forbidden\": Trying to access another user's goal",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"goals",
+								"{{goal_id}}"
+							],
+							"variable": [
+								{
+									"key": "goal_id",
+									"value": "goal_id_here",
+									"description": "Goal ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals", "{{goal_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Daily Mood Check-in\",\n        \"category\": \"Mood Tracking\",\n        \"frequency\": \"Daily\",\n        \"status\": \"in_progress\",\n        \"current_streak\": 7,\n        \"target_streak\": null,\n        \"completed_at\": null,\n        \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n        \"created_at\": \"2025-01-14T10:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T10:30:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Goal",
+					"request": {
+						"method": "PUT",
+						"description": "Authenticated endpoint. Updates an existing goal owned by the authenticated user. All fields are optional - only include fields you want to update. You can only update your own goals.\n\n**Request Body (all fields optional):**\n- `title`: Updated title (1-200 characters)\n- `category`: Updated category\n- `frequency`: Updated frequency\n- `target_streak`: Updated target streak\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Goal updated successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Updated Goal Title\",\n    \"category\": \"Exercise\",\n    \"frequency\": \"Weekly\",\n    \"status\": \"in_progress\",\n    \"current_streak\": 7,\n    \"target_streak\": 30,\n    \"completed_at\": null,\n    \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n    \"created_at\": \"2025-01-14T10:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n  }\n}\n```\n\n**Error Responses:**\n- `403 Forbidden\": Trying to update another user's goal\n- `404 Not Found\": Goal not found",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Goal Title\",\n    \"target_streak\": 30\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"goals",
+								"{{goal_id}}"
+							],
+							"variable": [
+								{
+									"key": "goal_id",
+									"value": "goal_id_here",
+									"description": "Goal ID to update"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Updated Goal Title\",\n    \"target_streak\": 30\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals", "{{goal_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Goal updated successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Updated Goal Title\",\n        \"category\": \"Mood Tracking\",\n        \"frequency\": \"Daily\",\n        \"status\": \"in_progress\",\n        \"current_streak\": 7,\n        \"target_streak\": 30,\n        \"completed_at\": null,\n        \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n        \"created_at\": \"2025-01-14T10:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Complete Goal",
+					"request": {
+						"method": "POST",
+						"description": "Authenticated endpoint. Manually marks a goal as completed. This changes the goal status from 'in_progress' to 'completed' and records the completion timestamp. Users can manually mark goals as completed even if they haven't reached their target streak. Use this when user clicks the 'Mark as Completed' button on a goal.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Goal marked as completed successfully\",\n  \"data\": {\n    \"_id\": \"65a1b2c3d4e5f6789012345\",\n    \"title\": \"Daily Mood Check-in\",\n    \"category\": \"Mood Tracking\",\n    \"frequency\": \"Daily\",\n    \"status\": \"completed\",\n    \"current_streak\": 7,\n    \"target_streak\": null,\n    \"completed_at\": \"2025-01-21T11:00:00.000Z\",\n    \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n    \"created_at\": \"2025-01-14T10:30:00.000Z\",\n    \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n  }\n}\n```\n\n**Error Responses:**\n- `400 Bad Request\": Goal is already completed\n- `403 Forbidden\": Trying to complete another user's goal\n- `404 Not Found\": Goal not found",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}/complete",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"goals",
+								"{{goal_id}}",
+								"complete"
+							],
+							"variable": [
+								{
+									"key": "goal_id",
+									"value": "goal_id_here",
+									"description": "Goal ID to complete"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}/complete",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals", "{{goal_id}}", "complete"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Goal marked as completed successfully\",\n    \"data\": {\n        \"_id\": \"65a1b2c3d4e5f6789012345\",\n        \"title\": \"Daily Mood Check-in\",\n        \"category\": \"Mood Tracking\",\n        \"frequency\": \"Daily\",\n        \"status\": \"completed\",\n        \"current_streak\": 7,\n        \"target_streak\": null,\n        \"completed_at\": \"2025-01-21T11:00:00.000Z\",\n        \"last_completed_date\": \"2025-01-21T00:00:00.000Z\",\n        \"created_at\": \"2025-01-14T10:30:00.000Z\",\n        \"updated_at\": \"2025-01-21T11:00:00.000Z\"\n    }\n}"
+						},
+						{
+							"name": "Error 400 - Already Completed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}/complete",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals", "{{goal_id}}", "complete"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Goal is already completed\",\n    \"error\": \"Bad Request\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Goal",
+					"request": {
+						"method": "DELETE",
+						"description": "Authenticated endpoint. Permanently deletes a goal owned by the authenticated user. Use with caution as this action cannot be undone. You can only delete your own goals.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Goal deleted successfully\"\n}\n```\n\n**Error Responses:**\n- `403 Forbidden\": Trying to delete another user's goal\n- `404 Not Found\": Goal not found",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"goals",
+								"{{goal_id}}"
+							],
+							"variable": [
+								{
+									"key": "goal_id",
+									"value": "goal_id_here",
+									"description": "Goal ID to delete"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/goals/{{goal_id}}",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "goals", "{{goal_id}}"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Goal deleted successfully\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Quote",
+			"item": [
+				{
+					"name": "Get Today's Quote",
+					"request": {
+						"method": "GET",
+						"description": "Public endpoint. Returns the quote of the day. All users receive the same quote on the same day. A new quote is randomly selected each day (avoiding quotes used in the last 30 days). The quote includes English text, optional Urdu translation, and optional Quranic verse.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"693d0b81cb2878051aaefde4\",\n    \"quote_english\": \"You are enough, exactly as you are.\",\n    \"quote_urdu\": \"\",\n    \"quranic_verse\": \"\",\n    \"today_quote\": true\n  }\n}\n```",
+						"header": [],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/quote",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"quote"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/quote",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "quote"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"693d0b81cb2878051aaefde4\",\n        \"quote_english\": \"You are enough, exactly as you are.\",\n        \"quote_urdu\": \"\",\n        \"quranic_verse\": \"\",\n        \"today_quote\": true\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Wellness",
+			"item": [
+				{
+					"name": "Get Progress",
+					"request": {
+						"method": "GET",
+						"description": "**Authenticated endpoint.** Returns comprehensive progress data for the Wellness Tracking Progress tab. This endpoint provides:\n\n- **Today's Steps**: Current step count for today\n- **Day Streak**: Consecutive days with step activity (calculated from steps entries)\n- **Streak Status**: Visual indicator - `on_fire` (7+ days), `active` (3-6 days), `inactive` (<3 days)\n- **Weekly Goal**: Auto-created weekly goal tracking (default: 6000 steps per week, Monday-Sunday)\n- **This Week Activity**: Daily breakdown for the current week (Monday to Sunday)\n\n**Weekly Goal Auto-Creation:**\n- Weekly goals are automatically created when first accessed\n- Each week starts on Monday at 00:00:00\n- Goals reset weekly and track steps from Monday to Sunday\n- Current steps are calculated from all step entries within the week\n\n**Response Fields:**\n- `today_steps` (number): Steps recorded today\n- `day_streak` (number): Consecutive days with step activity\n- `streak_status` (string): `on_fire` | `active` | `inactive`\n- `weekly_goal.target` (number): Target steps for the week (default: 6000)\n- `weekly_goal.current` (number): Current steps this week\n- `weekly_goal.percentage` (number): Progress percentage (0-100)\n- `this_week_activity` (array): 7-day array with `day` (Mo-Su), `date` (YYYY-MM-DD), `steps` (number)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"today_steps\": 3456,\n    \"day_streak\": 7,\n    \"streak_status\": \"on_fire\",\n    \"weekly_goal\": {\n      \"target\": 6000,\n      \"current\": 3045,\n      \"percentage\": 50.75\n    },\n    \"this_week_activity\": [\n      {\"day\": \"Mo\", \"date\": \"2025-01-20\", \"steps\": 2345},\n      {\"day\": \"Tu\", \"date\": \"2025-01-21\", \"steps\": 2345}\n    ]\n  }\n}\n```\n\n**Error Responses:**\n- `401 Unauthorized`: Missing or invalid authentication token",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/wellness/progress",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wellness",
+								"progress"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/wellness/progress",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "wellness", "progress"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"today_steps\": 3456,\n        \"day_streak\": 7,\n        \"streak_status\": \"on_fire\",\n        \"weekly_goal\": {\n            \"target\": 6000,\n            \"current\": 3045,\n            \"percentage\": 50.75\n        },\n        \"this_week_activity\": [\n            {\"day\": \"Mo\", \"date\": \"2025-01-20\", \"steps\": 2345},\n            {\"day\": \"Tu\", \"date\": \"2025-01-21\", \"steps\": 2345},\n            {\"day\": \"We\", \"date\": \"2025-01-22\", \"steps\": 2345},\n            {\"day\": \"Th\", \"date\": \"2025-01-23\", \"steps\": 2345},\n            {\"day\": \"Fr\", \"date\": \"2025-01-24\", \"steps\": 2345},\n            {\"day\": \"Sa\", \"date\": \"2025-01-25\", \"steps\": 2345},\n            {\"day\": \"Su\", \"date\": \"2025-01-26\", \"steps\": 2345}\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Pet Growth",
+					"request": {
+						"method": "GET",
+						"description": "**Authenticated endpoint.** Returns comprehensive plant growth data for the Wellness Tracking Pet Growth tab. This endpoint provides:\n\n**XP System:**\n- XP is **only** calculated from **CLAIMED** achievements (not just unlocked)\n- Users must unlock an achievement (meet requirements) AND claim it to receive XP\n- Total XP determines the plant level\n\n**Plant Levels (6 Total):**\n1. **Seed** (0 XP) - Starting your journey\n2. **Sprout** (100 XP) - Developing well\n3. **Seedling** (1000 XP) - Growing strong\n4. **Budding Plant** (3000 XP) - Blossoming beautifully\n5. **Flowering Plant** (5000 XP) - Blooming beautifully\n6. **Mature Plant** (10000 XP) - Strong and resilient\n\n**Response Fields:**\n- `current_level` (number): Current plant level (1-6)\n- `level_name` (string): Name of current level\n- `current_xp` (number): Total XP earned from claimed achievements\n- `xp_for_next_level` (number): XP threshold for next level\n- `xp_needed` (number): XP remaining to reach next level\n- `total_xp_earned` (number): Same as current_xp (total from claimed achievements)\n- `can_level_up` (boolean): Whether user has enough XP to level up\n- `levels` (array): All 6 levels with:\n  - `level` (number): Level number (1-6)\n  - `name` (string): Level name\n  - `xp_required` (number): XP threshold for this level\n  - `status` (string): `unlocked` | `current` | `locked`\n  - `description` (string): Level description\n  - `can_unlock` (boolean): Whether user can unlock this level\n  - `xp_needed` (number): XP needed to unlock (if locked)\n  - `progress` (object): Progress bar information:\n    - `current_xp` (number): Current XP towards this level\n    - `total_xp` (number): Total XP required for this level\n    - `percentage` (number): Progress percentage (0-100)\n    - `xp_needed` (number): XP remaining\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"current_level\": 2,\n    \"level_name\": \"Sprout\",\n    \"current_xp\": 130,\n    \"xp_for_next_level\": 1000,\n    \"xp_needed\": 870,\n    \"total_xp_earned\": 130,\n    \"can_level_up\": false,\n    \"levels\": [\n      {\n        \"level\": 1,\n        \"name\": \"Seed\",\n        \"xp_required\": 0,\n        \"status\": \"unlocked\",\n        \"description\": \"Starting your journey\",\n        \"can_unlock\": true,\n        \"xp_needed\": 0,\n        \"progress\": {\n          \"current_xp\": 0,\n          \"total_xp\": 0,\n          \"percentage\": 100,\n          \"xp_needed\": 0\n        }\n      },\n      {\n        \"level\": 2,\n        \"name\": \"Sprout\",\n        \"xp_required\": 100,\n        \"status\": \"current\",\n        \"description\": \"Developing well\",\n        \"can_unlock\": false,\n        \"xp_needed\": 0,\n        \"progress\": {\n          \"current_xp\": 130,\n          \"total_xp\": 100,\n          \"percentage\": 100,\n          \"xp_needed\": 0\n        }\n      },\n      {\n        \"level\": 3,\n        \"name\": \"Seedling\",\n        \"xp_required\": 1000,\n        \"status\": \"locked\",\n        \"description\": \"Growing strong\",\n        \"can_unlock\": false,\n        \"xp_needed\": 870,\n        \"progress\": {\n          \"current_xp\": 130,\n          \"total_xp\": 1000,\n          \"percentage\": 13,\n          \"xp_needed\": 870\n        }\n      }\n    ]\n  }\n}\n```\n\n**Error Responses:**\n- `401 Unauthorized`: Missing or invalid authentication token",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/wellness/pet-growth",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wellness",
+								"pet-growth"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/wellness/pet-growth",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "wellness", "pet-growth"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"current_level\": 2,\n        \"level_name\": \"Sprout\",\n        \"current_xp\": 130,\n        \"xp_for_next_level\": 1000,\n        \"xp_needed\": 870,\n        \"total_xp_earned\": 130,\n        \"can_level_up\": false,\n        \"levels\": [\n            {\n                \"level\": 1,\n                \"name\": \"Seed\",\n                \"xp_required\": 0,\n                \"status\": \"unlocked\",\n                \"description\": \"Starting your journey\",\n                \"can_unlock\": true,\n                \"xp_needed\": 0,\n                \"progress\": {\n                    \"current_xp\": 0,\n                    \"total_xp\": 0,\n                    \"percentage\": 100,\n                    \"xp_needed\": 0\n                }\n            },\n            {\n                \"level\": 2,\n                \"name\": \"Sprout\",\n                \"xp_required\": 100,\n                \"status\": \"current\",\n                \"description\": \"Developing well\",\n                \"can_unlock\": false,\n                \"xp_needed\": 0,\n                \"progress\": {\n                    \"current_xp\": 130,\n                    \"total_xp\": 100,\n                    \"percentage\": 100,\n                    \"xp_needed\": 0\n                }\n            },\n            {\n                \"level\": 3,\n                \"name\": \"Seedling\",\n                \"xp_required\": 1000,\n                \"status\": \"locked\",\n                \"description\": \"Growing strong\",\n                \"can_unlock\": false,\n                \"xp_needed\": 870,\n                \"progress\": {\n                    \"current_xp\": 130,\n                    \"total_xp\": 1000,\n                    \"percentage\": 13,\n                    \"xp_needed\": 870\n                }\n            }\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Rewards",
+					"request": {
+						"method": "GET",
+						"description": "**Authenticated endpoint.** Returns rewards data for the Wellness Tracking Rewards tab. Shows all unlocked and claimed achievements with their claimable status.\n\n**Achievement Status Flow:**\n1. **LOCKED** → Achievement not started or in progress\n2. **IN_PROGRESS** → User is working towards the achievement (progress < 100%)\n3. **UNLOCKED** → Achievement requirements met (automatic) - User can now claim\n4. **CLAIMED** → User manually claimed the achievement - XP awarded\n\n**Important:**\n- **Unlock** = Automatic when requirements are met (e.g., 7 days streak)\n- **Claim** = Manual action by user to collect XP reward\n- **XP is only awarded when achievement is CLAIMED**, not just unlocked\n- Use `is_claimable: true` to show \"Claim\" button in UI\n- After claiming, use `POST /api/v1/achievements/:id/claim` endpoint\n\n**Response Fields:**\n- `rewards` (array): All unlocked/claimed achievements, sorted by most recent\n  - `id` (string): Achievement ID (use for claiming)\n  - `name` (string): Achievement name\n  - `description` (string): Achievement description\n  - `icon` (string): Achievement icon/emoji\n  - `status` (string): `unlocked` | `claimed`\n  - `is_claimable` (boolean): `true` if status is `unlocked` (can be claimed)\n  - `xp_reward` (number): XP awarded when claimed\n  - `unlocked_at` (string): ISO timestamp when unlocked\n  - `claimed_at` (string): ISO timestamp when claimed (only if status is `claimed`)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"rewards\": [\n      {\n        \"id\": \"achievement_id\",\n        \"name\": \"Week Warrior\",\n        \"description\": \"7 days in a row\",\n        \"icon\": \"⭐\",\n        \"status\": \"unlocked\",\n        \"is_claimable\": true,\n        \"xp_reward\": 100,\n        \"unlocked_at\": \"2025-01-20T10:00:00Z\"\n      },\n      {\n        \"id\": \"achievement_id_2\",\n        \"name\": \"Community Helper\",\n        \"description\": \"helped 5 people in forums\",\n        \"icon\": \"🤝\",\n        \"status\": \"claimed\",\n        \"is_claimable\": false,\n        \"xp_reward\": 50,\n        \"unlocked_at\": \"2025-01-15T10:00:00Z\",\n        \"claimed_at\": \"2025-01-15T10:05:00Z\"\n      }\n    ]\n  }\n}\n```\n\n**Error Responses:**\n- `401 Unauthorized`: Missing or invalid authentication token",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/wellness/rewards",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wellness",
+								"rewards"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/wellness/rewards",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "wellness", "rewards"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"rewards\": [\n            {\n                \"id\": \"achievement_id\",\n                \"name\": \"Week Warrior\",\n                \"description\": \"7 days in a row\",\n                \"icon\": \"⭐\",\n                \"status\": \"unlocked\",\n                \"is_claimable\": true,\n                \"xp_reward\": 100,\n                \"unlocked_at\": \"2025-01-20T10:00:00Z\"\n            },\n            {\n                \"id\": \"achievement_id_2\",\n                \"name\": \"Community Helper\",\n                \"description\": \"helped 5 people in forums\",\n                \"icon\": \"🤝\",\n                \"status\": \"claimed\",\n                \"is_claimable\": false,\n                \"xp_reward\": 50,\n                \"unlocked_at\": \"2025-01-15T10:00:00Z\",\n                \"claimed_at\": \"2025-01-15T10:05:00Z\"\n            }\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get User XP",
+					"request": {
+						"method": "GET",
+						"description": "**Authenticated endpoint.** Returns the user's total earned XP and current level information. XP is calculated from all **CLAIMED** achievements only.\n\n**XP System:**\n- XP is **only** calculated from **CLAIMED** achievements (not just unlocked)\n- Users must unlock an achievement (meet requirements) AND claim it to receive XP\n- Total XP determines the plant level\n\n**Response Fields:**\n- `total_xp_earned` (number): Total XP earned from all claimed achievements\n- `current_level` (number): Current plant level (1-6)\n- `level_name` (string): Name of current level (Seed, Sprout, Seedling, etc.)\n- `xp_from_claimed_achievements` (number): Same as total_xp_earned (for clarity)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"total_xp_earned\": 130,\n    \"current_level\": 2,\n    \"level_name\": \"Sprout\",\n    \"xp_from_claimed_achievements\": 130\n  }\n}\n```\n\n**Error Responses:**\n- `401 Unauthorized`: Missing or invalid authentication token",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from user login"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/wellness/xp",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wellness",
+								"xp"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/wellness/xp",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "wellness", "xp"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"total_xp_earned\": 130,\n        \"current_level\": 2,\n        \"level_name\": \"Sprout\",\n        \"xp_from_claimed_achievements\": 130\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wellness",
+								"rewards"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/wellness/rewards",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "wellness", "rewards"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"rewards\": [\n            {\n                \"id\": \"achievement_id\",\n                \"name\": \"Week Warrior\",\n                \"description\": \"7 days in a row\",\n                \"icon\": \"⭐\",\n                \"status\": \"unlocked\",\n                \"is_claimable\": true,\n                \"xp_reward\": 100,\n                \"unlocked_at\": \"2025-01-20T10:00:00Z\"\n            },\n            {\n                \"id\": \"achievement_id_2\",\n                \"name\": \"Community Helper\",\n                \"description\": \"helped 5 people in forums\",\n                \"icon\": \"🤝\",\n                \"status\": \"claimed\",\n                \"is_claimable\": false,\n                \"xp_reward\": 50,\n                \"unlocked_at\": \"2025-01-15T10:00:00Z\",\n                \"claimed_at\": \"2025-01-15T10:05:00Z\"\n            }\n        ]\n    }\n}"
 						}
 					]
 				}
@@ -3908,7 +4911,7 @@
 					"name": "Get Recent Achievements",
 					"request": {
 						"method": "GET",
-						"description": "Fetches the most recently unlocked achievements for the authenticated user. This endpoint is typically used in the Profile Overview tab to show the user's latest accomplishments. Returns an array of achievements sorted by `unlocked_at` date (most recent first). Only includes achievements with status `unlocked` or `claimed`.\n\n**Use Cases:**\n- Display recent achievements in user profile\n- Show latest accomplishments after unlocking\n- Profile overview dashboard\n\n**Query Parameters:**\n- `limit` (optional): Number of recent achievements to return (default: 2, max: recommended 10)",
+						"description": "Fetches the most recently unlocked achievements for the authenticated user. This endpoint is typically used in the Profile Overview tab to show the user's latest accomplishments. Returns an array of achievements sorted by `unlocked_at` date (most recent first). Only includes achievements with status `unlocked` or `claimed`.\n\n**Use Cases:**\n- Display recent achievements in user profile\n- Show latest accomplishments after unlocking\n- Profile overview dashboard\n\n**Query Parameters:**\n- `limit` (optional): Number of recent achievements to return (default: 2, max: recommended 10)\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"673a1b2c3d4e5f6a7b8c9d0e\",\n      \"name\": \"Week Warrior\",\n      \"description\": \"7 days in a row\",\n      \"icon\": \"star\",\n      \"category\": \"streak\",\n      \"status\": \"unlocked\",\n      \"progress\": {\n        \"current\": 7,\n        \"target\": 7,\n        \"percentage\": 100\n      },\n      \"unlocked_at\": \"2024-12-13T10:30:00.000Z\",\n      \"claimed_at\": null,\n      \"xp_reward\": 100\n    }\n  ]\n}\n```",
 						"header": [
 							{
 								"key": "Authorization",
@@ -4024,7 +5027,7 @@
 					"name": "Get All Achievements",
 					"request": {
 						"method": "GET",
-						"description": "Fetches all available achievements with the user's progress for each one. This endpoint is used in the Achievements tab to show all achievements, their progress, and status. Returns 38 total achievements across 6 categories: Streak, Community, Activity (Steps, Mood, Journal), and Milestone.\n\n**Use Cases:**\n- Display all achievements in Achievements tab\n- Show progress bars for each achievement\n- Filter achievements by status\n- Calculate completion percentage\n- Show achievement categories\n\n**Query Parameters:**\n- `status` (optional): Filter by status\n  - `all`: Returns all achievements (default)\n  - `locked`: Only locked achievements\n  - `in_progress`: Only achievements in progress\n  - `unlocked`: Only unlocked achievements\n  - `claimed`: Only claimed achievements\n\n**Response Structure:**\n- `total_achievements`: Total number of available achievements (38)\n- `unlocked_count`: Number of unlocked/claimed achievements\n- `achievements`: Array of all achievements with progress information\n  - Each achievement includes: id, name, description, icon, category, status, progress (current/target/percentage), unlocked_at, claimed_at, xp_reward",
+						"description": "Fetches all available achievements with the user's progress for each one. This endpoint is used in the Achievements tab to show all achievements, their progress, and status. Returns 38 total achievements across 6 categories: Streak, Community, Activity (Steps, Mood, Journal), and Milestone.\n\n**Use Cases:**\n- Display all achievements in Achievements tab\n- Show progress bars for each achievement\n- Filter achievements by status\n- Calculate completion percentage\n- Show achievement categories\n\n**Query Parameters:**\n- `status` (optional): Filter by status\n  - `all`: Returns all achievements (default)\n  - `locked`: Only locked achievements\n  - `in_progress`: Only achievements in progress\n  - `unlocked`: Only unlocked achievements\n  - `claimed`: Only claimed achievements\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"total_achievements\": 38,\n    \"unlocked_count\": 4,\n    \"achievements\": [\n      {\n        \"id\": \"673a1b2c3d4e5f6a7b8c9d0e\",\n        \"name\": \"Week Warrior\",\n        \"description\": \"7 days in a row\",\n        \"icon\": \"star\",\n        \"category\": \"streak\",\n        \"status\": \"unlocked\",\n        \"progress\": {\n          \"current\": 7,\n          \"target\": 7,\n          \"percentage\": 100\n        },\n        \"unlocked_at\": \"2024-12-13T10:30:00.000Z\",\n        \"claimed_at\": null,\n        \"xp_reward\": 100\n      },\n      {\n        \"id\": \"673a1b2c3d4e5f6a7b8c9d0f\",\n        \"name\": \"First Steps\",\n        \"description\": \"Complete your first 10,000 steps\",\n        \"icon\": \"foot\",\n        \"category\": \"activity\",\n        \"status\": \"in_progress\",\n        \"progress\": {\n          \"current\": 3456,\n          \"target\": 10000,\n          \"percentage\": 34.56\n        },\n        \"unlocked_at\": null,\n        \"claimed_at\": null,\n        \"xp_reward\": 25\n      }\n    ]\n  }\n}\n```",
 						"header": [
 							{
 								"key": "Authorization",
@@ -4095,7 +5098,7 @@
 					"name": "Claim Achievement",
 					"request": {
 						"method": "POST",
-						"description": "Claims an unlocked achievement. This marks the achievement as 'claimed' and records the claim timestamp. Users can claim achievements to receive XP rewards and mark them as completed. The achievement status changes from 'unlocked' to 'claimed'.\n\n**Use Cases:**\n- User clicks 'Claim' button on unlocked achievement\n- Mark achievement as claimed after viewing\n- Award XP to user (if XP system is implemented)\n\n**Path Parameters:**\n- `id`: The achievement ID (MongoDB ObjectId) to claim. Use the achievement_id from Get All Achievements response.\n\n**Requirements:**\n- Achievement must be in `unlocked` status\n- Achievement must belong to the authenticated user\n- Achievement must exist in the database",
+						"description": "Claims an unlocked achievement. This marks the achievement as 'claimed' and records the claim timestamp. Users can claim achievements to receive XP rewards and mark them as completed. The achievement status changes from 'unlocked' to 'claimed'.\n\n**Use Cases:**\n- User clicks 'Claim' button on unlocked achievement\n- Mark achievement as claimed after viewing\n- Award XP to user (if XP system is implemented)\n\n**Path Parameters:**\n- `id`: The achievement ID (MongoDB ObjectId) to claim. Use the achievement_id from Get All Achievements response.\n\n**Requirements:**\n- Achievement must be in `unlocked` status\n- Achievement must belong to the authenticated user\n- Achievement must exist in the database\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Achievement claimed successfully\",\n  \"achievement\": {\n    \"id\": \"673a1b2c3d4e5f6a7b8c9d0e\",\n    \"name\": \"Week Warrior\",\n    \"description\": \"7 days in a row\",\n    \"icon\": \"star\",\n    \"xp_reward\": 100\n  }\n}\n```\n\n**Error Responses:**\n- `404 Not Found`: Achievement is not unlocked yet or achievement not found for this user",
 						"header": [
 							{
 								"key": "Authorization",
@@ -4270,6 +5273,12 @@
 			"value": "",
 			"type": "string",
 			"description": "Achievement ID for testing achievement endpoints"
+		},
+		{
+			"key": "goal_id",
+			"value": "",
+			"type": "string",
+			"description": "Goal ID for testing goal endpoints"
 		}
 	]
 }

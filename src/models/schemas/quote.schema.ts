@@ -13,9 +13,16 @@ export class Quote {
 
   @Prop({ required: false, default: '' })
   quranic_verse?: string;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  is_today_quote?: boolean;
+
+  @Prop({ type: Date })
+  selected_date?: Date;
 }
 
 export const QuoteSchema = SchemaFactory.createForClass(Quote);
 
 QuoteSchema.index({ quote_english: 'text', quote_urdu: 'text' });
+QuoteSchema.index({ is_today_quote: 1, selected_date: 1 });
 
