@@ -4259,53 +4259,6 @@
 				}
 			]
 		},
-							"protocol": "https",
-							"host": [
-								"fikrless",
-								"com"
-							],
-							"path": [
-								"api",
-								"v1",
-								"wellness",
-								"rewards"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success 200",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{token}}"
-									}
-								],
-								"url": {
-									"raw": "https://fikrless.com/api/v1/wellness/rewards",
-									"protocol": "https",
-									"host": ["fikrless", "com"],
-									"path": ["api", "v1", "wellness", "rewards"]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"rewards\": [\n            {\n                \"id\": \"achievement_id\",\n                \"name\": \"Week Warrior\",\n                \"description\": \"7 days in a row\",\n                \"icon\": \"⭐\",\n                \"status\": \"unlocked\",\n                \"is_claimable\": true,\n                \"xp_reward\": 100,\n                \"unlocked_at\": \"2025-01-20T10:00:00Z\"\n            },\n            {\n                \"id\": \"achievement_id_2\",\n                \"name\": \"Community Helper\",\n                \"description\": \"helped 5 people in forums\",\n                \"icon\": \"🤝\",\n                \"status\": \"claimed\",\n                \"is_claimable\": false,\n                \"xp_reward\": 50,\n                \"unlocked_at\": \"2025-01-15T10:00:00Z\",\n                \"claimed_at\": \"2025-01-15T10:05:00Z\"\n            }\n        ]\n    }\n}"
-						}
-					]
-				}
-			]
-		},
 		{
 			"name": "Journal",
 			"item": [
