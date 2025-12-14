@@ -5,7 +5,9 @@ import { NotificationTemplate, NotificationTemplateDocument } from '../models/sc
 import { UserNotification, UserNotificationDocument } from '../models/schemas/user-notification.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateNotificationTemplateDto } from './dto/create-notification-template.dto';
+import { UpdateNotificationTemplateDto } from './dto/update-notification-template.dto';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto';
+import { SendNotificationDto } from './dto/send-notification.dto';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
 import { NotificationRequestDto } from './dto/notification-request.dto';
 import { FirebaseService } from '../firebase/firebase.service';
@@ -40,6 +42,67 @@ export class NotificationService {
       query.type = type;
     }
     return this.templateModel.find(query).sort({ createdAt: -1 });
+  }
+
+  async getAllTemplatesForAdmin(
+    search?: string,
+    type?: string,
+    isActive?: string,
+    page: number = 1,
+    limit: number = 1000,
+  ): Promise<{ data: any[]; pagination: any }> {
+    const skip = (page - 1) * limit;
+    const query: Record<string, any> = {};
+
+    if (type && type !== 'all') {
+      query.type = type;
+    }
+
+    if (isActive !== undefined && isActive !== 'all') {
+      query.is_active = isActive === 'true';
+    }
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { body: { $regex: search, $options: 'i' } },
+        { type: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [templates, total] = await Promise.all([
+      this.templateModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.templateModel.countDocuments(query),
+    ]);
+
+    return {
+      data: templates.map((template) => ({
+        _id: template._id.toString(),
+        title: template.title,
+        body: template.body,
+        type: template.type,
+        metadata: template.metadata || {},
+        cta_text: template.cta_text,
+        cta_url: template.cta_url,
+        schedule_at: template.schedule_at,
+        is_active: template.is_active,
+        created_at: (template as any).createdAt,
+        updated_at: (template as any).updatedAt,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        has_next: page * limit < total,
+        has_prev: page > 1,
+      },
+    };
   }
 
   async getTemplateById(id: string) {
@@ -273,6 +336,124 @@ export class NotificationService {
         cta_url,
       },
     });
+  }
+
+  // Admin methods
+  async updateTemplateAsAdmin(templateId: string, dto: UpdateNotificationTemplateDto) {
+    const template = await this.templateModel.findById(templateId);
+    if (!template) {
+      throw new NotFoundException('Notification template not found');
+    }
+
+    if (dto.title !== undefined) template.title = dto.title;
+    if (dto.body !== undefined) template.body = dto.body;
+    if (dto.type !== undefined) template.type = dto.type;
+    if (dto.metadata !== undefined) template.metadata = dto.metadata;
+    if (dto.cta_text !== undefined) template.cta_text = dto.cta_text;
+    if (dto.cta_url !== undefined) template.cta_url = dto.cta_url;
+    if (dto.schedule_at !== undefined) {
+      template.schedule_at = dto.schedule_at ? new Date(dto.schedule_at) : undefined;
+    }
+    if (dto.is_active !== undefined) template.is_active = dto.is_active;
+
+    await template.save();
+    return {
+      _id: template._id.toString(),
+      title: template.title,
+      body: template.body,
+      type: template.type,
+      metadata: template.metadata || {},
+      cta_text: template.cta_text,
+      cta_url: template.cta_url,
+      schedule_at: template.schedule_at,
+      is_active: template.is_active,
+      created_at: (template as any).createdAt,
+      updated_at: (template as any).updatedAt,
+    };
+  }
+
+  async deleteTemplateAsAdmin(templateId: string) {
+    const template = await this.templateModel.findById(templateId);
+    if (!template) {
+      throw new NotFoundException('Notification template not found');
+    }
+
+    await template.deleteOne();
+    return { success: true, message: 'Template deleted successfully' };
+  }
+
+  async sendNotificationAsAdmin(dto: SendNotificationDto) {
+    // If sending to a single user
+    if (dto.user_id) {
+      await this.createDirectNotification(
+        dto.user_id,
+        dto.title,
+        dto.body,
+        dto.type || 'general',
+        dto.metadata,
+        dto.cta_url,
+      );
+      return { success: true, message: 'Notification sent successfully', recipients: 1 };
+    }
+
+    // If broadcasting
+    let targetUsers: Types.ObjectId[] = [];
+
+    if (dto.send_to_all) {
+      const users = await this.userModel.find({ is_disabled: { $ne: true } }, '_id').lean();
+      targetUsers = users.map((u) => u._id as Types.ObjectId);
+    } else if (dto.user_ids && dto.user_ids.length) {
+      targetUsers = dto.user_ids.map((id) => new Types.ObjectId(id));
+    } else {
+      throw new BadRequestException('Please specify user_id, send_to_all, or provide user_ids');
+    }
+
+    if (!targetUsers.length) {
+      throw new BadRequestException('No target users found for this notification');
+    }
+
+    // Create a unique template for this notification
+    const uniqueTemplateType = `admin_${dto.type || 'general'}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    
+    const template = await this.templateModel.create({
+      title: dto.title.substring(0, 100),
+      body: dto.body.substring(0, 200),
+      type: uniqueTemplateType,
+      is_active: true,
+      metadata: dto.metadata || {},
+      cta_text: dto.cta_text,
+      cta_url: dto.cta_url,
+    });
+
+    const payload = {
+      title: dto.title,
+      body: dto.body,
+      type: dto.type || 'general',
+      metadata: dto.metadata || {},
+      cta_text: dto.cta_text,
+      cta_url: dto.cta_url,
+    };
+
+    const operations = targetUsers.map((userId) => ({
+      updateOne: {
+        filter: { template_id: template._id, user_id: userId },
+        update: {
+          $setOnInsert: {
+            template_id: template._id,
+            user_id: userId,
+            payload,
+            status: 'unread',
+            deleted_at: null,
+            read_at: null,
+          },
+        },
+        upsert: true,
+      },
+    }));
+
+    await this.userNotificationModel.bulkWrite(operations, { ordered: false });
+
+    return { success: true, message: 'Notification sent successfully', recipients: targetUsers.length };
   }
 }
 

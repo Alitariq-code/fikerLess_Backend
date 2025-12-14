@@ -101,6 +101,10 @@ export class AuthService {
       throw new NotFoundException('User does not Exist');
     }
 
+    if (user.is_disabled) {
+      throw new UnauthorizedException('Your account has been disabled. Please contact support.');
+    }
+
     if (!user.is_email_verified) {
       throw new UnauthorizedException('Please verify your email');
     }
@@ -110,11 +114,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (user.user_type === 'user' && !user.has_demographics) {
+    // Admin users can login without demographics or profile
+    if (user.user_type === 'admin') {
+      // Admin login - no additional checks needed
+    } else if (user.user_type === 'user' && !user.has_demographics) {
       throw new UnauthorizedException('Please Give Your Demographics Data');
-    }
-
-    if (user.user_type === 'specialist') {
+    } else if (user.user_type === 'specialist') {
       const profile = await this.specialistModel.findOne({ user_id: user._id });
       if (!profile) {
         throw new UnauthorizedException('Please complete your specialist profile');

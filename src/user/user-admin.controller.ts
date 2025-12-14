@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Put,
   Delete,
   Patch,
@@ -11,21 +10,20 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  UnauthorizedException,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { QuoteService } from './quote.service';
-import { CreateQuoteDto } from './dto/create-quote.dto';
-import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { UserAdminService } from './user-admin.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { getUserFromToken } from '../utils/utils';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-@Controller('api/v1/quote')
-export class QuoteController {
+@Controller('api/v1/users/admin')
+export class UserAdminController {
   constructor(
-    private readonly quoteService: QuoteService,
+    private readonly userAdminService: UserAdminService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
@@ -49,23 +47,13 @@ export class QuoteController {
     return userId;
   }
 
-  @Get()
+  @Get('all')
   @HttpCode(HttpStatus.OK)
-  async getTodayQuote() {
-    const quote = await this.quoteService.getTodayQuote();
-    return {
-      success: true,
-      data: quote,
-    };
-  }
-
-  // Admin endpoints
-  @Get('admin/all')
-  @HttpCode(HttpStatus.OK)
-  async getAllQuotesForAdmin(
+  async getAllUsersForAdmin(
     @Headers('authorization') token: string,
     @Query('search') search?: string,
-    @Query('is_today_quote') isTodayQuote?: string,
+    @Query('user_type') userType?: string,
+    @Query('is_disabled') isDisabled?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -73,9 +61,10 @@ export class QuoteController {
 
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 1000;
-    const result = await this.quoteService.getAllQuotesForAdmin(
+    const result = await this.userAdminService.getAllUsersForAdmin(
       search,
-      isTodayQuote,
+      userType,
+      isDisabled,
       pageNum,
       limitNum,
     );
@@ -85,74 +74,59 @@ export class QuoteController {
     };
   }
 
-  @Get('admin/:id')
+  @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getQuoteByIdForAdmin(
+  async getUserByIdForAdmin(
     @Headers('authorization') token: string,
     @Param('id') id: string,
   ) {
     await this.ensureAdmin(token);
-    const quote = await this.quoteService.getQuoteByIdForAdmin(id);
+    const user = await this.userAdminService.getUserByIdForAdmin(id);
     return {
       success: true,
-      data: quote,
+      data: user,
     };
   }
 
-  @Post('admin/create')
+  @Put(':id')
   @HttpCode(HttpStatus.OK)
-  async createQuoteAsAdmin(
-    @Headers('authorization') token: string,
-    @Body() dto: CreateQuoteDto,
-  ) {
-    await this.ensureAdmin(token);
-    const quote = await this.quoteService.createQuoteAsAdmin(dto);
-    return {
-      success: true,
-      message: 'Quote created successfully',
-      data: quote,
-    };
-  }
-
-  @Put('admin/:id')
-  @HttpCode(HttpStatus.OK)
-  async updateQuoteAsAdmin(
+  async updateUserAsAdmin(
     @Headers('authorization') token: string,
     @Param('id') id: string,
-    @Body() dto: UpdateQuoteDto,
+    @Body() dto: UpdateUserDto,
   ) {
     await this.ensureAdmin(token);
-    const quote = await this.quoteService.updateQuoteAsAdmin(id, dto);
+    const user = await this.userAdminService.updateUserAsAdmin(id, dto);
     return {
       success: true,
-      message: 'Quote updated successfully',
-      data: quote,
+      message: 'User updated successfully',
+      data: user,
     };
   }
 
-  @Patch('admin/:id/set-today')
+  @Patch(':id/toggle-status')
   @HttpCode(HttpStatus.OK)
-  async setQuoteOfTheDay(
+  async toggleUserStatus(
     @Headers('authorization') token: string,
     @Param('id') id: string,
   ) {
     await this.ensureAdmin(token);
-    const quote = await this.quoteService.setQuoteOfTheDay(id);
+    const user = await this.userAdminService.toggleUserStatus(id);
     return {
       success: true,
-      message: 'Quote set as quote of the day successfully',
-      data: quote,
+      message: `User ${user.is_disabled ? 'disabled' : 'enabled'} successfully`,
+      data: user,
     };
   }
 
-  @Delete('admin/:id')
+  @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteQuoteAsAdmin(
+  async deleteUserAsAdmin(
     @Headers('authorization') token: string,
     @Param('id') id: string,
   ) {
     await this.ensureAdmin(token);
-    const result = await this.quoteService.deleteQuoteAsAdmin(id);
+    const result = await this.userAdminService.deleteUserAsAdmin(id);
     return {
       success: true,
       ...result,

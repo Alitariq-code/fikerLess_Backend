@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, MinLength, MaxLength, IsUrl } from 'class-validator';
+import { IsString, IsEnum, IsOptional, MinLength, MaxLength, IsArray } from 'class-validator';
 import { ArticleCategory, ArticleStatus } from '../../models/schemas/article.schema';
 
 export class UpdateArticleDto {
@@ -18,8 +18,13 @@ export class UpdateArticleDto {
   content?: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Featured image must be a valid URL' })
+  @IsString()
   featured_image_url?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  image_urls?: string[];
 
   @IsOptional()
   @IsEnum(ArticleStatus)

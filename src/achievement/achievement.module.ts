@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AchievementController } from './achievement.controller';
+import { AchievementAdminController } from './achievement-admin.controller';
 import { AchievementService } from './achievement.service';
 import { Achievement, AchievementSchema } from '../models/schemas/achievement.schema';
 import { UserAchievement, UserAchievementSchema } from '../models/schemas/user-achievement.schema';
@@ -20,7 +21,7 @@ import { NotificationModule } from '../notification/notification.module';
     ]),
     NotificationModule,
   ],
-  controllers: [AchievementController],
+  controllers: [AchievementController, AchievementAdminController],
   providers: [AchievementService],
   exports: [AchievementService], // Export so other services can use it
 })

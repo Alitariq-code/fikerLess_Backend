@@ -30,6 +30,7 @@ export class ArticleService {
       category: article.category,
       content: includeContent ? article.content : undefined,
       featured_image_url: article.featured_image_url,
+      image_urls: article.image_urls || [],
       status: article.status,
       published_at: article.published_at,
       views: article.views,
@@ -76,6 +77,7 @@ export class ArticleService {
       category: dto.category,
       content: dto.content,
       featured_image_url: dto.featured_image_url,
+      image_urls: dto.image_urls || [],
       status,
       read_time_minutes: readTime,
       published_at: status === ArticleStatus.PUBLISHED ? new Date() : undefined,
@@ -260,6 +262,7 @@ export class ArticleService {
       article.read_time_minutes = this.calculateReadTime(dto.content);
     }
     if (dto.featured_image_url !== undefined) article.featured_image_url = dto.featured_image_url;
+    if (dto.image_urls !== undefined) article.image_urls = dto.image_urls;
     if (dto.status) {
       article.status = dto.status;
       if (dto.status === ArticleStatus.PUBLISHED && !article.published_at) {
@@ -308,6 +311,154 @@ export class ArticleService {
 
   getCategories(): string[] {
     return Object.values(ArticleCategory);
+  }
+
+  // Admin methods
+  async getAllArticlesForAdmin(
+    search?: string,
+    status?: string,
+    category?: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{ data: any[]; pagination: any }> {
+    const skip = (page - 1) * limit;
+    const query: any = {};
+
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    if (search) {
+      query.$text = { $search: search };
+    }
+
+    const [articles, total] = await Promise.all([
+      this.articleModel
+        .find(query)
+        .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.articleModel.countDocuments(query),
+    ]);
+
+    const enrichedArticles = await Promise.all(
+      articles.map(async (article) => {
+        const specialist = await this.specialistModel.findOne({ user_id: article.specialist_id });
+        const user = await this.userModel.findById(article.specialist_id);
+        return {
+          _id: article._id.toString(),
+          title: article.title,
+          category: article.category,
+          content: article.content,
+          featured_image_url: article.featured_image_url,
+          image_urls: article.image_urls || [],
+          status: article.status,
+          published_at: article.published_at,
+          views: article.views || 0,
+          likes: article.likes || 0,
+          read_time_minutes: article.read_time_minutes,
+          author: {
+            _id: article.specialist_id.toString(),
+            name: specialist?.full_name || user?.email || 'Unknown',
+            profile_photo: specialist?.profile_photo,
+            designation: specialist?.designation,
+          },
+          created_at: (article as any).createdAt,
+          updated_at: (article as any).updatedAt,
+        };
+      }),
+    );
+
+    return {
+      data: enrichedArticles,
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        has_next: page * limit < total,
+        has_prev: page > 1,
+      },
+    };
+  }
+
+  async createArticleAsAdmin(dto: CreateArticleDto, adminUserId: string) {
+    // Use admin user ID as specialist_id for admin-created articles
+    const readTime = this.calculateReadTime(dto.content);
+    const status = dto.status || ArticleStatus.DRAFT;
+
+    const article = await this.articleModel.create({
+      specialist_id: adminUserId,
+      title: dto.title,
+      category: dto.category,
+      content: dto.content,
+      featured_image_url: dto.featured_image_url,
+      image_urls: dto.image_urls || [],
+      status,
+      read_time_minutes: readTime,
+      published_at: status === ArticleStatus.PUBLISHED ? new Date() : undefined,
+    });
+
+    return this.formatArticleResponse(article);
+  }
+
+  async updateArticleAsAdmin(articleId: string, dto: UpdateArticleDto) {
+    const article = await this.articleModel.findById(articleId);
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+
+    if (dto.title) article.title = dto.title;
+    if (dto.category) article.category = dto.category;
+    if (dto.content) {
+      article.content = dto.content;
+      article.read_time_minutes = this.calculateReadTime(dto.content);
+    }
+    if (dto.featured_image_url !== undefined) article.featured_image_url = dto.featured_image_url;
+    if (dto.image_urls !== undefined) article.image_urls = dto.image_urls;
+    if (dto.status) {
+      article.status = dto.status;
+      if (dto.status === ArticleStatus.PUBLISHED && !article.published_at) {
+        article.published_at = new Date();
+      }
+    }
+
+    await article.save();
+    return this.formatArticleResponse(article);
+  }
+
+  async deleteArticleAsAdmin(articleId: string) {
+    const article = await this.articleModel.findById(articleId);
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+
+    await article.deleteOne();
+    return { success: true, message: 'Article deleted successfully' };
+  }
+
+  async toggleArticleStatus(articleId: string) {
+    const article = await this.articleModel.findById(articleId);
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+
+    if (article.status === ArticleStatus.PUBLISHED) {
+      article.status = ArticleStatus.DRAFT;
+    } else {
+      article.status = ArticleStatus.PUBLISHED;
+      if (!article.published_at) {
+        article.published_at = new Date();
+      }
+    }
+
+    await article.save();
+    return this.formatArticleResponse(article);
   }
 }
 

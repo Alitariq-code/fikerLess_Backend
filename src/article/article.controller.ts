@@ -181,5 +181,107 @@ export class ArticleController {
       data: article,
     };
   }
+
+  // Admin endpoints
+  @Get('admin/all')
+  @HttpCode(HttpStatus.OK)
+  async getAllArticlesForAdmin(
+    @Headers('authorization') token: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('category') category?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    const user = await this.userModel.findById(userId);
+    if (!user || user.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can access this endpoint');
+    }
+
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 1000; // Allow large limit for admin
+    const result = await this.articleService.getAllArticlesForAdmin(
+      search,
+      status,
+      category,
+      pageNum,
+      limitNum,
+    );
+    return {
+      success: true,
+      ...result,
+    };
+  }
+
+  @Post('admin/create')
+  @HttpCode(HttpStatus.CREATED)
+  async createArticleAsAdmin(
+    @Headers('authorization') token: string,
+    @Body() dto: CreateArticleDto,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    const user = await this.userModel.findById(userId);
+    if (!user || user.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can create articles');
+    }
+    const article = await this.articleService.createArticleAsAdmin(dto, userId);
+    return {
+      success: true,
+      message: 'Article created successfully',
+      data: article,
+    };
+  }
+
+  @Put('admin/:id')
+  @HttpCode(HttpStatus.OK)
+  async updateArticleAsAdmin(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateArticleDto,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    const user = await this.userModel.findById(userId);
+    if (!user || user.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can update articles');
+    }
+    const article = await this.articleService.updateArticleAsAdmin(id, dto);
+    return {
+      success: true,
+      message: 'Article updated successfully',
+      data: article,
+    };
+  }
+
+  @Delete('admin/:id')
+  @HttpCode(HttpStatus.OK)
+  async deleteArticleAsAdmin(@Headers('authorization') token: string, @Param('id') id: string) {
+    const userId = await this.getUserIdFromToken(token);
+    const user = await this.userModel.findById(userId);
+    if (!user || user.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can delete articles');
+    }
+    const result = await this.articleService.deleteArticleAsAdmin(id);
+    return {
+      success: true,
+      ...result,
+    };
+  }
+
+  @Patch('admin/:id/toggle-status')
+  @HttpCode(HttpStatus.OK)
+  async toggleArticleStatus(@Headers('authorization') token: string, @Param('id') id: string) {
+    const userId = await this.getUserIdFromToken(token);
+    const user = await this.userModel.findById(userId);
+    if (!user || user.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can toggle article status');
+    }
+    const article = await this.articleService.toggleArticleStatus(id);
+    return {
+      success: true,
+      message: 'Article status updated successfully',
+      data: article,
+    };
+  }
 }
 

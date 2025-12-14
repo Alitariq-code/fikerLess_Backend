@@ -6,6 +6,8 @@ import { UserAchievement, UserAchievementDocument, UserAchievementStatus } from 
 import { ForumPost, ForumPostDocument } from '../models/schemas/forum-post.schema';
 import { ForumComment, ForumCommentDocument } from '../models/schemas/forum-comment.schema';
 import { NotificationService } from '../notification/notification.service';
+import { CreateAchievementDto } from './dto/create-achievement.dto';
+import { UpdateAchievementDto } from './dto/update-achievement.dto';
 
 @Injectable()
 export class AchievementService {
@@ -497,6 +499,272 @@ export class AchievementService {
       this.logger.error(`claimAchievement failed for user ${userId}, achievement ${achievementId} after ${duration}ms:`, error);
       throw error;
     }
+  }
+
+  // Admin methods
+  async getAllAchievementsForAdmin(
+    search?: string,
+    category?: string,
+    conditionType?: string,
+    isActive?: string,
+    page: number = 1,
+    limit: number = 1000,
+  ): Promise<{ data: any[]; pagination: any }> {
+    const skip = (page - 1) * limit;
+    const query: any = {};
+
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    if (conditionType && conditionType !== 'all') {
+      query.condition_type = conditionType;
+    }
+
+    if (isActive !== undefined && isActive !== 'all') {
+      query.is_active = isActive === 'true';
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [achievements, total] = await Promise.all([
+      this.achievementModel
+        .find(query)
+        .sort({ order: 1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.achievementModel.countDocuments(query),
+    ]);
+
+    return {
+      data: achievements.map((achievement) => ({
+        _id: achievement._id.toString(),
+        name: achievement.name,
+        description: achievement.description,
+        icon: achievement.icon,
+        category: achievement.category,
+        condition_type: achievement.condition_type,
+        condition_value: achievement.condition_value,
+        xp_reward: achievement.xp_reward || 0,
+        is_active: achievement.is_active,
+        order: achievement.order || 0,
+        created_at: (achievement as any).createdAt,
+        updated_at: (achievement as any).updatedAt,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        has_next: page * limit < total,
+        has_prev: page > 1,
+      },
+    };
+  }
+
+  async getAchievementByIdForAdmin(achievementId: string) {
+    const achievement = await this.achievementModel.findById(achievementId).lean();
+    if (!achievement) {
+      throw new NotFoundException('Achievement not found');
+    }
+    return {
+      _id: achievement._id.toString(),
+      name: achievement.name,
+      description: achievement.description,
+      icon: achievement.icon,
+      category: achievement.category,
+      condition_type: achievement.condition_type,
+      condition_value: achievement.condition_value,
+      xp_reward: achievement.xp_reward || 0,
+      is_active: achievement.is_active,
+      order: achievement.order || 0,
+      created_at: (achievement as any).createdAt,
+      updated_at: (achievement as any).updatedAt,
+    };
+  }
+
+  async createAchievementAsAdmin(dto: CreateAchievementDto) {
+    // Check if achievement with same name already exists
+    const existing = await this.achievementModel.findOne({ name: dto.name }).exec();
+    if (existing) {
+      throw new BadRequestException('An achievement with this name already exists');
+    }
+
+    const achievement = await this.achievementModel.create({
+      name: dto.name,
+      description: dto.description,
+      icon: dto.icon,
+      category: dto.category,
+      condition_type: dto.condition_type,
+      condition_value: dto.condition_value,
+      xp_reward: dto.xp_reward || 0,
+      is_active: dto.is_active !== undefined ? dto.is_active : true,
+      order: dto.order || 0,
+    });
+
+    return {
+      _id: achievement._id.toString(),
+      name: achievement.name,
+      description: achievement.description,
+      icon: achievement.icon,
+      category: achievement.category,
+      condition_type: achievement.condition_type,
+      condition_value: achievement.condition_value,
+      xp_reward: achievement.xp_reward || 0,
+      is_active: achievement.is_active,
+      order: achievement.order || 0,
+      created_at: (achievement as any).createdAt,
+      updated_at: (achievement as any).updatedAt,
+    };
+  }
+
+  async updateAchievementAsAdmin(achievementId: string, dto: UpdateAchievementDto) {
+    const achievement = await this.achievementModel.findById(achievementId);
+    if (!achievement) {
+      throw new NotFoundException('Achievement not found');
+    }
+
+    // Check if name is being changed and if new name already exists
+    if (dto.name && dto.name !== achievement.name) {
+      const existing = await this.achievementModel.findOne({ name: dto.name, _id: { $ne: achievementId } }).exec();
+      if (existing) {
+        throw new BadRequestException('An achievement with this name already exists');
+      }
+    }
+
+    if (dto.name !== undefined) achievement.name = dto.name;
+    if (dto.description !== undefined) achievement.description = dto.description;
+    if (dto.icon !== undefined) achievement.icon = dto.icon;
+    if (dto.category !== undefined) achievement.category = dto.category;
+    if (dto.condition_type !== undefined) achievement.condition_type = dto.condition_type;
+    if (dto.condition_value !== undefined) achievement.condition_value = dto.condition_value;
+    if (dto.xp_reward !== undefined) achievement.xp_reward = dto.xp_reward;
+    if (dto.is_active !== undefined) achievement.is_active = dto.is_active;
+    if (dto.order !== undefined) achievement.order = dto.order;
+
+    await achievement.save();
+
+    return {
+      _id: achievement._id.toString(),
+      name: achievement.name,
+      description: achievement.description,
+      icon: achievement.icon,
+      category: achievement.category,
+      condition_type: achievement.condition_type,
+      condition_value: achievement.condition_value,
+      xp_reward: achievement.xp_reward || 0,
+      is_active: achievement.is_active,
+      order: achievement.order || 0,
+      created_at: (achievement as any).createdAt,
+      updated_at: (achievement as any).updatedAt,
+    };
+  }
+
+  async deleteAchievementAsAdmin(achievementId: string) {
+    const achievement = await this.achievementModel.findById(achievementId);
+    if (!achievement) {
+      throw new NotFoundException('Achievement not found');
+    }
+
+    // Check if any users have this achievement
+    const userAchievementCount = await this.userAchievementModel.countDocuments({
+      achievement_id: achievementId,
+    }).exec();
+
+    if (userAchievementCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete achievement. ${userAchievementCount} user(s) have this achievement. Consider deactivating it instead.`
+      );
+    }
+
+    await achievement.deleteOne();
+    return { success: true, message: 'Achievement deleted successfully' };
+  }
+
+  async getAllUserAchievementsForAdmin(
+    userId?: string,
+    achievementId?: string,
+    status?: string,
+    page: number = 1,
+    limit: number = 1000,
+  ): Promise<{ data: any[]; pagination: any }> {
+    const skip = (page - 1) * limit;
+    const query: any = {};
+
+    if (userId) {
+      query.user_id = new Types.ObjectId(userId);
+    }
+
+    if (achievementId) {
+      query.achievement_id = new Types.ObjectId(achievementId);
+    }
+
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    const [userAchievements, total] = await Promise.all([
+      this.userAchievementModel
+        .find(query)
+        .populate('user_id', 'email first_name last_name username')
+        .populate('achievement_id')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.userAchievementModel.countDocuments(query),
+    ]);
+
+    const data = userAchievements.map((ua: any) => {
+      const user = ua.user_id;
+      const achievement = ua.achievement_id;
+      return {
+        _id: ua._id.toString(),
+        user: user ? {
+          _id: user._id.toString(),
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          username: user.username,
+        } : null,
+        achievement: achievement ? {
+          _id: achievement._id.toString(),
+          name: achievement.name,
+          description: achievement.description,
+          icon: achievement.icon,
+          category: achievement.category,
+        } : null,
+        progress_current: ua.progress_current || 0,
+        progress_target: ua.progress_target,
+        progress_percentage: ua.progress_target > 0 
+          ? Math.round((ua.progress_current / ua.progress_target) * 100) 
+          : 0,
+        status: ua.status,
+        unlocked_at: ua.unlocked_at,
+        claimed_at: ua.claimed_at,
+        last_updated: ua.last_updated,
+        created_at: (ua as any).createdAt,
+        updated_at: (ua as any).updatedAt,
+      };
+    });
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        has_next: page * limit < total,
+        has_prev: page > 1,
+      },
+    };
   }
 }
 

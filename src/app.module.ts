@@ -19,6 +19,9 @@ import { GoalsModule } from './goals/goals.module';
 import { QuoteModule } from './quote/quote.module';
 import { WellnessModule } from './wellness/wellness.module';
 import { AudioModule } from './audio/audio.module';
+import { InternshipModule } from './internship/internship.module';
+import { UserAdminModule } from './user/user-admin.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -67,13 +70,16 @@ import { AudioModule } from './audio/audio.module';
     QuoteModule,
     WellnessModule,
     AudioModule,
+    InternshipModule,
+    UserAdminModule,
+    UploadModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-      ],
-    })
-    export class AppModule {}
+  ],
+})
+export class AppModule {}
 

@@ -38,6 +38,9 @@ export class User {
 
   @Prop({ unique: true, sparse: true })
   username?: string;
+
+  @Prop({ default: false })
+  is_disabled: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -56,6 +56,9 @@ export class Article {
   @Prop()
   featured_image_url?: string;
 
+  @Prop({ type: [String], default: [] })
+  image_urls?: string[];
+
   @Prop({
     type: String,
     enum: Object.values(ArticleStatus),
