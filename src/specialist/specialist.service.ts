@@ -213,7 +213,13 @@ export class SpecialistService {
           if (user.user_type !== 'specialist') {
             throw new NotFoundException('User is not a specialist');
           }
-          throw new NotFoundException('Specialist profile not found. Please complete your specialist profile first.');
+          // Return a special result indicating profile doesn't exist yet
+          return {
+            profile: null,
+            profile_exists: false,
+            user_exists: true,
+            message: 'Specialist profile not found. Please complete your specialist profile first.',
+          };
         }
       }
     }
@@ -222,7 +228,10 @@ export class SpecialistService {
       throw new NotFoundException('Specialist not found');
     }
 
-    return this.formatProfile(profile);
+    return {
+      profile: this.formatProfile(profile),
+      profile_exists: true,
+    };
   }
 
   async getHighlights(limit: number = 3, location?: string) {

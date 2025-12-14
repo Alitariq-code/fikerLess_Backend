@@ -96,9 +96,21 @@ export class SpecialistController {
   @HttpCode(HttpStatus.OK)
   async getPublicProfile(@Param('id') id: string) {
     const result = await this.specialistService.getSpecialistById(id);
+    
+    // If profile doesn't exist but user is a specialist, return graceful response
+    if (result.profile_exists === false) {
+      return {
+        success: false,
+        data: null,
+        message: result.message,
+        profile_exists: false,
+      };
+    }
+    
+    // Profile exists, return it
     return {
       success: true,
-      data: result,
+      data: result.profile,
     };
   }
 
