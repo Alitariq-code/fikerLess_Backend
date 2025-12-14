@@ -196,7 +196,7 @@ export class SpecialistService {
 
   async getSpecialistById(id: string) {
     if (!Types.ObjectId.isValid(id)) {
-      throw new NotFoundException('Specialist not found');
+      throw new NotFoundException('Invalid specialist ID format');
     }
 
     // Try to find by profile _id first
@@ -205,6 +205,17 @@ export class SpecialistService {
     // If not found, try to find by user_id (in case frontend passes user ID)
     if (!profile) {
       profile = await this.specialistModel.findOne({ user_id: new Types.ObjectId(id) });
+      
+      // If still not found, check if user exists (for better error message)
+      if (!profile) {
+        const user = await this.userModel.findById(id);
+        if (user) {
+          if (user.user_type !== 'specialist') {
+            throw new NotFoundException('User is not a specialist');
+          }
+          throw new NotFoundException('Specialist profile not found. Please complete your specialist profile first.');
+        }
+      }
     }
     
     if (!profile) {
