@@ -3,13 +3,23 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
+
+  // Serve static files from public directory
+  // Use process.cwd() to get project root (works in both dev and prod)
+  const publicPath = join(process.cwd(), 'public');
+  app.useStaticAssets(publicPath, {
+    prefix: '/',
+  });
+  logger.log(`📁 Serving static files from: ${publicPath}`);
   
   app.enableCors({
     origin: '*',
@@ -37,6 +47,7 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`🚀 Application is running on: http://localhost:${port}`);
   logger.log(`📝 API logging is enabled`);
+  logger.log(`🌐 Test page available at: http://localhost:${port}/audio-test.html`);
 }
 
 bootstrap();

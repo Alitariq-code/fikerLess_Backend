@@ -18,6 +18,7 @@ import { AchievementModule } from './achievement/achievement.module';
 import { GoalsModule } from './goals/goals.module';
 import { QuoteModule } from './quote/quote.module';
 import { WellnessModule } from './wellness/wellness.module';
+import { AudioModule } from './audio/audio.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { WellnessModule } from './wellness/wellness.module';
     GoalsModule,
     QuoteModule,
     WellnessModule,
+    AudioModule,
   ],
   providers: [
     {

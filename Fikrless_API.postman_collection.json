@@ -5173,6 +5173,379 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Audio",
+			"item": [
+				{
+					"name": "List All Audios",
+					"request": {
+						"method": "GET",
+						"description": "Fetches all active audio files from the database with their metadata. This endpoint returns a paginated list of audio files that can be played in the app. Each audio includes essential information: ID, name (title), duration in seconds, and stream URL.\n\n**Use Cases:**\n- Display audio library in app\n- Show available meditation/breathing exercises\n- Filter and search audio files\n- Paginate through large audio collections\n\n**Query Parameters:**\n- `language` (optional): Filter by language (Urdu, English)\n- `category` (optional): Filter by category (Breathing, Meditation, Sleep, etc.)\n- `search` (optional): Search by audio name or description\n- `page` (optional): Page number for pagination (default: 1)\n- `limit` (optional): Number of results per page (default: 20, max: 50)\n\n**Response Fields:**\n- `success` (boolean): Request success status\n- `data` (array): Array of audio objects\n  - `id` (string): Unique audio ID (MongoDB ObjectId)\n  - `name` (string): Audio title/name\n  - `duration` (number): Duration in seconds\n  - `stream_url` (string): URL path to stream the audio file\n- `pagination` (object): Pagination metadata\n  - `page` (number): Current page number\n  - `limit` (number): Results per page\n  - `total` (number): Total number of audios\n  - `total_pages` (number): Total number of pages\n  - `has_next` (boolean): Whether there's a next page\n  - `has_prev` (boolean): Whether there's a previous page\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"67890abc123def456\",\n      \"name\": \"Sukoon Bhari Saans\",\n      \"duration\": 300,\n      \"stream_url\": \"/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3\"\n    },\n    {\n      \"id\": \"67890abc123def457\",\n      \"name\": \"Grounding Breath\",\n      \"duration\": 420,\n      \"stream_url\": \"/api/v1/audio/stream/Audio11_Grounding_Breath_English.mp3\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 14,\n    \"total_pages\": 1,\n    \"has_next\": false,\n    \"has_prev\": false\n  }\n}\n```\n\n**Error Responses:**\n- `500 Internal Server Error`: Database or server error",
+						"header": [],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/audio/list?page=1&limit=20",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audio",
+								"list"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page (default: 20, max: 50)"
+								},
+								{
+									"key": "language",
+									"value": "",
+									"description": "Filter by language (Urdu, English)",
+									"disabled": true
+								},
+								{
+									"key": "category",
+									"value": "",
+									"description": "Filter by category",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name or description",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Audio List",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/list?page=1&limit=20",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"list"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": \"67890abc123def456\",\n            \"name\": \"Sukoon Bhari Saans\",\n            \"duration\": 300,\n            \"stream_url\": \"/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3\"\n        },\n        {\n            \"id\": \"67890abc123def457\",\n            \"name\": \"Grounding Breath\",\n            \"duration\": 420,\n            \"stream_url\": \"/api/v1/audio/stream/Audio11_Grounding_Breath_English.mp3\"\n        },\n        {\n            \"id\": \"67890abc123def458\",\n            \"name\": \"Morning Clarity Breath\",\n            \"duration\": 68,\n            \"stream_url\": \"/api/v1/audio/stream/Audio12_Morning_Clarity_Breath_English.mp3\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 20,\n        \"total\": 14,\n        \"total_pages\": 1,\n        \"has_next\": false,\n        \"has_prev\": false\n    }\n}"
+						},
+						{
+							"name": "Success - Filtered by Language",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/list?language=Urdu",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"list"
+									],
+									"query": [
+										{
+											"key": "language",
+											"value": "Urdu"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": \"67890abc123def456\",\n            \"name\": \"Sukoon Bhari Saans\",\n            \"duration\": 300,\n            \"stream_url\": \"/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3\"\n        },\n        {\n            \"id\": \"67890abc123def459\",\n            \"name\": \"Zameen Se Jurna\",\n            \"duration\": 89,\n            \"stream_url\": \"/api/v1/audio/stream/Audio2_Zameen_Se_Jurna_Urdu.mp3\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 20,\n        \"total\": 9,\n        \"total_pages\": 1,\n        \"has_next\": false,\n        \"has_prev\": false\n    }\n}"
+						},
+						{
+							"name": "Success - Search Results",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/list?search=breath",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"list"
+									],
+									"query": [
+										{
+											"key": "search",
+											"value": "breath"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": \"67890abc123def457\",\n            \"name\": \"Grounding Breath\",\n            \"duration\": 420,\n            \"stream_url\": \"/api/v1/audio/stream/Audio11_Grounding_Breath_English.mp3\"\n        },\n        {\n            \"id\": \"67890abc123def458\",\n            \"name\": \"Morning Clarity Breath\",\n            \"duration\": 68,\n            \"stream_url\": \"/api/v1/audio/stream/Audio12_Morning_Clarity_Breath_English.mp3\"\n        }\n    ],\n    \"pagination\": {\n        \"page\": 1,\n        \"limit\": 20,\n        \"total\": 5,\n        \"total_pages\": 1,\n        \"has_next\": false,\n        \"has_prev\": false\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Audio by ID",
+					"request": {
+						"method": "GET",
+						"description": "Fetches a single audio file by its ID. Returns the same format as the list endpoint but for a single audio. Use this endpoint when you need to get details of a specific audio file.\n\n**Use Cases:**\n- Get audio details before playing\n- Verify audio exists\n- Get audio metadata for a specific ID\n\n**Path Parameters:**\n- `id` (required): Audio ID (MongoDB ObjectId)\n\n**Response Fields:**\n- `success` (boolean): Request success status\n- `data` (object): Audio object\n  - `id` (string): Unique audio ID\n  - `name` (string): Audio title/name\n  - `duration` (number): Duration in seconds\n  - `stream_url` (string): URL path to stream the audio file\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"67890abc123def456\",\n    \"name\": \"Sukoon Bhari Saans\",\n    \"duration\": 300,\n    \"stream_url\": \"/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3\"\n  }\n}\n```\n\n**Error Responses:**\n- `404 Not Found`: Audio not found or not active\n- `500 Internal Server Error`: Database or server error",
+						"header": [],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/audio/{{audio_id}}",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audio",
+								"{{audio_id}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Audio Details",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/67890abc123def456",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"67890abc123def456"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"id\": \"67890abc123def456\",\n        \"name\": \"Sukoon Bhari Saans\",\n        \"duration\": 300,\n        \"stream_url\": \"/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3\"\n    }\n}"
+						},
+						{
+							"name": "Error 404 - Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/invalid-id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"invalid-id"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Audio not found\",\n    \"error\": \"Not Found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Stream Audio File",
+					"request": {
+						"method": "GET",
+						"description": "Streams the complete audio file. This endpoint sends the entire audio file in a single HTTP response (200 OK). The file is sent as `audio/mpeg` content type and can be played directly in HTML5 audio players, mobile apps, or any media player that supports HTTP audio streaming.\n\n**How It Works:**\n- Sends complete file in single response (no Range Request support)\n- Suitable for small files (~2MB)\n- Returns 200 OK with full file content\n- Content-Type: `audio/mpeg`\n- Includes Content-Length header\n- Cached for 1 year (Cache-Control)\n\n**Use Cases:**\n- Play audio in web browsers (HTML5 audio)\n- Play audio in mobile apps (Flutter, React Native)\n- Download audio files\n- Stream to media players\n\n**Path Parameters:**\n- `filename` (required): Audio filename (must match filename in database)\n  - Example: `Audio1_Sukoon_Bhari_Saans_Urdu.mp3`\n  - URL encoding is handled automatically\n\n**Response Headers:**\n- `Content-Type`: `audio/mpeg`\n- `Content-Length`: File size in bytes\n- `Cache-Control`: `public, max-age=31536000` (1 year)\n\n**Response (200 OK):**\n- Binary audio file content (MP3)\n- Can be played directly in audio players\n\n**Error Responses:**\n- `400 Bad Request`: Invalid filename (path traversal attempt)\n- `404 Not Found`: Audio file not found on server\n- `500 Internal Server Error`: Server error reading file\n\n**Example Usage:**\n```html\n<audio controls>\n  <source src=\"http://localhost:5002/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3\" type=\"audio/mpeg\">\n</audio>\n```\n\n**Flutter Example:**\n```dart\nfinal audioPlayer = AudioPlayer();\nawait audioPlayer.play(UrlSource('http://localhost:5002/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3'));\n```",
+						"header": [],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audio",
+								"stream",
+								"Audio1_Sukoon_Bhari_Saans_Urdu.mp3"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Audio File",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/stream/Audio1_Sukoon_Bhari_Saans_Urdu.mp3",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"stream",
+										"Audio1_Sukoon_Bhari_Saans_Urdu.mp3"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "audio/mpeg"
+								},
+								{
+									"key": "Content-Length",
+									"value": "2359296"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "public, max-age=31536000"
+								}
+							],
+							"cookie": [],
+							"body": "[Binary audio file content - MP3 format]"
+						},
+						{
+							"name": "Error 404 - File Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/stream/nonexistent.mp3",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"stream",
+										"nonexistent.mp3"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Audio file not found\",\n    \"error\": \"Not Found\"\n}"
+						},
+						{
+							"name": "Error 400 - Invalid Filename",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/v1/audio/stream/../../../etc/passwd",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"audio",
+										"stream",
+										"../../../etc/passwd"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Invalid filename\",\n    \"error\": \"Bad Request\"\n}"
+						}
+					]
+				}
+			]
 		}
 	],
 	"variable": [
@@ -5232,6 +5605,12 @@
 			"value": "",
 			"type": "string",
 			"description": "Goal ID for testing goal endpoints"
+		},
+		{
+			"key": "audio_id",
+			"value": "",
+			"type": "string",
+			"description": "Audio ID for testing audio endpoints"
 		}
 	]
 }
