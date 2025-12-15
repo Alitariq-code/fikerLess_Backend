@@ -32,7 +32,9 @@ export class ForumService {
   async createPost(userId: string, dto: CreateForumPostDto): Promise<any> {
     const post = new this.forumPostModel({
       user_id: userId,
-      ...dto,
+      title: dto.title,
+      description: dto.description,
+      category: dto.category || undefined,
       is_anonymous: dto.is_anonymous || false,
     });
     await post.save();

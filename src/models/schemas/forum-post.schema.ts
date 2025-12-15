@@ -19,10 +19,10 @@ export class ForumPost {
   @Prop({
     type: String,
     enum: Object.values(ArticleCategory),
-    required: true,
+    required: false,
     index: true,
   })
-  category: ArticleCategory;
+  category?: ArticleCategory;
 
   @Prop({ type: Boolean, default: false })
   is_anonymous: boolean;

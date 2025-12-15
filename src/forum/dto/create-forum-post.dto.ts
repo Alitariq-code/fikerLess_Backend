@@ -13,9 +13,9 @@ export class CreateForumPostDto {
   @MinLength(10, { message: 'Description must be at least 10 characters long' })
   description: string;
 
-  @IsNotEmpty({ message: 'Category is required' })
+  @IsOptional()
   @IsEnum(ArticleCategory, { message: 'Invalid category' })
-  category: ArticleCategory;
+  category?: ArticleCategory;
 
   @IsOptional()
   @IsBoolean()
