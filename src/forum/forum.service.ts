@@ -562,7 +562,7 @@ export class ForumService {
   private formatPostResponse(post: ForumPostDocument): any {
     const user = (post as any).user_id;
     const authorName = post.is_anonymous 
-      ? `Anonymous_user_${post.user_id.toString().slice(-3)}`
+      ? `Anonymous_user_${(post.user_id?.toString() || post._id?.toString() || '000').slice(-3)}`
       : user ? `${user.first_name} ${user.last_name}`.trim() || user.email : 'Unknown';
 
     return {
@@ -587,7 +587,7 @@ export class ForumService {
   ): Promise<any> {
     const user = (comment as any).user_id;
     const authorName = comment.is_anonymous
-      ? `Anonymous_user_${comment.user_id.toString().slice(-3)}`
+      ? `Anonymous_user_${(comment.user_id?.toString() || comment._id?.toString() || '000').slice(-3)}`
       : user ? `${user.first_name} ${user.last_name}`.trim() || user.email : 'Unknown';
 
     // Check if user liked this comment
