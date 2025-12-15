@@ -44,4 +44,3 @@ import { MailModule } from '../mail/mail.module';
   providers: [AuthService],
 })
 export class AuthModule {}
-
