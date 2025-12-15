@@ -1,47 +1,72 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthController } from './auth.controller';
+import { Controller, Post, Body, Headers, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { User, UserSchema } from '../models/schemas/user.schema';
-import { SpecialistProfile, SpecialistProfileSchema } from '../models/schemas/specialist-profile.schema';
-import { Demographics, DemographicsSchema } from '../models/schemas/demographics.schema';
-import { Journal, JournalSchema } from '../models/schemas/journal.schema';
-import { Mood, MoodSchema } from '../models/schemas/mood.schema';
-import { Steps, StepsSchema } from '../models/schemas/steps.schema';
-import { Goal, GoalSchema } from '../models/schemas/goal.schema';
-import { UserAchievement, UserAchievementSchema } from '../models/schemas/user-achievement.schema';
-import { UserPlant, UserPlantSchema } from '../models/schemas/user-plant.schema';
-import { WeeklyGoal, WeeklyGoalSchema } from '../models/schemas/weekly-goal.schema';
-import { ForumPost, ForumPostSchema } from '../models/schemas/forum-post.schema';
-import { ForumComment, ForumCommentSchema } from '../models/schemas/forum-comment.schema';
-import { ForumLike, ForumLikeSchema } from '../models/schemas/forum-like.schema';
-import { ForumCommentLike, ForumCommentLikeSchema } from '../models/schemas/forum-comment-like.schema';
-import { UserNotification, UserNotificationSchema } from '../models/schemas/user-notification.schema';
-import { MailModule } from '../mail/mail.module';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
-@Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: SpecialistProfile.name, schema: SpecialistProfileSchema },
-      { name: Demographics.name, schema: DemographicsSchema },
-      { name: Journal.name, schema: JournalSchema },
-      { name: Mood.name, schema: MoodSchema },
-      { name: Steps.name, schema: StepsSchema },
-      { name: Goal.name, schema: GoalSchema },
-      { name: UserAchievement.name, schema: UserAchievementSchema },
-      { name: UserPlant.name, schema: UserPlantSchema },
-      { name: WeeklyGoal.name, schema: WeeklyGoalSchema },
-      { name: ForumPost.name, schema: ForumPostSchema },
-      { name: ForumComment.name, schema: ForumCommentSchema },
-      { name: ForumLike.name, schema: ForumLikeSchema },
-      { name: ForumCommentLike.name, schema: ForumCommentLikeSchema },
-      { name: UserNotification.name, schema: UserNotificationSchema },
-    ]),
-    MailModule,
-  ],
-  controllers: [AuthController],
-  providers: [AuthService],
-})
-export class AuthModule {}
+@Controller('api/v1/auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('signup')
+  @HttpCode(HttpStatus.OK)
+  async signup(@Body() body: { email: string; password: string; user_type: string }) {
+    if (!body || !body.email || !body.password || !body.user_type) {
+      throw new BadRequestException('email, password, and user_type are required');
+    }
+    return this.authService.signup(body.email, body.password, body.user_type);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() body: { email: string; password: string }) {
+    if (!body || !body.email || !body.password) {
+      throw new BadRequestException('Email and password are required');
+    }
+    return this.authService.login(body.email, body.password);
+  }
+
+  @Post('email-verify')
+  @HttpCode(HttpStatus.OK)
+  async emailVerify(@Body() body: { token: string }) {
+    return this.authService.emailVerify(body.token);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() body: { email: string }) {
+    if (!body || !body.email) {
+      throw new BadRequestException('Please provide your email address to reset your password.');
+    }
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @Headers('authorization') token: string,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    if (!dto || !dto.old_password || !dto.new_password) {
+      throw new BadRequestException('Both old password and new password are required.');
+    }
+    return this.authService.changePassword(token, dto.old_password, dto.new_password);
+  }
+
+  @Post('delete-user-request')
+  @HttpCode(HttpStatus.OK)
+  async requestDeleteUserOTP(@Body() body: { email: string }) {
+    if (!body || !body.email) {
+      throw new BadRequestException('Please provide your email address to delete your account.');
+    }
+    return this.authService.requestDeleteUserOTP(body.email);
+  }
+
+  @Post('delete-user-verify')
+  @HttpCode(HttpStatus.OK)
+  async verifyDeleteUserOTP(@Body() body: { email: string; otp: string }) {
+    if (!body || !body.email || !body.otp) {
+      throw new BadRequestException('Email and verification code are required.');
+    }
+    return this.authService.verifyDeleteUserOTP(body.email, body.otp);
+  }
+}
 
