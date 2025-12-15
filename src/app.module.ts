@@ -22,6 +22,7 @@ import { AudioModule } from './audio/audio.module';
 import { InternshipModule } from './internship/internship.module';
 import { UserAdminModule } from './user/user-admin.module';
 import { UploadModule } from './upload/upload.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { UploadModule } from './upload/upload.module';
     InternshipModule,
     UserAdminModule,
     UploadModule,
+    ContactModule,
   ],
   providers: [
     {
