@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Put,
   Delete,
   Patch,
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { UserAdminService } from './user-admin.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { getUserFromToken } from '../utils/utils';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -45,6 +47,21 @@ export class UserAdminController {
       throw new ForbiddenException('Only admins can access this endpoint');
     }
     return userId;
+  }
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createUserAsAdmin(
+    @Headers('authorization') token: string,
+    @Body() dto: CreateUserDto,
+  ) {
+    await this.ensureAdmin(token);
+    const user = await this.userAdminService.createUserAsAdmin(dto);
+    return {
+      success: true,
+      message: 'User created successfully',
+      data: user,
+    };
   }
 
   @Get('all')
