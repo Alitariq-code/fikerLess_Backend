@@ -179,6 +179,12 @@ export class UserAdminService {
       user.email = dto.email;
     }
 
+    // Update password if provided
+    if (dto.password) {
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
+      user.password = hashedPassword;
+    }
+
     if (dto.first_name !== undefined) user.first_name = dto.first_name;
     if (dto.last_name !== undefined) user.last_name = dto.last_name;
     if (dto.phone_number !== undefined) user.phone_number = dto.phone_number;
@@ -188,6 +194,62 @@ export class UserAdminService {
     if (dto.is_disabled !== undefined) user.is_disabled = dto.is_disabled;
 
     await user.save();
+
+    // Update demographics if provided
+    if (dto.demographics) {
+      const userObjectId = userId.toString();
+      let demographics = await this.demographicsModel.findOne({ user_id: userObjectId }).exec();
+
+      if (!demographics) {
+        demographics = new this.demographicsModel({ user_id: userObjectId });
+      }
+
+      const listFields = [
+        'what_brings_you_here',
+        'diagnosed_conditions',
+        'goals_for_using_app',
+        'preferred_support_type',
+      ];
+
+      const stringFields = [
+        'age_range',
+        'gender_identity',
+        'country_of_residence',
+        'relationship_status',
+        'other_reason',
+        'mental_health_diagnosis',
+        'seeing_professional',
+        'suicidal_thoughts',
+        'exercise_frequency',
+        'substance_use',
+        'support_system',
+        'preferred_therapist_gender',
+        'preferred_language',
+      ];
+
+      for (const field of listFields) {
+        if (field in dto.demographics) {
+          const fieldData = dto.demographics[field];
+          if (Array.isArray(fieldData)) {
+            demographics[field] = fieldData;
+          }
+        }
+      }
+
+      for (const field of stringFields) {
+        if (field in dto.demographics) {
+          demographics[field] = dto.demographics[field];
+        }
+      }
+
+      if ('understands_emergency_disclaimer' in dto.demographics) {
+        demographics.understands_emergency_disclaimer = dto.demographics.understands_emergency_disclaimer || false;
+      }
+
+      await demographics.save();
+      user.has_demographics = true;
+      await user.save();
+    }
 
     return this.getUserByIdForAdmin(userId);
   }
