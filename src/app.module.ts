@@ -23,6 +23,7 @@ import { InternshipModule } from './internship/internship.module';
 import { UserAdminModule } from './user/user-admin.module';
 import { UploadModule } from './upload/upload.module';
 import { ContactModule } from './contact/contact.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { ContactModule } from './contact/contact.module';
     UserAdminModule,
     UploadModule,
     ContactModule,
+    BookingModule,
   ],
   providers: [
     {

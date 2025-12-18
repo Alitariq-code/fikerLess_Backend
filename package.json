@@ -28,7 +28,8 @@
     "test:forum-comments": "ts-node scripts/test-forum-comments.ts",
     "test:forum-complete": "ts-node scripts/test-forum-complete.ts",
     "test:wellness-complete": "ts-node scripts/test-wellness-complete.ts",
-    "test:complete-system": "ts-node scripts/test-complete-system.ts"
+    "test:complete-system": "ts-node scripts/test-complete-system.ts",
+    "test:booking-availability": "ts-node scripts/test-booking-availability.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

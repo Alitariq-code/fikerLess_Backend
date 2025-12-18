@@ -158,28 +158,28 @@ export class ContactService {
           </div>
           
           <div class="content">
-            <div class="field">
+          <div class="field">
               <span class="field-label">👤 Name</span>
-              <div class="field-value">${this.escapeHtml(name)}</div>
-            </div>
-            
-            <div class="field">
+            <div class="field-value">${this.escapeHtml(name)}</div>
+          </div>
+          
+          <div class="field">
               <span class="field-label">✉️ Email</span>
               <div class="field-value">
                 <a href="mailto:${this.escapeHtml(email)}" style="color: #0ea5e9; text-decoration: none;">${this.escapeHtml(email)}</a>
               </div>
-            </div>
-            
-            ${number ? `
-            <div class="field">
+          </div>
+          
+          ${number ? `
+          <div class="field">
               <span class="field-label">📱 Phone Number</span>
               <div class="field-value">
                 <a href="tel:${this.escapeHtml(number)}" style="color: #0ea5e9; text-decoration: none;">${this.escapeHtml(number)}</a>
               </div>
-            </div>
-            ` : ''}
-            
-            <div class="enquiry-field">
+          </div>
+          ` : ''}
+          
+          <div class="enquiry-field">
               <span class="field-label">💬 Enquiry</span>
               <div class="field-value">${this.escapeHtml(enquiry)}</div>
             </div>

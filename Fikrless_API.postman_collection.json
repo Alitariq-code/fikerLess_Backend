@@ -5546,6 +5546,472 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Booking - Availability",
+			"item": [
+				{
+					"name": "Availability Settings",
+					"item": [
+						{
+							"name": "Create Availability Settings",
+							"request": {
+								"method": "POST",
+								"description": "Creates availability settings for a specialist/doctor. Defines slot duration, break time between sessions, and timezone. Must be created before adding availability rules. Only specialists can create settings. Slot duration must be between 15-480 minutes, break time between 0-60 minutes.",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"slot_duration_minutes\": 60,\n    \"break_minutes\": 15,\n    \"timezone\": \"Asia/Karachi\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"settings"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Availability Settings",
+							"request": {
+								"method": "GET",
+								"description": "Retrieves the availability settings for the authenticated specialist. Returns slot duration, break time, and timezone configuration. Only specialists can access their own settings.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"settings"
+									]
+								}
+							}
+						},
+						{
+							"name": "Update Availability Settings",
+							"request": {
+								"method": "PUT",
+								"description": "Updates the availability settings for a specialist. Can update slot duration, break time, and/or timezone. All fields are optional - only provided fields will be updated. Changes only affect future slot generation, not existing bookings.",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"slot_duration_minutes\": 45,\n    \"break_minutes\": 10,\n    \"timezone\": \"America/New_York\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"settings"
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Availability Rules",
+					"item": [
+						{
+							"name": "Create Availability Rule",
+							"request": {
+								"method": "POST",
+								"description": "Creates a weekly availability rule for a specific day of the week. Defines working hours (start_time to end_time) for that day. Requires availability settings to exist first. Prevents overlapping rules on the same day. Time format must be HH:mm (24-hour format). Only specialists can create rules.",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"day_of_week\": \"MON\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"17:00\",\n    \"is_active\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/rules",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"rules"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get All Availability Rules",
+							"request": {
+								"method": "GET",
+								"description": "Retrieves all availability rules for the authenticated specialist. Returns rules sorted by day of week and start time. Includes active and inactive rules. Only specialists can access their own rules.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/rules",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"rules"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Availability Rule by ID",
+							"request": {
+								"method": "GET",
+								"description": "Retrieves a specific availability rule by its ID. Returns the rule details including day of week, start/end times, and active status. Only the rule owner (specialist) can access it.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/rules/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"rules",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "Availability rule ID"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "Update Availability Rule",
+							"request": {
+								"method": "PUT",
+								"description": "Updates an existing availability rule. Can modify day of week, start/end times, and active status. All fields are optional. Prevents creating overlaps when updating times. Changes only affect future slot generation. Only the rule owner can update it.",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"day_of_week\": \"TUE\",\n    \"start_time\": \"08:00\",\n    \"end_time\": \"16:00\",\n    \"is_active\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/rules/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"rules",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "Availability rule ID"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "Delete Availability Rule",
+							"request": {
+								"method": "DELETE",
+								"description": "Deletes an availability rule permanently. Cannot be undone. Only affects future slot generation - existing bookings are not affected. Only the rule owner can delete it.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/rules/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"rules",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "Availability rule ID"
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Availability Overrides",
+					"item": [
+						{
+							"name": "Create Availability Override",
+							"request": {
+								"method": "POST",
+								"description": "Creates a date-specific override to modify or cancel availability for a specific date. Overrides take priority over weekly rules. Type can be 'OFF' (completely unavailable) or 'CUSTOM' (custom hours). Date must be today or in the future. For CUSTOM type, start_time and end_time are required. Only specialists can create overrides.",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"date\": \"2025-12-25\",\n    \"type\": \"OFF\",\n    \"reason\": \"Christmas Holiday\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/overrides",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"overrides"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get All Availability Overrides",
+							"request": {
+								"method": "GET",
+								"description": "Retrieves all availability overrides for the authenticated specialist. Optional query parameters allow filtering by date range (start_date and end_date in YYYY-MM-DD format). Returns overrides sorted by date. Only specialists can access their own overrides.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/overrides?start_date=2025-12-01&end_date=2025-12-31",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"overrides"
+									],
+									"query": [
+										{
+											"key": "start_date",
+											"value": "2025-12-01",
+											"description": "Start date filter (YYYY-MM-DD format, optional)"
+										},
+										{
+											"key": "end_date",
+											"value": "2025-12-31",
+											"description": "End date filter (YYYY-MM-DD format, optional)"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Availability Override by ID",
+							"request": {
+								"method": "GET",
+								"description": "Retrieves a specific availability override by its ID. Returns override details including date, type (OFF/CUSTOM), times (if CUSTOM), and reason. Only the override owner (specialist) can access it.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/overrides/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"overrides",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "Availability override ID"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "Update Availability Override",
+							"request": {
+								"method": "PUT",
+								"description": "Updates an existing availability override. Can modify date, type, times, and reason. All fields are optional. When changing type to CUSTOM, start_time and end_time become required. Date must remain today or in the future. Only the override owner can update it.",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"CUSTOM\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"14:00\",\n    \"reason\": \"Half day - Updated\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/overrides/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"overrides",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "Availability override ID"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "Delete Availability Override",
+							"request": {
+								"method": "DELETE",
+								"description": "Deletes an availability override permanently. Cannot be undone. After deletion, the date will use the regular weekly rules (if any). Only affects future slot generation. Only the override owner can delete it.",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"description": "JWT token from login (specialist only)"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/availability/overrides/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"availability",
+										"overrides",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "Availability override ID"
+										}
+									]
+								}
+							}
+						}
+					]
+				}
+			]
 		}
 	],
 	"variable": [
