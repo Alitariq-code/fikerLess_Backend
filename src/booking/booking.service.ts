@@ -3,12 +3,15 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { AvailabilityRule, AvailabilityRuleDocument } from '../models/schemas/availability-rule.schema';
+import { AvailabilityRule, AvailabilityRuleDocument, DayOfWeek } from '../models/schemas/availability-rule.schema';
 import { AvailabilitySettings, AvailabilitySettingsDocument } from '../models/schemas/availability-settings.schema';
 import { AvailabilityOverride, AvailabilityOverrideDocument, OverrideType } from '../models/schemas/availability-override.schema';
+import { SessionRequest, SessionRequestDocument, SessionRequestStatus } from '../models/schemas/session-request.schema';
+import { BlockedSlot, BlockedSlotDocument } from '../models/schemas/blocked-slot.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateAvailabilityRuleDto } from './dto/create-availability-rule.dto';
 import { UpdateAvailabilityRuleDto } from './dto/update-availability-rule.dto';
@@ -16,13 +19,22 @@ import { CreateAvailabilitySettingsDto } from './dto/create-availability-setting
 import { UpdateAvailabilitySettingsDto } from './dto/update-availability-settings.dto';
 import { CreateAvailabilityOverrideDto } from './dto/create-availability-override.dto';
 import { UpdateAvailabilityOverrideDto } from './dto/update-availability-override.dto';
+import { GetAvailableSlotsDto } from './dto/get-available-slots.dto';
+import { CreateSessionRequestDto } from './dto/create-session-request.dto';
+import moment from 'moment-timezone';
 
 @Injectable()
 export class BookingService {
+  private readonly logger = new Logger(BookingService.name);
+  private readonly PAYMENT_UPLOAD_EXPIRY_MINUTES = 30; // 30 minutes to upload payment
+  private readonly APPROVAL_WAIT_HOURS = 24; // 24 hours for admin to approve
+
   constructor(
     @InjectModel(AvailabilityRule.name) private availabilityRuleModel: Model<AvailabilityRuleDocument>,
     @InjectModel(AvailabilitySettings.name) private availabilitySettingsModel: Model<AvailabilitySettingsDocument>,
     @InjectModel(AvailabilityOverride.name) private availabilityOverrideModel: Model<AvailabilityOverrideDocument>,
+    @InjectModel(SessionRequest.name) private sessionRequestModel: Model<SessionRequestDocument>,
+    @InjectModel(BlockedSlot.name) private blockedSlotModel: Model<BlockedSlotDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
@@ -69,12 +81,16 @@ export class BookingService {
     const startMinutes = startHour * 60 + startMin;
     const endMinutes = endHour * 60 + endMin;
 
-    const existingRules = await this.availabilityRuleModel.find({
-      doctor_id: doctorId,
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const query: any = {
+      doctor_id: doctorObjectId,
       day_of_week: dayOfWeek,
       is_active: true,
-      ...(excludeRuleId ? { _id: { $ne: excludeRuleId } } : {}),
-    });
+    };
+    if (excludeRuleId) {
+      query._id = { $ne: new Types.ObjectId(excludeRuleId) };
+    }
+    const existingRules = await this.availabilityRuleModel.find(query);
 
     for (const rule of existingRules) {
       const [ruleStartHour, ruleStartMin] = rule.start_time.split(':').map(Number);
@@ -99,7 +115,8 @@ export class BookingService {
    * Ensure settings exist before creating rules
    */
   private async ensureSettingsExist(doctorId: string): Promise<void> {
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
     if (!settings) {
       throw new BadRequestException(
         'Availability settings must be created before adding availability rules',
@@ -112,13 +129,14 @@ export class BookingService {
   async createAvailabilitySettings(doctorId: string, dto: CreateAvailabilitySettingsDto) {
     await this.validateDoctor(doctorId);
 
-    const existing = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const existing = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
     if (existing) {
       throw new BadRequestException('Availability settings already exist. Use update endpoint.');
     }
 
     const settings = await this.availabilitySettingsModel.create({
-      doctor_id: doctorId,
+      doctor_id: doctorObjectId,
       slot_duration_minutes: dto.slot_duration_minutes,
       break_minutes: dto.break_minutes,
       timezone: dto.timezone || 'Asia/Karachi',
@@ -134,7 +152,8 @@ export class BookingService {
   async getAvailabilitySettings(doctorId: string) {
     await this.validateDoctor(doctorId);
 
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
     if (!settings) {
       throw new NotFoundException('Availability settings not found');
     }
@@ -148,7 +167,8 @@ export class BookingService {
   async updateAvailabilitySettings(doctorId: string, dto: UpdateAvailabilitySettingsDto) {
     await this.validateDoctor(doctorId);
 
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
     if (!settings) {
       throw new NotFoundException('Availability settings not found');
     }
@@ -181,8 +201,9 @@ export class BookingService {
     this.validateTimeRange(dto.start_time, dto.end_time);
     await this.checkOverlappingRules(doctorId, dto.day_of_week, dto.start_time, dto.end_time);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
     const rule = await this.availabilityRuleModel.create({
-      doctor_id: doctorId,
+      doctor_id: doctorObjectId,
       day_of_week: dto.day_of_week,
       start_time: dto.start_time,
       end_time: dto.end_time,
@@ -199,8 +220,9 @@ export class BookingService {
   async getAvailabilityRules(doctorId: string) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
     const rules = await this.availabilityRuleModel
-      .find({ doctor_id: doctorId })
+      .find({ doctor_id: doctorObjectId })
       .sort({ day_of_week: 1, start_time: 1 });
 
     return {
@@ -212,9 +234,11 @@ export class BookingService {
   async getAvailabilityRuleById(doctorId: string, ruleId: string) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const ruleObjectId = new Types.ObjectId(ruleId);
     const rule = await this.availabilityRuleModel.findOne({
-      _id: ruleId,
-      doctor_id: doctorId,
+      _id: ruleObjectId,
+      doctor_id: doctorObjectId,
     });
 
     if (!rule) {
@@ -230,9 +254,11 @@ export class BookingService {
   async updateAvailabilityRule(doctorId: string, ruleId: string, dto: UpdateAvailabilityRuleDto) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const ruleObjectId = new Types.ObjectId(ruleId);
     const rule = await this.availabilityRuleModel.findOne({
-      _id: ruleId,
-      doctor_id: doctorId,
+      _id: ruleObjectId,
+      doctor_id: doctorObjectId,
     });
 
     if (!rule) {
@@ -278,9 +304,11 @@ export class BookingService {
   async deleteAvailabilityRule(doctorId: string, ruleId: string) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const ruleObjectId = new Types.ObjectId(ruleId);
     const rule = await this.availabilityRuleModel.findOneAndDelete({
-      _id: ruleId,
-      doctor_id: doctorId,
+      _id: ruleObjectId,
+      doctor_id: doctorObjectId,
     });
 
     if (!rule) {
@@ -314,9 +342,10 @@ export class BookingService {
       this.validateTimeRange(dto.start_time, dto.end_time);
     }
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
     // Check if override already exists for this date
     const existing = await this.availabilityOverrideModel.findOne({
-      doctor_id: doctorId,
+      doctor_id: doctorObjectId,
       date: dto.date,
     });
 
@@ -327,7 +356,7 @@ export class BookingService {
     }
 
     const override = await this.availabilityOverrideModel.create({
-      doctor_id: doctorId,
+      doctor_id: doctorObjectId,
       date: dto.date,
       type: dto.type,
       start_time: dto.start_time,
@@ -345,7 +374,8 @@ export class BookingService {
   async getAvailabilityOverrides(doctorId: string, startDate?: string, endDate?: string) {
     await this.validateDoctor(doctorId);
 
-    const query: any = { doctor_id: doctorId };
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const query: any = { doctor_id: doctorObjectId };
     if (startDate || endDate) {
       query.date = {};
       if (startDate) {
@@ -369,9 +399,11 @@ export class BookingService {
   async getAvailabilityOverrideById(doctorId: string, overrideId: string) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const overrideObjectId = new Types.ObjectId(overrideId);
     const override = await this.availabilityOverrideModel.findOne({
-      _id: overrideId,
-      doctor_id: doctorId,
+      _id: overrideObjectId,
+      doctor_id: doctorObjectId,
     });
 
     if (!override) {
@@ -391,9 +423,11 @@ export class BookingService {
   ) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const overrideObjectId = new Types.ObjectId(overrideId);
     const override = await this.availabilityOverrideModel.findOne({
-      _id: overrideId,
-      doctor_id: doctorId,
+      _id: overrideObjectId,
+      doctor_id: doctorObjectId,
     });
 
     if (!override) {
@@ -450,9 +484,11 @@ export class BookingService {
   async deleteAvailabilityOverride(doctorId: string, overrideId: string) {
     await this.validateDoctor(doctorId);
 
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const overrideObjectId = new Types.ObjectId(overrideId);
     const override = await this.availabilityOverrideModel.findOneAndDelete({
-      _id: overrideId,
-      doctor_id: doctorId,
+      _id: overrideObjectId,
+      doctor_id: doctorObjectId,
     });
 
     if (!override) {
@@ -462,6 +498,438 @@ export class BookingService {
     return {
       success: true,
       message: 'Availability override deleted successfully',
+    };
+  }
+
+  // ==================== Slot Generation & Session Requests ====================
+
+  /**
+   * Get day of week from date string (YYYY-MM-DD)
+   */
+  private getDayOfWeek(dateStr: string): DayOfWeek {
+    const date = moment(dateStr, 'YYYY-MM-DD');
+    const dayNames: DayOfWeek[] = [
+      DayOfWeek.SUN,
+      DayOfWeek.MON,
+      DayOfWeek.TUE,
+      DayOfWeek.WED,
+      DayOfWeek.THU,
+      DayOfWeek.FRI,
+      DayOfWeek.SAT,
+    ];
+    return dayNames[date.day()];
+  }
+
+  /**
+   * Convert time string (HH:mm) to minutes since midnight
+   */
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  /**
+   * Convert minutes since midnight to time string (HH:mm)
+   */
+  private minutesToTime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * Generate available slots for a doctor on a specific date
+   */
+  async getAvailableSlots(doctorId: string, dto: GetAvailableSlotsDto) {
+    // Validate doctor exists and is a specialist
+    const doctor = await this.validateDoctor(dto.doctor_id);
+    const doctorObjectId = new Types.ObjectId(dto.doctor_id);
+
+    // Validate date is today or in the future
+    const requestedDate = moment(dto.date, 'YYYY-MM-DD').startOf('day');
+    const today = moment().startOf('day');
+    // Check if date is before today (not same day)
+    if (requestedDate.isBefore(today)) {
+      throw new BadRequestException('Cannot get slots for past dates');
+    }
+
+    // Get doctor's availability settings
+    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    if (!settings) {
+      throw new BadRequestException('Doctor has not set up availability settings');
+    }
+
+    // Check for date override
+    const override = await this.availabilityOverrideModel.findOne({
+      doctor_id: doctorObjectId,
+      date: dto.date,
+    });
+
+    let availableStartTime: string | null = null;
+    let availableEndTime: string | null = null;
+
+    if (override) {
+      if (override.type === OverrideType.OFF) {
+        // Doctor is completely off
+        return {
+          success: true,
+          data: [],
+          message: 'Doctor is not available on this date',
+        };
+      } else if (override.type === OverrideType.CUSTOM && override.start_time && override.end_time) {
+        // Use custom hours from override
+        availableStartTime = override.start_time;
+        availableEndTime = override.end_time;
+      }
+    }
+    
+    // Only use weekly rules if no override or override is not CUSTOM
+    if (!availableStartTime || !availableEndTime) {
+      // Use weekly rules
+      const dayOfWeek = this.getDayOfWeek(dto.date);
+      const rule = await this.availabilityRuleModel.findOne({
+        doctor_id: doctorObjectId,
+        day_of_week: dayOfWeek,
+        is_active: true,
+      });
+
+      if (!rule) {
+        return {
+          success: true,
+          data: [],
+          message: 'No availability rule for this day',
+        };
+      }
+
+      availableStartTime = rule.start_time;
+      availableEndTime = rule.end_time;
+    }
+
+    if (!availableStartTime || !availableEndTime) {
+      return {
+        success: true,
+        data: [],
+        message: 'No availability for this date',
+      };
+    }
+
+    // Generate slots
+    const slotDuration = settings.slot_duration_minutes;
+    const breakMinutes = settings.break_minutes;
+    const startMinutes = this.timeToMinutes(availableStartTime);
+    const endMinutes = this.timeToMinutes(availableEndTime);
+
+    const slots: Array<{ start_time: string; end_time: string }> = [];
+    let currentStart = startMinutes;
+
+    while (currentStart < endMinutes) {
+      // Check if slot would exceed end time
+      if (currentStart + slotDuration > endMinutes) {
+        break;
+      }
+
+      const slotStart = this.minutesToTime(currentStart);
+      const slotEnd = this.minutesToTime(currentStart + slotDuration);
+
+      // Double-check slot doesn't exceed end time
+      const slotEndMinutes = this.timeToMinutes(slotEnd);
+      if (slotEndMinutes > endMinutes) {
+        break;
+      }
+
+      // Check if this slot is in the past (for today)
+      if (requestedDate.isSame(today, 'day')) {
+        const now = moment();
+        const slotDateTime = moment(`${dto.date} ${slotStart}`, 'YYYY-MM-DD HH:mm');
+        if (slotDateTime.isBefore(now)) {
+          currentStart += slotDuration + breakMinutes;
+          // Check if new currentStart would exceed end time
+          if (currentStart >= endMinutes) {
+            break;
+          }
+          continue;
+        }
+      }
+
+      slots.push({
+        start_time: slotStart,
+        end_time: slotEnd,
+      });
+
+      currentStart += slotDuration + breakMinutes;
+    }
+
+    // Get confirmed sessions for this date
+    const confirmedSessions = await this.sessionRequestModel.find({
+      doctor_id: doctorObjectId,
+      date: dto.date,
+      status: SessionRequestStatus.CONFIRMED,
+    });
+
+    // Get active blocked slots (not expired)
+    const now = new Date();
+    const activeBlocks = await this.blockedSlotModel.find({
+      doctor_id: doctorObjectId,
+      date: dto.date,
+      expires_at: { $gt: now },
+    });
+
+    // Filter out slots that are booked or blocked, and ensure they don't exceed end time
+    const endTimeMinutes = this.timeToMinutes(availableEndTime);
+    const availableSlots = slots.filter((slot) => {
+      // Ensure slot doesn't exceed available end time
+      const slotStartMinutes = this.timeToMinutes(slot.start_time);
+      const slotEndMinutes = this.timeToMinutes(slot.end_time);
+      if (slotEndMinutes > endTimeMinutes) {
+        return false;
+      }
+
+      // Check if slot is confirmed
+      const isConfirmed = confirmedSessions.some(
+        (session) => session.start_time === slot.start_time && session.end_time === slot.end_time,
+      );
+
+      // Check if slot is blocked
+      const isBlocked = activeBlocks.some(
+        (block) => block.start_time === slot.start_time && block.end_time === slot.end_time,
+      );
+
+      return !isConfirmed && !isBlocked;
+    });
+
+    return {
+      success: true,
+      data: availableSlots,
+    };
+  }
+
+  /**
+   * Create a session request
+   */
+  async createSessionRequest(userId: string, dto: CreateSessionRequestDto) {
+    // Validate user exists
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Validate doctor exists and is a specialist
+    const doctor = await this.validateDoctor(dto.doctor_id);
+
+    // Validate date is today or in the future
+    const requestedDate = moment(dto.date, 'YYYY-MM-DD').startOf('day');
+    const today = moment().startOf('day');
+    if (requestedDate.isBefore(today)) {
+      throw new BadRequestException('Cannot create session request for past dates');
+    }
+
+    // Check if slot is available
+    const availableSlots = await this.getAvailableSlots(dto.doctor_id, {
+      date: dto.date,
+      doctor_id: dto.doctor_id,
+    });
+
+    const isSlotAvailable = availableSlots.data.some(
+      (slot) => slot.start_time === dto.start_time && slot.end_time === dto.end_time,
+    );
+
+    if (!isSlotAvailable) {
+      throw new BadRequestException('This slot is no longer available');
+    }
+
+    // Get doctor's hourly rate from specialist profile
+    // For now, we'll use a default amount. In production, fetch from specialist profile
+    const amount = 1000; // Default amount, should be fetched from specialist profile
+    const currency = 'PKR';
+
+    // Create blocked slot (expires in 30 minutes)
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + this.PAYMENT_UPLOAD_EXPIRY_MINUTES);
+
+    // Create session request first to get its ID
+    const sessionRequest = await this.sessionRequestModel.create({
+      doctor_id: new Types.ObjectId(dto.doctor_id),
+      user_id: new Types.ObjectId(userId),
+      date: dto.date,
+      start_time: dto.start_time,
+      end_time: dto.end_time,
+      amount,
+      currency,
+      status: SessionRequestStatus.PENDING_PAYMENT,
+      expires_at: expiresAt,
+    });
+
+    // Create blocked slot with session request ID
+    const blockedSlot = await this.blockedSlotModel.create({
+      doctor_id: new Types.ObjectId(dto.doctor_id),
+      date: dto.date,
+      start_time: dto.start_time,
+      end_time: dto.end_time,
+      expires_at: expiresAt,
+      session_request_id: sessionRequest._id,
+    });
+
+    // Update session request with blocked slot ID
+    sessionRequest.blocked_slot_id = blockedSlot._id;
+    await sessionRequest.save();
+
+    return {
+      success: true,
+      message: 'Session request created successfully. Please upload payment screenshot within 30 minutes.',
+      data: {
+        ...sessionRequest.toObject(),
+        expires_at: expiresAt,
+      },
+    };
+  }
+
+  /**
+   * Get user's session requests
+   */
+  async getUserSessionRequests(userId: string, status?: SessionRequestStatus) {
+    const userObjectId = new Types.ObjectId(userId);
+    const query: any = { user_id: userObjectId };
+    if (status) {
+      query.status = status;
+    }
+
+    const requests = await this.sessionRequestModel
+      .find(query)
+      .populate('doctor_id', 'first_name last_name email')
+      .sort({ createdAt: -1 });
+
+    return {
+      success: true,
+      data: requests,
+    };
+  }
+
+  /**
+   * Get session request by ID
+   */
+  async getSessionRequestById(userId: string, requestId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const requestObjectId = new Types.ObjectId(requestId);
+    
+    const request = await this.sessionRequestModel
+      .findOne({
+        _id: requestObjectId,
+        $or: [{ user_id: userObjectId }, { doctor_id: userObjectId }], // User or doctor can view
+      })
+      .populate('doctor_id', 'first_name last_name email')
+      .populate('user_id', 'first_name last_name email');
+
+    if (!request) {
+      throw new NotFoundException('Session request not found');
+    }
+
+    return {
+      success: true,
+      data: request,
+    };
+  }
+
+  /**
+   * Upload payment screenshot
+   */
+  async uploadPaymentScreenshot(
+    userId: string,
+    requestId: string,
+    file: Express.Multer.File,
+  ) {
+    const userObjectId = new Types.ObjectId(userId);
+    const requestObjectId = new Types.ObjectId(requestId);
+    
+    const request = await this.sessionRequestModel.findOne({
+      _id: requestObjectId,
+      user_id: userObjectId,
+    });
+
+    if (!request) {
+      throw new NotFoundException('Session request not found');
+    }
+
+    if (request.status !== SessionRequestStatus.PENDING_PAYMENT) {
+      throw new BadRequestException(
+        `Cannot upload payment. Current status: ${request.status}`,
+      );
+    }
+
+    // Check if payment upload has expired
+    if (request.expires_at && new Date() > request.expires_at) {
+      request.status = SessionRequestStatus.EXPIRED;
+      await request.save();
+
+      // Delete blocked slot
+      if (request.blocked_slot_id) {
+        await this.blockedSlotModel.findByIdAndDelete(request.blocked_slot_id);
+      }
+
+      throw new BadRequestException('Payment upload time has expired. Please create a new request.');
+    }
+
+    // Save file URL (assuming file is saved and URL is provided)
+    const fileUrl = `/uploads/payments/${file.filename}`;
+
+    request.payment_screenshot_url = fileUrl;
+    request.status = SessionRequestStatus.PENDING_APPROVAL;
+
+    // Extend blocked slot expiry (24 hours for admin review)
+    const newExpiry = new Date();
+    newExpiry.setHours(newExpiry.getHours() + this.APPROVAL_WAIT_HOURS);
+
+    if (request.blocked_slot_id) {
+      const blockedSlot = await this.blockedSlotModel.findById(request.blocked_slot_id);
+      if (blockedSlot) {
+        blockedSlot.expires_at = newExpiry;
+        await blockedSlot.save();
+      }
+    }
+
+    request.expires_at = newExpiry; // Update expiry for admin review
+    await request.save();
+
+    return {
+      success: true,
+      message: 'Payment screenshot uploaded successfully. Waiting for admin approval.',
+      data: request,
+    };
+  }
+
+  /**
+   * Cancel session request (only before payment)
+   */
+  async cancelSessionRequest(userId: string, requestId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const requestObjectId = new Types.ObjectId(requestId);
+    
+    const request = await this.sessionRequestModel.findOne({
+      _id: requestObjectId,
+      user_id: userObjectId,
+    });
+
+    if (!request) {
+      throw new NotFoundException('Session request not found');
+    }
+
+    if (request.status !== SessionRequestStatus.PENDING_PAYMENT) {
+      throw new BadRequestException(
+        `Cannot cancel request. Current status: ${request.status}. Only pending payment requests can be cancelled.`,
+      );
+    }
+
+    // Update status
+    request.status = SessionRequestStatus.CANCELLED;
+    await request.save();
+
+    // Delete blocked slot
+    if (request.blocked_slot_id) {
+      await this.blockedSlotModel.findByIdAndDelete(request.blocked_slot_id);
+    }
+
+    return {
+      success: true,
+      message: 'Session request cancelled successfully',
     };
   }
 }

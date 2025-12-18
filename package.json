@@ -29,7 +29,9 @@
     "test:forum-complete": "ts-node scripts/test-forum-complete.ts",
     "test:wellness-complete": "ts-node scripts/test-wellness-complete.ts",
     "test:complete-system": "ts-node scripts/test-complete-system.ts",
-    "test:booking-availability": "ts-node scripts/test-booking-availability.ts"
+    "test:booking-availability": "ts-node scripts/test-booking-availability.ts",
+    "test:booking-slots-sessions": "ts-node scripts/test-booking-slots-sessions.ts",
+    "test:booking-complete-flow": "ts-node scripts/test-booking-complete-flow.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -46,6 +48,7 @@
     "class-validator": "^0.14.0",
     "firebase-admin": "^12.0.0",
     "jsonwebtoken": "^9.0.2",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^7.5.0",
     "multer": "^2.0.2",
     "music-metadata": "^11.10.3",

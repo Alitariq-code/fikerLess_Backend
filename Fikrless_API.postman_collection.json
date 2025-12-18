@@ -5585,7 +5585,181 @@
 										"settings"
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Settings Created",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"slot_duration_minutes\": 60,\n    \"break_minutes\": 15,\n    \"timezone\": \"Asia/Karachi\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability settings created successfully\",\n    \"data\": {\n        \"_id\": \"67890abcdef1234567890123\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"slot_duration_minutes\": 60,\n        \"break_minutes\": 15,\n        \"timezone\": \"Asia/Karachi\",\n        \"createdAt\": \"2025-12-18T10:30:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:30:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 400 - Settings Already Exist",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"slot_duration_minutes\": 60,\n    \"break_minutes\": 15\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Availability settings already exist. Use update endpoint.\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 400 - Invalid Slot Duration",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"slot_duration_minutes\": 10,\n    \"break_minutes\": 15\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": [\n        \"slot_duration_minutes must be at least 15 minutes\"\n    ],\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 403 - Not a Specialist",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"slot_duration_minutes\": 60,\n    \"break_minutes\": 15\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 403,\n    \"message\": \"Only specialists can manage availability\",\n    \"error\": \"Forbidden\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Get Availability Settings",
@@ -5611,7 +5785,79 @@
 										"settings"
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Settings Retrieved",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"67890abcdef1234567890123\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"slot_duration_minutes\": 60,\n        \"break_minutes\": 15,\n        \"timezone\": \"Asia/Karachi\",\n        \"createdAt\": \"2025-12-18T10:30:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:30:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 404 - Settings Not Found",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability settings not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Update Availability Settings",
@@ -5645,7 +5891,95 @@
 										"settings"
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Settings Updated",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"slot_duration_minutes\": 45,\n    \"break_minutes\": 10\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability settings updated successfully\",\n    \"data\": {\n        \"_id\": \"67890abcdef1234567890123\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"slot_duration_minutes\": 45,\n        \"break_minutes\": 10,\n        \"timezone\": \"Asia/Karachi\",\n        \"createdAt\": \"2025-12-18T10:30:00.000Z\",\n        \"updatedAt\": \"2025-12-18T11:00:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 404 - Settings Not Found",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"slot_duration_minutes\": 45\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/settings",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"settings"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability settings not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						}
 					]
 				},
@@ -5684,7 +6018,181 @@
 										"rules"
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Rule Created",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"day_of_week\": \"MON\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"17:00\",\n    \"is_active\": true\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability rule created successfully\",\n    \"data\": {\n        \"_id\": \"78901abcdef2345678901234\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"day_of_week\": \"MON\",\n        \"start_time\": \"09:00\",\n        \"end_time\": \"17:00\",\n        \"is_active\": true,\n        \"createdAt\": \"2025-12-18T10:35:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:35:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 400 - Settings Not Found",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"day_of_week\": \"MON\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"17:00\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Availability settings must be created before adding availability rules\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 400 - Overlapping Rule",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"day_of_week\": \"MON\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"18:00\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Overlapping availability rule exists for MON between 09:00 and 17:00\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 400 - Invalid Time Format",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"day_of_week\": \"MON\",\n    \"start_time\": \"9:00\",\n    \"end_time\": \"17:00\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": [\n        \"start_time must be in HH:mm format (e.g., 09:00)\"\n    ],\n    \"error\": \"Bad Request\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Get All Availability Rules",
@@ -5710,7 +6218,79 @@
 										"rules"
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Rules Retrieved",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"78901abcdef2345678901234\",\n            \"doctor_id\": \"12345abcdef6789012345678\",\n            \"day_of_week\": \"MON\",\n            \"start_time\": \"09:00\",\n            \"end_time\": \"17:00\",\n            \"is_active\": true,\n            \"createdAt\": \"2025-12-18T10:35:00.000Z\",\n            \"updatedAt\": \"2025-12-18T10:35:00.000Z\"\n        },\n        {\n            \"_id\": \"89012abcdef3456789012345\",\n            \"doctor_id\": \"12345abcdef6789012345678\",\n            \"day_of_week\": \"TUE\",\n            \"start_time\": \"09:00\",\n            \"end_time\": \"17:00\",\n            \"is_active\": true,\n            \"createdAt\": \"2025-12-18T10:36:00.000Z\",\n            \"updatedAt\": \"2025-12-18T10:36:00.000Z\"\n        }\n    ]\n}"
+								},
+								{
+									"name": "Success - Empty Rules Array",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": []\n}"
+								}
+							]
 						},
 						{
 							"name": "Get Availability Rule by ID",
@@ -5744,7 +6324,81 @@
 										}
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Rule Retrieved",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/78901abcdef2345678901234",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"78901abcdef2345678901234"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"78901abcdef2345678901234\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"day_of_week\": \"MON\",\n        \"start_time\": \"09:00\",\n        \"end_time\": \"17:00\",\n        \"is_active\": true,\n        \"createdAt\": \"2025-12-18T10:35:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:35:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 404 - Rule Not Found",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/invalidid123",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"invalidid123"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability rule not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Update Availability Rule",
@@ -5786,7 +6440,141 @@
 										}
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Rule Updated",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"start_time\": \"08:00\",\n    \"end_time\": \"16:00\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/78901abcdef2345678901234",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"78901abcdef2345678901234"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability rule updated successfully\",\n    \"data\": {\n        \"_id\": \"78901abcdef2345678901234\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"day_of_week\": \"MON\",\n        \"start_time\": \"08:00\",\n        \"end_time\": \"16:00\",\n        \"is_active\": true,\n        \"createdAt\": \"2025-12-18T10:35:00.000Z\",\n        \"updatedAt\": \"2025-12-18T11:00:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 400 - Update Creates Overlap",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"start_time\": \"18:00\",\n    \"end_time\": \"21:00\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/78901abcdef2345678901234",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"78901abcdef2345678901234"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Overlapping availability rule exists for MON between 18:00 and 20:00\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 404 - Rule Not Found",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"start_time\": \"08:00\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/invalidid123",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"invalidid123"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability rule not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Delete Availability Rule",
@@ -5820,7 +6608,81 @@
 										}
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Rule Deleted",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/78901abcdef2345678901234",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"78901abcdef2345678901234"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability rule deleted successfully\"\n}"
+								},
+								{
+									"name": "Error 404 - Rule Not Found",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/rules/invalidid123",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"rules",
+												"invalidid123"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability rule not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						}
 					]
 				},
@@ -5859,7 +6721,224 @@
 										"overrides"
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - OFF Override Created",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"date\": \"2025-12-25\",\n    \"type\": \"OFF\",\n    \"reason\": \"Christmas Holiday\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability override created successfully\",\n    \"data\": {\n        \"_id\": \"90123abcdef4567890123456\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"date\": \"2025-12-25\",\n        \"type\": \"OFF\",\n        \"reason\": \"Christmas Holiday\",\n        \"createdAt\": \"2025-12-18T10:40:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:40:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Success - CUSTOM Override Created",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"date\": \"2025-12-26\",\n    \"type\": \"CUSTOM\",\n    \"start_time\": \"10:00\",\n    \"end_time\": \"14:00\",\n    \"reason\": \"Half day\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability override created successfully\",\n    \"data\": {\n        \"_id\": \"01234abcdef5678901234567\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"date\": \"2025-12-26\",\n        \"type\": \"CUSTOM\",\n        \"start_time\": \"10:00\",\n        \"end_time\": \"14:00\",\n        \"reason\": \"Half day\",\n        \"createdAt\": \"2025-12-18T10:41:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:41:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 400 - Past Date",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"date\": \"2024-12-01\",\n    \"type\": \"OFF\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Override date must be today or in the future\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 400 - CUSTOM Without Times",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"date\": \"2025-12-25\",\n    \"type\": \"CUSTOM\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"start_time and end_time are required for CUSTOM type\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 400 - Duplicate Override",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"date\": \"2025-12-25\",\n    \"type\": \"OFF\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Override already exists for date 2025-12-25. Use update endpoint.\",\n    \"error\": \"Bad Request\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Get All Availability Overrides",
@@ -5897,7 +6976,89 @@
 										}
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Overrides Retrieved",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides?start_date=2025-12-01&end_date=2025-12-31",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											],
+											"query": [
+												{
+													"key": "start_date",
+													"value": "2025-12-01"
+												},
+												{
+													"key": "end_date",
+													"value": "2025-12-31"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"90123abcdef4567890123456\",\n            \"doctor_id\": \"12345abcdef6789012345678\",\n            \"date\": \"2025-12-25\",\n            \"type\": \"OFF\",\n            \"reason\": \"Christmas Holiday\",\n            \"createdAt\": \"2025-12-18T10:40:00.000Z\",\n            \"updatedAt\": \"2025-12-18T10:40:00.000Z\"\n        },\n        {\n            \"_id\": \"01234abcdef5678901234567\",\n            \"doctor_id\": \"12345abcdef6789012345678\",\n            \"date\": \"2025-12-26\",\n            \"type\": \"CUSTOM\",\n            \"start_time\": \"10:00\",\n            \"end_time\": \"14:00\",\n            \"reason\": \"Half day\",\n            \"createdAt\": \"2025-12-18T10:41:00.000Z\",\n            \"updatedAt\": \"2025-12-18T10:41:00.000Z\"\n        }\n    ]\n}"
+								},
+								{
+									"name": "Success - Empty Overrides Array",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": []\n}"
+								}
+							]
 						},
 						{
 							"name": "Get Availability Override by ID",
@@ -5931,7 +7092,81 @@
 										}
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Override Retrieved",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/90123abcdef4567890123456",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"90123abcdef4567890123456"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"90123abcdef4567890123456\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"date\": \"2025-12-25\",\n        \"type\": \"OFF\",\n        \"reason\": \"Christmas Holiday\",\n        \"createdAt\": \"2025-12-18T10:40:00.000Z\",\n        \"updatedAt\": \"2025-12-18T10:40:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 404 - Override Not Found",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/invalidid123",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"invalidid123"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability override not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Update Availability Override",
@@ -5973,7 +7208,141 @@
 										}
 									]
 								}
-							}
+							},
+							"response": [
+								{
+									"name": "Success - Override Updated",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"reason\": \"Updated holiday reason\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/90123abcdef4567890123456",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"90123abcdef4567890123456"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability override updated successfully\",\n    \"data\": {\n        \"_id\": \"90123abcdef4567890123456\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"date\": \"2025-12-25\",\n        \"type\": \"OFF\",\n        \"reason\": \"Updated holiday reason\",\n        \"createdAt\": \"2025-12-18T10:40:00.000Z\",\n        \"updatedAt\": \"2025-12-18T11:00:00.000Z\"\n    }\n}"
+								},
+								{
+									"name": "Error 400 - CUSTOM Type Without Times",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"type\": \"CUSTOM\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/90123abcdef4567890123456",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"90123abcdef4567890123456"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 400,\n    \"message\": \"start_time and end_time are required for CUSTOM type\",\n    \"error\": \"Bad Request\"\n}"
+								},
+								{
+									"name": "Error 404 - Override Not Found",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"reason\": \"Updated\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/invalidid123",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"invalidid123"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability override not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
 						},
 						{
 							"name": "Delete Availability Override",
@@ -6007,7 +7376,1154 @@
 										}
 									]
 								}
+							},
+							"response": [
+								{
+									"name": "Success - Override Deleted",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/90123abcdef4567890123456",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"90123abcdef4567890123456"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Availability override deleted successfully\"\n}"
+								},
+								{
+									"name": "Error 404 - Override Not Found",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/v1/booking/availability/overrides/invalidid123",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"v1",
+												"booking",
+												"availability",
+												"overrides",
+												"invalidid123"
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Availability override not found\",\n    \"error\": \"Not Found\"\n}"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Booking - Slots & Sessions",
+			"item": [
+				{
+					"name": "Get Available Slots",
+					"request": {
+						"method": "GET",
+						"description": "Retrieves available booking slots for a specific doctor on a specific date. Slots are dynamically generated based on the doctor's availability settings, rules, and overrides. Excludes slots that are already booked (confirmed sessions) or temporarily blocked (pending session requests). Past slots for the current day are automatically excluded. Requires authentication (any user type can view slots).",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login (any user type)"
 							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/booking/slots/available?doctor_id={{doctor_id}}&date=2025-12-25",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"booking",
+								"slots",
+								"available"
+							],
+							"query": [
+								{
+									"key": "doctor_id",
+									"value": "{{doctor_id}}",
+									"description": "Doctor/Specialist ID (MongoDB ObjectId)"
+								},
+								{
+									"key": "date",
+									"value": "2025-12-25",
+									"description": "Date in YYYY-MM-DD format (must be today or future)"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Slots Retrieved",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/slots/available?doctor_id=12345abcdef6789012345678&date=2025-12-25",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"slots",
+										"available"
+									],
+									"query": [
+										{
+											"key": "doctor_id",
+											"value": "12345abcdef6789012345678"
+										},
+										{
+											"key": "date",
+											"value": "2025-12-25"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"start_time\": \"09:00\",\n            \"end_time\": \"10:00\"\n        },\n        {\n            \"start_time\": \"10:15\",\n            \"end_time\": \"11:15\"\n        },\n        {\n            \"start_time\": \"11:30\",\n            \"end_time\": \"12:30\"\n        },\n        {\n            \"start_time\": \"13:00\",\n            \"end_time\": \"14:00\"\n        },\n        {\n            \"start_time\": \"14:15\",\n            \"end_time\": \"15:15\"\n        },\n        {\n            \"start_time\": \"15:30\",\n            \"end_time\": \"16:30\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "Success - No Slots (Holiday Override)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/slots/available?doctor_id=12345abcdef6789012345678&date=2025-12-25",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"slots",
+										"available"
+									],
+									"query": [
+										{
+											"key": "doctor_id",
+											"value": "12345abcdef6789012345678"
+										},
+										{
+											"key": "date",
+											"value": "2025-12-25"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [],\n    \"message\": \"Doctor is not available on this date\"\n}"
+						},
+						{
+							"name": "Error 400 - Missing doctor_id",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/slots/available?date=2025-12-25",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"slots",
+										"available"
+									],
+									"query": [
+										{
+											"key": "date",
+											"value": "2025-12-25"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"doctor_id is required\",\n    \"error\": \"Bad Request\"\n}"
+						},
+						{
+							"name": "Error 400 - Past Date",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/slots/available?doctor_id=12345abcdef6789012345678&date=2024-12-01",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"slots",
+										"available"
+									],
+									"query": [
+										{
+											"key": "doctor_id",
+											"value": "12345abcdef6789012345678"
+										},
+										{
+											"key": "date",
+											"value": "2024-12-01"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Cannot get slots for past dates\",\n    \"error\": \"Bad Request\"\n}"
+						},
+						{
+							"name": "Error 400 - Doctor Has No Settings",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/slots/available?doctor_id=12345abcdef6789012345678&date=2025-12-25",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"slots",
+										"available"
+									],
+									"query": [
+										{
+											"key": "doctor_id",
+											"value": "12345abcdef6789012345678"
+										},
+										{
+											"key": "date",
+											"value": "2025-12-25"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Doctor has not set up availability settings\",\n    \"error\": \"Bad Request\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Session Request",
+					"request": {
+						"method": "POST",
+						"description": "Creates a new session booking request for a specific doctor and time slot. Validates that the slot is available and not already booked. Creates a temporary blocked slot (expires in 30 minutes for payment upload) and a session request with PENDING_PAYMENT status. Only regular users can create session requests. The request must be paid within the expiry time or it will be automatically cancelled.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login (regular user)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"doctor_id\": \"12345abcdef6789012345678\",\n    \"date\": \"2025-12-25\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"10:00\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/booking/session-requests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"booking",
+								"session-requests"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Request Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"doctor_id\": \"12345abcdef6789012345678\",\n    \"date\": \"2025-12-25\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"10:00\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Session request created successfully\",\n    \"data\": {\n        \"_id\": \"abc123def456789012345678\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"user_id\": \"98765fedcba4321098765432\",\n        \"date\": \"2025-12-25\",\n        \"start_time\": \"09:00\",\n        \"end_time\": \"10:00\",\n        \"amount\": 5000,\n        \"currency\": \"PKR\",\n        \"status\": \"PENDING_PAYMENT\",\n        \"payment_screenshot_url\": null,\n        \"expires_at\": \"2025-12-18T11:30:00.000Z\",\n        \"blocked_slot_id\": \"xyz789abc123456789012345\",\n        \"createdAt\": \"2025-12-18T11:00:00.000Z\",\n        \"updatedAt\": \"2025-12-18T11:00:00.000Z\"\n    }\n}"
+						},
+						{
+							"name": "Error 400 - Slot No Longer Available",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"doctor_id\": \"12345abcdef6789012345678\",\n    \"date\": \"2025-12-25\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"10:00\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"The requested slot is no longer available\",\n    \"error\": \"Bad Request\"\n}"
+						},
+						{
+							"name": "Error 400 - Invalid Time Format",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"doctor_id\": \"12345abcdef6789012345678\",\n    \"date\": \"2025-12-25\",\n    \"start_time\": \"9:00\",\n    \"end_time\": \"10:00\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": [\n        \"Start time must be in HH:mm format (e.g., 09:00)\"\n    ],\n    \"error\": \"Bad Request\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get My Session Requests",
+					"request": {
+						"method": "GET",
+						"description": "Retrieves all session requests created by the authenticated user. Optional query parameter 'status' can filter requests by status (PENDING_PAYMENT, PENDING_APPROVAL, CONFIRMED, CANCELLED, REJECTED, EXPIRED). Returns requests sorted by creation date (newest first). Only the request owner can access their requests.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login (regular user)"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/booking/session-requests/my-requests?status=PENDING_PAYMENT",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"booking",
+								"session-requests",
+								"my-requests"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING_PAYMENT",
+									"description": "Optional: Filter by status (PENDING_PAYMENT, PENDING_APPROVAL, CONFIRMED, CANCELLED, REJECTED, EXPIRED)",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Requests Retrieved",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/my-requests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"my-requests"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"_id\": \"abc123def456789012345678\",\n            \"doctor_id\": \"12345abcdef6789012345678\",\n            \"user_id\": \"98765fedcba4321098765432\",\n            \"date\": \"2025-12-25\",\n            \"start_time\": \"09:00\",\n            \"end_time\": \"10:00\",\n            \"amount\": 5000,\n            \"currency\": \"PKR\",\n            \"status\": \"PENDING_PAYMENT\",\n            \"payment_screenshot_url\": null,\n            \"expires_at\": \"2025-12-18T11:30:00.000Z\",\n            \"blocked_slot_id\": \"xyz789abc123456789012345\",\n            \"createdAt\": \"2025-12-18T11:00:00.000Z\",\n            \"updatedAt\": \"2025-12-18T11:00:00.000Z\"\n        },\n        {\n            \"_id\": \"def456ghi789012345678901\",\n            \"doctor_id\": \"12345abcdef6789012345678\",\n            \"user_id\": \"98765fedcba4321098765432\",\n            \"date\": \"2025-12-26\",\n            \"start_time\": \"10:15\",\n            \"end_time\": \"11:15\",\n            \"amount\": 5000,\n            \"currency\": \"PKR\",\n            \"status\": \"PENDING_APPROVAL\",\n            \"payment_screenshot_url\": \"/uploads/payments/payment-1234567890.png\",\n            \"expires_at\": \"2025-12-19T11:00:00.000Z\",\n            \"blocked_slot_id\": \"uvw012def456789012345678\",\n            \"createdAt\": \"2025-12-18T10:00:00.000Z\",\n            \"updatedAt\": \"2025-12-18T10:15:00.000Z\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "Success - Empty Array",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/my-requests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"my-requests"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Session Request by ID",
+					"request": {
+						"method": "GET",
+						"description": "Retrieves detailed information about a specific session request by its ID. Returns all request details including doctor info, date, time, amount, status, payment screenshot URL, and expiry time. Only the request owner (user who created it) can access the request details.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login (regular user)"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/booking/session-requests/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"booking",
+								"session-requests",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Session request ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Request Retrieved",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"abc123def456789012345678\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"user_id\": \"98765fedcba4321098765432\",\n        \"date\": \"2025-12-25\",\n        \"start_time\": \"09:00\",\n        \"end_time\": \"10:00\",\n        \"amount\": 5000,\n        \"currency\": \"PKR\",\n        \"status\": \"PENDING_PAYMENT\",\n        \"payment_screenshot_url\": null,\n        \"expires_at\": \"2025-12-18T11:30:00.000Z\",\n        \"blocked_slot_id\": \"xyz789abc123456789012345\",\n        \"createdAt\": \"2025-12-18T11:00:00.000Z\",\n        \"updatedAt\": \"2025-12-18T11:00:00.000Z\"\n    }\n}"
+						},
+						{
+							"name": "Error 404 - Request Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/invalidid123",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"invalidid123"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Session request not found\",\n    \"error\": \"Not Found\"\n}"
+						},
+						{
+							"name": "Error 403 - Unauthorized Access",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 403,\n    \"message\": \"You can only access your own session requests\",\n    \"error\": \"Forbidden\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Upload Payment Screenshot",
+					"request": {
+						"method": "PUT",
+						"description": "Uploads a payment screenshot for a session request. Changes the request status from PENDING_PAYMENT to PENDING_APPROVAL. Extends the blocked slot expiry to 24 hours for admin review. Accepts image files (JPEG, JPG, PNG, WebP) up to 5MB. Only the request owner can upload payment. Request must be in PENDING_PAYMENT status.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login (regular user)"
+							}
+						],
+						"body": {
+							"mode": "form-data",
+							"form-data": [
+								{
+									"key": "payment_screenshot",
+									"type": "file",
+									"src": [],
+									"description": "Payment screenshot image file (JPEG, JPG, PNG, WebP, max 5MB)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/booking/session-requests/:id/payment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"booking",
+								"session-requests",
+								":id",
+								"payment"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Session request ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Payment Uploaded",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "form-data",
+									"form-data": [
+										{
+											"key": "payment_screenshot",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678/payment",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678",
+										"payment"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Payment screenshot uploaded successfully. Waiting for admin approval.\",\n    \"data\": {\n        \"_id\": \"abc123def456789012345678\",\n        \"doctor_id\": \"12345abcdef6789012345678\",\n        \"user_id\": \"98765fedcba4321098765432\",\n        \"date\": \"2025-12-25\",\n        \"start_time\": \"09:00\",\n        \"end_time\": \"10:00\",\n        \"amount\": 5000,\n        \"currency\": \"PKR\",\n        \"status\": \"PENDING_APPROVAL\",\n        \"payment_screenshot_url\": \"/uploads/payments/payment-1734528000000-123456789.png\",\n        \"expires_at\": \"2025-12-19T11:00:00.000Z\",\n        \"blocked_slot_id\": \"xyz789abc123456789012345\",\n        \"createdAt\": \"2025-12-18T11:00:00.000Z\",\n        \"updatedAt\": \"2025-12-18T11:15:00.000Z\"\n    }\n}"
+						},
+						{
+							"name": "Error 400 - File Required",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "form-data",
+									"form-data": []
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678/payment",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678",
+										"payment"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Payment screenshot file is required\",\n    \"error\": \"Bad Request\"\n}"
+						},
+						{
+							"name": "Error 400 - Invalid File Type",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "form-data",
+									"form-data": [
+										{
+											"key": "payment_screenshot",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678/payment",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678",
+										"payment"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Invalid file type. Allowed types: image/jpeg, image/jpg, image/png, image/webp\",\n    \"error\": \"Bad Request\"\n}"
+						},
+						{
+							"name": "Error 400 - Wrong Status",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "form-data",
+									"form-data": [
+										{
+											"key": "payment_screenshot",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678/payment",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678",
+										"payment"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Payment can only be uploaded for requests with PENDING_PAYMENT status\",\n    \"error\": \"Bad Request\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Cancel Session Request",
+					"request": {
+						"method": "DELETE",
+						"description": "Cancels a session request. Only requests with PENDING_PAYMENT status can be cancelled (before payment upload). Cancellation releases the blocked slot immediately. Once payment is uploaded (PENDING_APPROVAL status), requests cannot be cancelled by users - only admins can reject them. Only the request owner can cancel their own requests.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "JWT token from login (regular user)"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/booking/session-requests/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"booking",
+								"session-requests",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Session request ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Request Cancelled",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Session request cancelled successfully\"\n}"
+						},
+						{
+							"name": "Error 400 - Cannot Cancel After Payment",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Cannot cancel request after payment upload. Contact admin for assistance.\",\n    \"error\": \"Bad Request\"\n}"
+						},
+						{
+							"name": "Error 404 - Request Not Found",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/invalidid123",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"invalidid123"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Session request not found\",\n    \"error\": \"Not Found\"\n}"
+						},
+						{
+							"name": "Error 403 - Unauthorized Access",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/booking/session-requests/abc123def456789012345678",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"booking",
+										"session-requests",
+										"abc123def456789012345678"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 403,\n    \"message\": \"You can only cancel your own session requests\",\n    \"error\": \"Forbidden\"\n}"
 						}
 					]
 				}
