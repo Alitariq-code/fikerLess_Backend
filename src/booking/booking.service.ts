@@ -12,6 +12,7 @@ import { AvailabilitySettings, AvailabilitySettingsDocument } from '../models/sc
 import { AvailabilityOverride, AvailabilityOverrideDocument, OverrideType } from '../models/schemas/availability-override.schema';
 import { SessionRequest, SessionRequestDocument, SessionRequestStatus } from '../models/schemas/session-request.schema';
 import { BlockedSlot, BlockedSlotDocument } from '../models/schemas/blocked-slot.schema';
+import { Session, SessionDocument, SessionStatus } from '../models/schemas/session.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateAvailabilityRuleDto } from './dto/create-availability-rule.dto';
 import { UpdateAvailabilityRuleDto } from './dto/update-availability-rule.dto';
@@ -21,6 +22,10 @@ import { CreateAvailabilityOverrideDto } from './dto/create-availability-overrid
 import { UpdateAvailabilityOverrideDto } from './dto/update-availability-override.dto';
 import { GetAvailableSlotsDto } from './dto/get-available-slots.dto';
 import { CreateSessionRequestDto } from './dto/create-session-request.dto';
+import { ApproveSessionRequestDto } from './dto/approve-session-request.dto';
+import { RejectSessionRequestDto } from './dto/reject-session-request.dto';
+import { GetSessionsDto } from './dto/get-sessions.dto';
+import { NotificationService } from '../notification/notification.service';
 import moment from 'moment-timezone';
 
 @Injectable()
@@ -35,7 +40,9 @@ export class BookingService {
     @InjectModel(AvailabilityOverride.name) private availabilityOverrideModel: Model<AvailabilityOverrideDocument>,
     @InjectModel(SessionRequest.name) private sessionRequestModel: Model<SessionRequestDocument>,
     @InjectModel(BlockedSlot.name) private blockedSlotModel: Model<BlockedSlotDocument>,
+    @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -930,6 +937,415 @@ export class BookingService {
     return {
       success: true,
       message: 'Session request cancelled successfully',
+    };
+  }
+
+  // ==================== Admin Approval & Session Management ====================
+
+  /**
+   * Get pending session requests for admin review
+   */
+  async getPendingSessionRequests(adminId: string, page: number = 1, limit: number = 20) {
+    // Validate admin
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || admin.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can access pending requests');
+    }
+
+    const skip = (page - 1) * limit;
+    const requests = await this.sessionRequestModel
+      .find({ status: SessionRequestStatus.PENDING_APPROVAL })
+      .populate('doctor_id', 'first_name last_name email')
+      .populate('user_id', 'first_name last_name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await this.sessionRequestModel.countDocuments({
+      status: SessionRequestStatus.PENDING_APPROVAL,
+    });
+
+    return {
+      success: true,
+      data: requests,
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        has_next: page * limit < total,
+        has_prev: page > 1,
+      },
+    };
+  }
+
+  /**
+   * Get pending session request details by ID (admin)
+   */
+  async getPendingSessionRequestById(adminId: string, requestId: string) {
+    // Validate admin
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || admin.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can access pending requests');
+    }
+
+    const requestObjectId = new Types.ObjectId(requestId);
+    const request = await this.sessionRequestModel
+      .findById(requestObjectId)
+      .populate('doctor_id', 'first_name last_name email phone')
+      .populate('user_id', 'first_name last_name email phone')
+      .lean();
+
+    if (!request) {
+      throw new NotFoundException('Session request not found');
+    }
+
+    if (request.status !== SessionRequestStatus.PENDING_APPROVAL) {
+      throw new BadRequestException(
+        `Request is not pending approval. Current status: ${request.status}`,
+      );
+    }
+
+    return {
+      success: true,
+      data: request,
+    };
+  }
+
+  /**
+   * Approve session request and create confirmed session
+   */
+  async approveSessionRequest(adminId: string, requestId: string, dto: ApproveSessionRequestDto) {
+    // Validate admin
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || admin.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can approve session requests');
+    }
+
+    const requestObjectId = new Types.ObjectId(requestId);
+    const request = await this.sessionRequestModel.findById(requestObjectId);
+
+    if (!request) {
+      throw new NotFoundException('Session request not found');
+    }
+
+    if (request.status !== SessionRequestStatus.PENDING_APPROVAL) {
+      throw new BadRequestException(
+        `Cannot approve request. Current status: ${request.status}. Only PENDING_APPROVAL requests can be approved.`,
+      );
+    }
+
+    // Check if slot is still available (no conflicts)
+    const existingSession = await this.sessionModel.findOne({
+      doctor_id: request.doctor_id,
+      date: request.date,
+      start_time: request.start_time,
+      end_time: request.end_time,
+      status: { $in: [SessionStatus.CONFIRMED, SessionStatus.COMPLETED] },
+    });
+
+    if (existingSession) {
+      throw new BadRequestException(
+        'Slot is no longer available. Another session has been confirmed for this time.',
+      );
+    }
+
+    // Create confirmed session
+    const session = await this.sessionModel.create({
+      doctor_id: request.doctor_id,
+      user_id: request.user_id,
+      date: request.date,
+      start_time: request.start_time,
+      end_time: request.end_time,
+      amount: request.amount,
+      currency: request.currency,
+      status: SessionStatus.CONFIRMED,
+      session_request_id: request._id,
+      notes: dto.notes || null,
+    });
+
+    // Update session request status to CONFIRMED (linked to session)
+    // Note: SessionRequestStatus.CONFIRMED indicates the request was approved and a session was created
+    request.status = SessionRequestStatus.CONFIRMED;
+    await request.save();
+
+    // Delete blocked slot (slot is now confirmed, no longer blocked)
+    if (request.blocked_slot_id) {
+      await this.blockedSlotModel.findByIdAndDelete(request.blocked_slot_id);
+    }
+
+    // Send notifications
+    try {
+      const doctor = await this.userModel.findById(request.doctor_id);
+      const user = await this.userModel.findById(request.user_id);
+
+      // Notify user
+      await this.notificationService.createDirectNotification(
+        request.user_id.toString(),
+        'Session Approved',
+        `Your session with ${doctor?.first_name} ${doctor?.last_name} on ${request.date} at ${request.start_time} has been approved.`,
+        'booking',
+        {
+          session_id: session._id.toString(),
+          doctor_id: request.doctor_id.toString(),
+          date: request.date,
+          start_time: request.start_time,
+          end_time: request.end_time,
+        },
+        `/sessions/${session._id}`,
+      );
+
+      // Notify doctor
+      await this.notificationService.createDirectNotification(
+        request.doctor_id.toString(),
+        'New Session Booked',
+        `${user?.first_name} ${user?.last_name} has booked a session with you on ${request.date} at ${request.start_time}.`,
+        'booking',
+        {
+          session_id: session._id.toString(),
+          user_id: request.user_id.toString(),
+          date: request.date,
+          start_time: request.start_time,
+          end_time: request.end_time,
+        },
+        `/sessions/${session._id}`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send notifications for approved session: ${error.message}`);
+      // Don't fail the approval if notification fails
+    }
+
+    // Populate session with user/doctor details
+    const populatedSession = await this.sessionModel
+      .findById(session._id)
+      .populate('doctor_id', 'first_name last_name email')
+      .populate('user_id', 'first_name last_name email')
+      .lean();
+
+    return {
+      success: true,
+      message: 'Session request approved and session created successfully',
+      data: populatedSession,
+    };
+  }
+
+  /**
+   * Reject session request
+   */
+  async rejectSessionRequest(adminId: string, requestId: string, dto: RejectSessionRequestDto) {
+    // Validate admin
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || admin.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can reject session requests');
+    }
+
+    const requestObjectId = new Types.ObjectId(requestId);
+    const request = await this.sessionRequestModel.findById(requestObjectId);
+
+    if (!request) {
+      throw new NotFoundException('Session request not found');
+    }
+
+    if (request.status !== SessionRequestStatus.PENDING_APPROVAL) {
+      throw new BadRequestException(
+        `Cannot reject request. Current status: ${request.status}. Only PENDING_APPROVAL requests can be rejected.`,
+      );
+    }
+
+    // Update request status
+    request.status = SessionRequestStatus.REJECTED;
+    await request.save();
+
+    // Delete blocked slot (release the slot)
+    if (request.blocked_slot_id) {
+      await this.blockedSlotModel.findByIdAndDelete(request.blocked_slot_id);
+    }
+
+    // Send notification to user
+    try {
+      const doctor = await this.userModel.findById(request.doctor_id);
+      await this.notificationService.createDirectNotification(
+        request.user_id.toString(),
+        'Session Request Rejected',
+        `Your session request with ${doctor?.first_name} ${doctor?.last_name} on ${request.date} at ${request.start_time} has been rejected. Reason: ${dto.reason}`,
+        'booking',
+        {
+          request_id: request._id.toString(),
+          doctor_id: request.doctor_id.toString(),
+          date: request.date,
+          rejection_reason: dto.reason,
+        },
+        null,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send rejection notification: ${error.message}`);
+      // Don't fail the rejection if notification fails
+    }
+
+    return {
+      success: true,
+      message: 'Session request rejected successfully',
+    };
+  }
+
+  // ==================== Session Queries ====================
+
+  /**
+   * Get user's confirmed sessions
+   */
+  async getUserSessions(userId: string, dto: GetSessionsDto) {
+    const userObjectId = new Types.ObjectId(userId);
+    const query: any = { user_id: userObjectId };
+
+    // Apply filters
+    if (dto.start_date || dto.end_date) {
+      query.date = {};
+      if (dto.start_date) {
+        query.date.$gte = dto.start_date;
+      }
+      if (dto.end_date) {
+        query.date.$lte = dto.end_date;
+      }
+    }
+
+    if (dto.status) {
+      query.status = dto.status;
+    }
+
+    const sessions = await this.sessionModel
+      .find(query)
+      .populate('doctor_id', 'first_name last_name email')
+      .sort({ date: 1, start_time: 1 })
+      .lean();
+
+    return {
+      success: true,
+      data: sessions,
+    };
+  }
+
+  /**
+   * Get doctor's sessions
+   */
+  async getDoctorSessions(doctorId: string, dto: GetSessionsDto) {
+    // Validate doctor
+    await this.validateDoctor(doctorId);
+
+    const doctorObjectId = new Types.ObjectId(doctorId);
+    const query: any = { doctor_id: doctorObjectId };
+
+    // Apply filters
+    if (dto.start_date || dto.end_date) {
+      query.date = {};
+      if (dto.start_date) {
+        query.date.$gte = dto.start_date;
+      }
+      if (dto.end_date) {
+        query.date.$lte = dto.end_date;
+      }
+    }
+
+    if (dto.status) {
+      query.status = dto.status;
+    }
+
+    const sessions = await this.sessionModel
+      .find(query)
+      .populate('user_id', 'first_name last_name email')
+      .sort({ date: 1, start_time: 1 })
+      .lean();
+
+    return {
+      success: true,
+      data: sessions,
+    };
+  }
+
+  /**
+   * Get session by ID
+   */
+  async getSessionById(userId: string, sessionId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const sessionObjectId = new Types.ObjectId(sessionId);
+
+    const session = await this.sessionModel
+      .findOne({
+        _id: sessionObjectId,
+        $or: [{ user_id: userObjectId }, { doctor_id: userObjectId }],
+      })
+      .populate('doctor_id', 'first_name last_name email phone')
+      .populate('user_id', 'first_name last_name email phone')
+      .lean();
+
+    if (!session) {
+      throw new NotFoundException('Session not found or you do not have access to it');
+    }
+
+    return {
+      success: true,
+      data: session,
+    };
+  }
+
+  /**
+   * Get all sessions (admin only, with filters)
+   */
+  async getAllSessions(adminId: string, dto: GetSessionsDto, page: number = 1, limit: number = 20) {
+    // Validate admin
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || admin.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can access all sessions');
+    }
+
+    const query: any = {};
+
+    // Apply filters
+    if (dto.start_date || dto.end_date) {
+      query.date = {};
+      if (dto.start_date) {
+        query.date.$gte = dto.start_date;
+      }
+      if (dto.end_date) {
+        query.date.$lte = dto.end_date;
+      }
+    }
+
+    if (dto.status) {
+      query.status = dto.status;
+    }
+
+    if (dto.doctor_id) {
+      query.doctor_id = new Types.ObjectId(dto.doctor_id);
+    }
+
+    if (dto.user_id) {
+      query.user_id = new Types.ObjectId(dto.user_id);
+    }
+
+    const skip = (page - 1) * limit;
+    const sessions = await this.sessionModel
+      .find(query)
+      .populate('doctor_id', 'first_name last_name email')
+      .populate('user_id', 'first_name last_name email')
+      .sort({ date: -1, start_time: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await this.sessionModel.countDocuments(query);
+
+    return {
+      success: true,
+      data: sessions,
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        has_next: page * limit < total,
+        has_prev: page > 1,
+      },
     };
   }
 }

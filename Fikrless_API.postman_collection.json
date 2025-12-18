@@ -8593,6 +8593,18 @@
 			"value": "",
 			"type": "string",
 			"description": "Audio ID for testing audio endpoints"
+		},
+		{
+			"key": "doctor_id",
+			"value": "",
+			"type": "string",
+			"description": "Doctor/Specialist ID for testing booking endpoints"
+		},
+		{
+			"key": "session_request_id",
+			"value": "",
+			"type": "string",
+			"description": "Session request ID for testing session request endpoints"
 		}
 	]
 }

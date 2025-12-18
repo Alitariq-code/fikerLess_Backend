@@ -31,7 +31,8 @@
     "test:complete-system": "ts-node scripts/test-complete-system.ts",
     "test:booking-availability": "ts-node scripts/test-booking-availability.ts",
     "test:booking-slots-sessions": "ts-node scripts/test-booking-slots-sessions.ts",
-    "test:booking-complete-flow": "ts-node scripts/test-booking-complete-flow.ts"
+    "test:booking-complete-flow": "ts-node scripts/test-booking-complete-flow.ts",
+    "test:booking-admin-sessions": "ts-node scripts/test-booking-admin-sessions.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

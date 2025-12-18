@@ -14,6 +14,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -28,6 +30,9 @@ import { CreateAvailabilityOverrideDto } from './dto/create-availability-overrid
 import { UpdateAvailabilityOverrideDto } from './dto/update-availability-override.dto';
 import { GetAvailableSlotsDto } from './dto/get-available-slots.dto';
 import { CreateSessionRequestDto } from './dto/create-session-request.dto';
+import { ApproveSessionRequestDto } from './dto/approve-session-request.dto';
+import { RejectSessionRequestDto } from './dto/reject-session-request.dto';
+import { GetSessionsDto } from './dto/get-sessions.dto';
 import { getUserFromToken } from '../utils/utils';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -293,6 +298,100 @@ export class BookingController {
   ) {
     const userId = await this.getUserIdFromToken(token);
     return this.bookingService.cancelSessionRequest(userId, id);
+  }
+
+  // ==================== Admin Endpoints ====================
+
+  @Get('admin/pending-requests')
+  @HttpCode(HttpStatus.OK)
+  async getPendingSessionRequests(
+    @Headers('authorization') token: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const adminId = await this.getUserIdFromToken(token);
+    return this.bookingService.getPendingSessionRequests(adminId, page, limit);
+  }
+
+  @Get('admin/pending-requests/:id')
+  @HttpCode(HttpStatus.OK)
+  async getPendingSessionRequestById(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+  ) {
+    const adminId = await this.getUserIdFromToken(token);
+    return this.bookingService.getPendingSessionRequestById(adminId, id);
+  }
+
+  @Post('admin/session-requests/:id/approve')
+  @HttpCode(HttpStatus.OK)
+  async approveSessionRequest(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+    @Body() dto: ApproveSessionRequestDto,
+  ) {
+    const adminId = await this.getUserIdFromToken(token);
+    return this.bookingService.approveSessionRequest(adminId, id, dto);
+  }
+
+  @Post('admin/session-requests/:id/reject')
+  @HttpCode(HttpStatus.OK)
+  async rejectSessionRequest(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+    @Body() dto: RejectSessionRequestDto,
+  ) {
+    const adminId = await this.getUserIdFromToken(token);
+    return this.bookingService.rejectSessionRequest(adminId, id, dto);
+  }
+
+  @Get('admin/sessions')
+  @HttpCode(HttpStatus.OK)
+  async getAllSessions(
+    @Headers('authorization') token: string,
+    @Query() dto: GetSessionsDto,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const adminId = await this.getUserIdFromToken(token);
+    return this.bookingService.getAllSessions(adminId, dto, page, limit);
+  }
+
+  // ==================== Session Viewing Endpoints ====================
+
+  @Get('sessions/my-sessions')
+  @HttpCode(HttpStatus.OK)
+  async getMySessions(
+    @Headers('authorization') token: string,
+    @Query() dto: GetSessionsDto,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    return this.bookingService.getUserSessions(userId, dto);
+  }
+
+  @Get('sessions/doctor/:doctorId')
+  @HttpCode(HttpStatus.OK)
+  async getDoctorSessions(
+    @Headers('authorization') token: string,
+    @Param('doctorId') doctorId: string,
+    @Query() dto: GetSessionsDto,
+  ) {
+    // Verify the token belongs to the doctor
+    const userId = await this.getUserIdFromToken(token);
+    if (userId !== doctorId) {
+      throw new BadRequestException('You can only view your own sessions');
+    }
+    return this.bookingService.getDoctorSessions(doctorId, dto);
+  }
+
+  @Get('sessions/:id')
+  @HttpCode(HttpStatus.OK)
+  async getSessionById(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    return this.bookingService.getSessionById(userId, id);
   }
 }
 

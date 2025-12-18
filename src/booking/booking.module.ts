@@ -7,7 +7,9 @@ import { AvailabilitySettings, AvailabilitySettingsSchema } from '../models/sche
 import { AvailabilityOverride, AvailabilityOverrideSchema } from '../models/schemas/availability-override.schema';
 import { SessionRequest, SessionRequestSchema } from '../models/schemas/session-request.schema';
 import { BlockedSlot, BlockedSlotSchema } from '../models/schemas/blocked-slot.schema';
+import { Session, SessionSchema } from '../models/schemas/session.schema';
 import { User, UserSchema } from '../models/schemas/user.schema';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -17,8 +19,10 @@ import { User, UserSchema } from '../models/schemas/user.schema';
       { name: AvailabilityOverride.name, schema: AvailabilityOverrideSchema },
       { name: SessionRequest.name, schema: SessionRequestSchema },
       { name: BlockedSlot.name, schema: BlockedSlotSchema },
+      { name: Session.name, schema: SessionSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    NotificationModule,
   ],
   controllers: [BookingController],
   providers: [BookingService],
