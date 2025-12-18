@@ -123,7 +123,11 @@ export class BookingService {
    */
   private async ensureSettingsExist(doctorId: string): Promise<void> {
     const doctorObjectId = new Types.ObjectId(doctorId);
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    let settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    if (!settings) {
+      // Fallback: try with string format
+      settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    }
     if (!settings) {
       throw new BadRequestException(
         'Availability settings must be created before adding availability rules',
@@ -160,7 +164,11 @@ export class BookingService {
     await this.validateDoctor(doctorId);
 
     const doctorObjectId = new Types.ObjectId(doctorId);
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    let settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    if (!settings) {
+      // Fallback: try with string format
+      settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    }
     if (!settings) {
       throw new NotFoundException('Availability settings not found');
     }
@@ -175,7 +183,11 @@ export class BookingService {
     await this.validateDoctor(doctorId);
 
     const doctorObjectId = new Types.ObjectId(doctorId);
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    let settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    if (!settings) {
+      // Fallback: try with string format
+      settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorId });
+    }
     if (!settings) {
       throw new NotFoundException('Availability settings not found');
     }
@@ -228,9 +240,15 @@ export class BookingService {
     await this.validateDoctor(doctorId);
 
     const doctorObjectId = new Types.ObjectId(doctorId);
-    const rules = await this.availabilityRuleModel
+    let rules = await this.availabilityRuleModel
       .find({ doctor_id: doctorObjectId })
       .sort({ day_of_week: 1, start_time: 1 });
+    if (!rules || rules.length === 0) {
+      // Fallback: try with string format
+      rules = await this.availabilityRuleModel
+        .find({ doctor_id: doctorId })
+        .sort({ day_of_week: 1, start_time: 1 });
+    }
 
     return {
       success: true,
@@ -393,9 +411,25 @@ export class BookingService {
       }
     }
 
-    const overrides = await this.availabilityOverrideModel
+    let overrides = await this.availabilityOverrideModel
       .find(query)
       .sort({ date: 1 });
+    if (!overrides || overrides.length === 0) {
+      // Fallback: try with string format
+      const stringQuery: any = { doctor_id: doctorId };
+      if (startDate || endDate) {
+        stringQuery.date = {};
+        if (startDate) {
+          stringQuery.date.$gte = startDate;
+        }
+        if (endDate) {
+          stringQuery.date.$lte = endDate;
+        }
+      }
+      overrides = await this.availabilityOverrideModel
+        .find(stringQuery)
+        .sort({ date: 1 });
+    }
 
     return {
       success: true,
@@ -560,17 +594,28 @@ export class BookingService {
       throw new BadRequestException('Cannot get slots for past dates');
     }
 
-    // Get doctor's availability settings
-    const settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    // Get doctor's availability settings (handle both ObjectId and string formats)
+    let settings = await this.availabilitySettingsModel.findOne({ doctor_id: doctorObjectId });
+    if (!settings) {
+      // Fallback: try with string format (for existing data that might be stored as string)
+      settings = await this.availabilitySettingsModel.findOne({ doctor_id: dto.doctor_id });
+    }
     if (!settings) {
       throw new BadRequestException('Doctor has not set up availability settings');
     }
 
-    // Check for date override
-    const override = await this.availabilityOverrideModel.findOne({
+    // Check for date override (handle both ObjectId and string formats)
+    let override = await this.availabilityOverrideModel.findOne({
       doctor_id: doctorObjectId,
       date: dto.date,
     });
+    if (!override) {
+      // Fallback: try with string format
+      override = await this.availabilityOverrideModel.findOne({
+        doctor_id: dto.doctor_id,
+        date: dto.date,
+      });
+    }
 
     let availableStartTime: string | null = null;
     let availableEndTime: string | null = null;
@@ -592,13 +637,21 @@ export class BookingService {
     
     // Only use weekly rules if no override or override is not CUSTOM
     if (!availableStartTime || !availableEndTime) {
-      // Use weekly rules
+      // Use weekly rules (handle both ObjectId and string formats)
       const dayOfWeek = this.getDayOfWeek(dto.date);
-      const rule = await this.availabilityRuleModel.findOne({
+      let rule = await this.availabilityRuleModel.findOne({
         doctor_id: doctorObjectId,
         day_of_week: dayOfWeek,
         is_active: true,
       });
+      if (!rule) {
+        // Fallback: try with string format
+        rule = await this.availabilityRuleModel.findOne({
+          doctor_id: dto.doctor_id,
+          day_of_week: dayOfWeek,
+          is_active: true,
+        });
+      }
 
       if (!rule) {
         return {
@@ -666,20 +719,36 @@ export class BookingService {
       currentStart += slotDuration + breakMinutes;
     }
 
-    // Get confirmed sessions for this date
-    const confirmedSessions = await this.sessionRequestModel.find({
+    // Get confirmed sessions for this date (handle both ObjectId and string formats)
+    let confirmedSessions = await this.sessionRequestModel.find({
       doctor_id: doctorObjectId,
       date: dto.date,
       status: SessionRequestStatus.CONFIRMED,
     });
+    if (confirmedSessions.length === 0) {
+      // Fallback: try with string format
+      confirmedSessions = await this.sessionRequestModel.find({
+        doctor_id: dto.doctor_id,
+        date: dto.date,
+        status: SessionRequestStatus.CONFIRMED,
+      });
+    }
 
-    // Get active blocked slots (not expired)
+    // Get active blocked slots (not expired) (handle both ObjectId and string formats)
     const now = new Date();
-    const activeBlocks = await this.blockedSlotModel.find({
+    let activeBlocks = await this.blockedSlotModel.find({
       doctor_id: doctorObjectId,
       date: dto.date,
       expires_at: { $gt: now },
     });
+    if (activeBlocks.length === 0) {
+      // Fallback: try with string format
+      activeBlocks = await this.blockedSlotModel.find({
+        doctor_id: dto.doctor_id,
+        date: dto.date,
+        expires_at: { $gt: now },
+      });
+    }
 
     // Filter out slots that are booked or blocked, and ensure they don't exceed end time
     const endTimeMinutes = this.timeToMinutes(availableEndTime);
