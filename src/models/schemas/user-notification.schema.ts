@@ -7,8 +7,8 @@ export type UserNotificationDocument = UserNotification & Document;
 
 @Schema({ collection: 'user_notifications', timestamps: true })
 export class UserNotification {
-  @Prop({ type: Types.ObjectId, ref: NotificationTemplate.name, required: true })
-  template_id: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: NotificationTemplate.name, required: false })
+  template_id?: Types.ObjectId; // Made optional for direct notifications
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   user_id: Types.ObjectId;
@@ -40,6 +40,14 @@ export class UserNotification {
 
 export const UserNotificationSchema = SchemaFactory.createForClass(UserNotification);
 
-UserNotificationSchema.index({ template_id: 1, user_id: 1 }, { unique: true });
+// Partial unique index: only applies when template_id exists
+// This prevents duplicate template notifications to same user, but allows multiple direct notifications
+UserNotificationSchema.index(
+  { template_id: 1, user_id: 1 },
+  { 
+    unique: true,
+    partialFilterExpression: { template_id: { $exists: true, $ne: null } }
+  }
+);
 UserNotificationSchema.index({ user_id: 1, status: 1, createdAt: -1 });
 

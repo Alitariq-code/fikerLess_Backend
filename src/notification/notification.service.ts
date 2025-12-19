@@ -37,7 +37,10 @@ export class NotificationService {
   }
 
   async listTemplates(type?: string) {
-    const query: Record<string, any> = {};
+    const query: Record<string, any> = {
+      // Exclude templates that start with "direct_" prefix (user activity notifications)
+      type: { $not: /^direct_/ },
+    };
     if (type) {
       query.type = type;
     }
@@ -54,8 +57,19 @@ export class NotificationService {
     const skip = (page - 1) * limit;
     const query: Record<string, any> = {};
 
+    // Always exclude templates that start with "direct_" prefix (user activity notifications)
+    const typeConditions: any[] = [{ type: { $not: /^direct_/ } }];
+
     if (type && type !== 'all') {
-      query.type = type;
+      // If specific type is requested, match it but still exclude direct_ templates
+      typeConditions.push({ type });
+    }
+
+    // Use $and to combine type conditions
+    if (typeConditions.length > 1) {
+      query.$and = typeConditions;
+    } else {
+      query.type = { $not: /^direct_/ };
     }
 
     if (isActive !== undefined && isActive !== 'all') {
@@ -63,11 +77,26 @@ export class NotificationService {
     }
 
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { body: { $regex: search, $options: 'i' } },
-        { type: { $regex: search, $options: 'i' } },
-      ];
+      const searchConditions = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { body: { $regex: search, $options: 'i' } },
+          { type: { $regex: search, $options: 'i' } },
+        ],
+      };
+
+      // Combine type filter with search conditions
+      if (query.$and) {
+        query.$and.push(searchConditions);
+      } else if (query.type) {
+        query.$and = [
+          { type: { $not: /^direct_/ } },
+          searchConditions,
+        ];
+        delete query.type;
+      } else {
+        query.$and = [{ type: { $not: /^direct_/ } }, searchConditions];
+      }
     }
 
     const [templates, total] = await Promise.all([
@@ -312,20 +341,11 @@ export class NotificationService {
     metadata?: Record<string, any>,
     cta_url?: string,
   ): Promise<void> {
-    // Create a unique template for each notification to avoid unique constraint issues
-    // The unique index on template_id + user_id means we need a unique template per notification
-    const uniqueTemplateType = `direct_${type}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    
-    const template = await this.templateModel.create({
-      title: title.substring(0, 100), // Template title (max length)
-      body: body.substring(0, 200), // Template body (max length)
-      type: uniqueTemplateType,
-      is_active: true,
-    });
-
-    // Create notification with the unique template
+    // Create user notification directly without creating a template
+    // Direct notifications are user-specific and don't need templates
+    // They won't appear in the admin "Manage Notifications" template list
     await this.userNotificationModel.create({
-      template_id: template._id,
+      // template_id is omitted for direct notifications
       user_id: new Types.ObjectId(userId),
       status: 'unread',
       payload: {
