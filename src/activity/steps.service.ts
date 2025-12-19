@@ -49,20 +49,21 @@ export class StepsService {
       });
 
       if (existing) {
-        existing.steps = totalSteps;
-        existing.calories_burned = caloriesBurned;
-        existing.distance_km = distanceKm;
+        // Accumulate steps instead of replacing (mobile app sends increments)
+        existing.steps = existing.steps + totalSteps;
+        existing.calories_burned = (existing.calories_burned || 0) + caloriesBurned;
+        existing.distance_km = (existing.distance_km || 0) + distanceKm;
         await existing.save();
         updated++;
         results.push({
           date: dateStr,
           status: 'updated',
           id: existing._id.toString(),
-          steps: totalSteps,
-          calories_burned: caloriesBurned,
-          distance_km: distanceKm,
+          steps: existing.steps,
+          calories_burned: existing.calories_burned,
+          distance_km: existing.distance_km,
           goal: existing.goal,
-          percentage: ((totalSteps / existing.goal) * 100).toFixed(2)
+          percentage: ((existing.steps / existing.goal) * 100).toFixed(2)
         });
       } else {
         const newEntry = await this.stepsModel.create({
