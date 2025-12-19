@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Headers, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -37,6 +38,15 @@ export class AuthController {
       throw new BadRequestException('Please provide your email address to reset your password.');
     }
     return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    if (!dto || !dto.email || !dto.otp || !dto.new_password) {
+      throw new BadRequestException('Email, OTP code, and new password are required.');
+    }
+    return this.authService.resetPassword(dto.email, dto.otp, dto.new_password);
   }
 
   @Post('change-password')

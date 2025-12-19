@@ -233,6 +233,55 @@ export class AuthService {
     };
   }
 
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    // Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      throw new BadRequestException(emailValidation.error);
+    }
+
+    // Validate OTP
+    if (!otp) {
+      throw new BadRequestException('Please provide the OTP code.');
+    }
+
+    // Find user by email and OTP
+    const user = await this.userModel.findOne({ email, otp_token: otp }).exec();
+    if (!user) {
+      throw new NotFoundException('Invalid email or OTP code. Please request a new password reset code.');
+    }
+
+    // Check if account is disabled
+    if (user.is_disabled) {
+      throw new UnauthorizedException('Your account has been disabled. Please contact support.');
+    }
+
+    // Validate new password strength (same as signup)
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      throw new BadRequestException(passwordValidation.error);
+    }
+
+    // Check if new password is the same as current password
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      throw new BadRequestException('New password must be different from your current password.');
+    }
+
+    // Hash and save new password
+    user.password = await bcrypt.hash(newPassword, 10);
+    // Clear OTP token after successful password reset
+    user.otp_token = '';
+    await user.save();
+
+    this.logger.log(`Password reset successfully for user ${user.email}`);
+
+    return {
+      message: 'Your password has been reset successfully! You can now log in with your new password.',
+      email: user.email,
+    };
+  }
+
   async changePassword(token: string, oldPassword: string, newPassword: string) {
     if (!token) {
       throw new UnauthorizedException('Please log in to access this feature.');
@@ -244,6 +293,11 @@ export class AuthService {
     }
 
     const user = result.user;
+
+    // Check if account is disabled
+    if (user.is_disabled) {
+      throw new UnauthorizedException('Your account has been disabled. Please contact support.');
+    }
 
     // Validate old password
     const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
@@ -267,10 +321,11 @@ export class AuthService {
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    this.logger.log(`Password changed successfully for user ${user.email}`);
+    this.logger.log(`Password changed successfully for user ${user.email} (${user.user_type})`);
 
     return {
       message: 'Your password has been changed successfully!',
+      user_type: user.user_type,
     };
   }
 
