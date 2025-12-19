@@ -106,7 +106,7 @@
 					"name": "Forgot Password",
 					"request": {
 						"method": "POST",
-						"description": "Triggers password reset flow. Sends a fresh OTP/reset code to the specified email if it exists.",
+						"description": "Triggers password reset flow. Sends a fresh OTP/reset code to the specified email if it exists. Works for all user types (user, specialist, admin). The OTP code will be sent via email.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -131,13 +131,253 @@
 								"forgot-password"
 							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"test@example.com\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/auth/forgot-password",
+									"protocol": "https",
+									"host": [
+										"fikrless",
+										"com"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"forgot-password"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Password reset code has been sent to your email\",\n    \"email\": \"test@example.com\"\n}"
+						},
+						{
+							"name": "Error - Email Not Found",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"nonexistent@example.com\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/auth/forgot-password",
+									"protocol": "https",
+									"host": [
+										"fikrless",
+										"com"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"forgot-password"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"No account found with this email address. Please sign up first.\",\n    \"error\": \"Not Found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"description": "Resets user password using the OTP code received via email from the forgot-password endpoint. Works for all user types (user, specialist, admin). Requires email, OTP code, and new password (minimum 8 characters).",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"1234\",\n    \"new_password\": \"NewPassword123\"\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/auth/reset-password",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"1234\",\n    \"new_password\": \"NewPassword123\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/auth/reset-password",
+									"protocol": "https",
+									"host": [
+										"fikrless",
+										"com"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"reset-password"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Your password has been reset successfully! You can now log in with your new password.\",\n    \"email\": \"test@example.com\"\n}"
+						},
+						{
+							"name": "Error - Invalid OTP",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"0000\",\n    \"new_password\": \"NewPassword123\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/auth/reset-password",
+									"protocol": "https",
+									"host": [
+										"fikrless",
+										"com"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"reset-password"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 404,\n    \"message\": \"Invalid email or OTP code. Please request a new password reset code.\",\n    \"error\": \"Not Found\"\n}"
+						},
+						{
+							"name": "Error - Weak Password",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"1234\",\n    \"new_password\": \"123\"\n}"
+								},
+								"url": {
+									"raw": "https://fikrless.com/api/v1/auth/reset-password",
+									"protocol": "https",
+									"host": [
+										"fikrless",
+										"com"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"reset-password"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"statusCode\": 400,\n    \"message\": \"Password must be at least 8 characters long.\",\n    \"error\": \"Bad Request\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Change Password",
 					"request": {
 						"method": "POST",
-						"description": "Allows an authenticated user to change their password. Requires both old_password and new_password for security. The new password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number. Requires JWT token in Authorization header.",
+						"description": "Allows an authenticated user to change their password. Requires both old_password and new_password for security. The new password must be at least 8 characters long. Works for all user types (user, specialist, admin). Requires JWT token in Authorization header.",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -207,7 +447,7 @@
 									}
 								],
 								"cookie": [],
-								"body": "{\n    \"message\": \"Your password has been changed successfully!\"\n}"
+								"body": "{\n    \"message\": \"Your password has been changed successfully!\",\n    \"user_type\": \"user\"\n}"
 							},
 							{
 								"name": "Error - Old Password Incorrect",

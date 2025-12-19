@@ -31,7 +31,7 @@ import moment from 'moment-timezone';
 @Injectable()
 export class BookingService {
   private readonly logger = new Logger(BookingService.name);
-  private readonly PAYMENT_UPLOAD_EXPIRY_MINUTES = 30; // 30 minutes to upload payment
+  private readonly PAYMENT_UPLOAD_EXPIRY_MINUTES = 10; // 10 minutes to upload payment
   private readonly APPROVAL_WAIT_HOURS = 24; // 24 hours for admin to approve
 
   constructor(
@@ -818,7 +818,7 @@ export class BookingService {
     const amount = 1000; // Default amount, should be fetched from specialist profile
     const currency = 'PKR';
 
-    // Create blocked slot (expires in 30 minutes)
+    // Create blocked slot (expires in 10 minutes)
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + this.PAYMENT_UPLOAD_EXPIRY_MINUTES);
 
@@ -851,7 +851,7 @@ export class BookingService {
 
     return {
       success: true,
-      message: 'Session request created successfully. Please upload payment screenshot within 30 minutes.',
+      message: 'Session request created successfully. Please upload payment screenshot within 10 minutes.',
       data: {
         ...sessionRequest.toObject(),
         expires_at: expiresAt,
