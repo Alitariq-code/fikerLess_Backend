@@ -27,7 +27,9 @@
     "test:fcm-token": "ts-node scripts/test-fcm-token.ts",
     "test:notification-settings": "ts-node scripts/test-notification-settings.ts",
     "test:sessions-by-date": "ts-node scripts/test-sessions-by-date.ts",
-    "test:wallet-summary": "ts-node scripts/test-wallet-summary.ts"
+    "test:wallet-summary": "ts-node scripts/test-wallet-summary.ts",
+    "test:session-file-upload": "ts-node scripts/test-session-file-upload.ts",
+    "test:session-details": "ts-node scripts/test-session-details.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

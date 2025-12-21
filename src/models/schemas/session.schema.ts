@@ -69,6 +69,9 @@ export class Session {
 
   @Prop({ type: String, enum: Object.values(SessionType) })
   session_type?: SessionType; // Type of session: video call or audio call
+
+  @Prop()
+  session_file?: string; // URL of uploaded session file (doc, pdf, etc.)
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);

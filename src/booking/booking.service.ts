@@ -14,6 +14,7 @@ import { SessionRequest, SessionRequestDocument, SessionRequestStatus } from '..
 import { BlockedSlot, BlockedSlotDocument } from '../models/schemas/blocked-slot.schema';
 import { Session, SessionDocument, SessionStatus, SessionType } from '../models/schemas/session.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
+import { Demographics, DemographicsDocument } from '../models/schemas/demographics.schema';
 import { CreateAvailabilityRuleDto } from './dto/create-availability-rule.dto';
 import { UpdateAvailabilityRuleDto } from './dto/update-availability-rule.dto';
 import { CreateAvailabilitySettingsDto } from './dto/create-availability-settings.dto';
@@ -42,6 +43,7 @@ export class BookingService {
     @InjectModel(BlockedSlot.name) private blockedSlotModel: Model<BlockedSlotDocument>,
     @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Demographics.name) private demographicsModel: Model<DemographicsDocument>,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -1371,6 +1373,35 @@ export class BookingService {
   }
 
   /**
+   * Update session file URL
+   */
+  async updateSessionFile(userId: string, sessionId: string, fileUrl: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const sessionObjectId = new Types.ObjectId(sessionId);
+
+    const session = await this.sessionModel.findOne({
+      _id: sessionObjectId,
+      user_id: userObjectId,
+    });
+
+    if (!session) {
+      throw new NotFoundException('Session not found or you do not have access to it');
+    }
+
+    session.session_file = fileUrl;
+    await session.save();
+
+    return {
+      success: true,
+      message: 'Session file uploaded successfully',
+      data: {
+        session_id: session._id.toString(),
+        session_file: session.session_file,
+      },
+    };
+  }
+
+  /**
    * Get doctor's sessions
    */
   async getDoctorSessions(doctorId: string, dto: GetSessionsDto) {
@@ -1430,6 +1461,116 @@ export class BookingService {
     return {
       success: true,
       data: session,
+    };
+  }
+
+  /**
+   * Get comprehensive session details for session details screen
+   */
+  async getSessionDetails(userId: string, sessionId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const sessionObjectId = new Types.ObjectId(sessionId);
+
+    // Get session with populated doctor and user
+    const session = await this.sessionModel
+      .findOne({
+        _id: sessionObjectId,
+        $or: [{ user_id: userObjectId }, { doctor_id: userObjectId }],
+      })
+      .populate('doctor_id', 'first_name last_name email phone')
+      .populate('user_id', 'first_name last_name email phone username')
+      .lean();
+
+    if (!session) {
+      throw new NotFoundException('Session not found or you do not have access to it');
+    }
+
+    // Calculate duration in minutes
+    const startTime = moment(session.start_time, 'HH:mm');
+    const endTime = moment(session.end_time, 'HH:mm');
+    const durationMinutes = endTime.diff(startTime, 'minutes');
+
+    // Get user ID from populated object (lean() returns populated objects)
+    const sessionUser = session.user_id as any;
+    const sessionUserId = sessionUser?._id || sessionUser;
+    const sessionUserObjectId = sessionUserId instanceof Types.ObjectId 
+      ? sessionUserId 
+      : new Types.ObjectId(sessionUserId.toString());
+
+    // Get client (user) demographics for preferred language
+    const demographics = await this.demographicsModel
+      .findOne({ user_id: sessionUserObjectId })
+      .lean();
+
+    // Get total sessions count for the user
+    const totalSessions = await this.sessionModel.countDocuments({
+      user_id: sessionUserObjectId,
+    });
+
+    // Get last session (most recent before current)
+    const lastSession = await this.sessionModel
+      .findOne({
+        user_id: sessionUserObjectId,
+        _id: { $ne: sessionObjectId },
+      })
+      .sort({ date: -1, start_time: -1 })
+      .lean();
+
+    // Extract filename from session_file URL
+    let fileName = null;
+    if (session.session_file) {
+      const parts = session.session_file.split('/');
+      fileName = parts[parts.length - 1];
+    }
+
+    // Format client ID (use username if available, otherwise email)
+    const clientId = (session.user_id as any)?.username || (session.user_id as any)?.email || 'anonymous_user';
+
+    return {
+      success: true,
+      data: {
+        session_details: {
+          session_title: session.session_title || 'Session',
+          time: `${session.start_time} - ${session.end_time}`,
+          duration: `${durationMinutes} minutes`,
+          client_id: clientId,
+          session_type: session.session_type || 'video call',
+        },
+        session_notes: {
+          upload_documents: session.session_file ? {
+            file_url: session.session_file,
+            file_name: fileName,
+          } : null,
+          notes: session.notes || null,
+        },
+        client_information: {
+          total_sessions: totalSessions,
+          is_new_client: totalSessions === 1,
+          last_session: lastSession ? {
+            date: lastSession.date,
+            status: lastSession.status,
+            title: lastSession.session_title || 'Previous Session',
+          } : null,
+          preferred_language: demographics?.preferred_language || 'English',
+        },
+        doctor_information: {
+          doctor_id: (session.doctor_id as any)?._id?.toString(),
+          full_name: session.doctor_id
+            ? `${(session.doctor_id as any).first_name || ''} ${(session.doctor_id as any).last_name || ''}`.trim()
+            : null,
+          email: (session.doctor_id as any)?.email || null,
+          phone: (session.doctor_id as any)?.phone || null,
+        },
+        user_information: {
+          user_id: (session.user_id as any)?._id?.toString(),
+          full_name: session.user_id
+            ? `${(session.user_id as any).first_name || ''} ${(session.user_id as any).last_name || ''}`.trim()
+            : null,
+          email: (session.user_id as any)?.email || null,
+          phone: (session.user_id as any)?.phone || null,
+          username: (session.user_id as any)?.username || null,
+        },
+      },
     };
   }
 

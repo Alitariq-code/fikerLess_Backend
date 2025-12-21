@@ -43,16 +43,28 @@ import { SessionRequestStatus } from '../models/schemas/session-request.schema';
 @Controller('api/v1/booking')
 export class BookingController {
   private readonly paymentUploadDir = join(process.cwd(), 'public', 'uploads', 'payments');
+  private readonly sessionFileUploadDir = join(process.cwd(), 'public', 'uploads', 'sessions');
   private readonly maxFileSize = 5 * 1024 * 1024; // 5MB
   private readonly allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  private readonly allowedSessionFileTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ];
 
   constructor(
     private readonly bookingService: BookingService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {
-    // Ensure payment upload directory exists
+    // Ensure upload directories exist
     if (!existsSync(this.paymentUploadDir)) {
       mkdirSync(this.paymentUploadDir, { recursive: true });
+    }
+    if (!existsSync(this.sessionFileUploadDir)) {
+      mkdirSync(this.sessionFileUploadDir, { recursive: true });
     }
   }
 
@@ -387,6 +399,55 @@ export class BookingController {
     return this.bookingService.getSessionsByDate(userId, dto.date, dto.status);
   }
 
+  @Post('sessions/:sessionId/upload-file')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const uploadDir = join(process.cwd(), 'public', 'uploads', 'sessions');
+          if (!existsSync(uploadDir)) {
+            mkdirSync(uploadDir, { recursive: true });
+          }
+          cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `session-${uniqueSuffix}${ext}`);
+        },
+      }),
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'text/plain',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ];
+        if (file.mimetype && allowedTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Invalid file type. Allowed: PDF, DOC, DOCX, TXT, XLS, XLSX'), false);
+        }
+      },
+    }),
+  )
+  async uploadSessionFile(
+    @Headers('authorization') token: string,
+    @Param('sessionId') sessionId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    const userId = await this.getUserIdFromToken(token);
+    const fileUrl = `/uploads/sessions/${file.filename}`;
+    return this.bookingService.updateSessionFile(userId, sessionId, fileUrl);
+  }
+
   @Get('sessions/doctor/:doctorId')
   @HttpCode(HttpStatus.OK)
   async getDoctorSessions(
@@ -410,6 +471,16 @@ export class BookingController {
   ) {
     const userId = await this.getUserIdFromToken(token);
     return this.bookingService.getSessionById(userId, id);
+  }
+
+  @Get('sessions/:id/details')
+  @HttpCode(HttpStatus.OK)
+  async getSessionDetails(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    return this.bookingService.getSessionDetails(userId, id);
   }
 }
 

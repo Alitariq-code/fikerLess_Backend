@@ -9,6 +9,7 @@ import { SessionRequest, SessionRequestSchema } from '../models/schemas/session-
 import { BlockedSlot, BlockedSlotSchema } from '../models/schemas/blocked-slot.schema';
 import { Session, SessionSchema } from '../models/schemas/session.schema';
 import { User, UserSchema } from '../models/schemas/user.schema';
+import { Demographics, DemographicsSchema } from '../models/schemas/demographics.schema';
 import { NotificationModule } from '../notification/notification.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { NotificationModule } from '../notification/notification.module';
       { name: BlockedSlot.name, schema: BlockedSlotSchema },
       { name: Session.name, schema: SessionSchema },
       { name: User.name, schema: UserSchema },
+      { name: Demographics.name, schema: DemographicsSchema },
     ]),
     NotificationModule,
   ],
