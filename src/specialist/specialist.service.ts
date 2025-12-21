@@ -23,7 +23,8 @@ export class SpecialistService {
       throw new ForbiddenException('Only specialists can create specialist profiles');
     }
 
-    const existing = await this.specialistModel.findOne({ user_id: userId });
+    const userIdObj = new Types.ObjectId(userId);
+    const existing = await this.specialistModel.findOne({ user_id: userIdObj });
     if (existing) {
       throw new BadRequestException('Profile already exists. Use update endpoint.');
     }
@@ -38,7 +39,7 @@ export class SpecialistService {
     const certifications = dto.certifications || [];
     
     const profile = await this.specialistModel.create({
-      user_id: userId,
+      user_id: userIdObj,
       full_name: dto.basic_info.full_name,
       designation: dto.basic_info.designation,
       location: dto.basic_info.location,
