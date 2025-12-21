@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, Matches, IsNumber, Min, IsOptional, IsEnum } from 'class-validator';
+import { SessionType } from '../../models/schemas/session-request.schema';
 
 export class CreateSessionRequestDto {
   @IsString()
@@ -25,5 +26,13 @@ export class CreateSessionRequestDto {
     message: 'end_time must be in HH:mm format (24-hour)',
   })
   end_time: string;
+
+  @IsString()
+  @IsOptional()
+  session_title?: string;
+
+  @IsEnum(SessionType)
+  @IsOptional()
+  session_type?: SessionType;
 }
 

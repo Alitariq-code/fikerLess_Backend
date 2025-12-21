@@ -12,7 +12,7 @@ import { AvailabilitySettings, AvailabilitySettingsDocument } from '../models/sc
 import { AvailabilityOverride, AvailabilityOverrideDocument, OverrideType } from '../models/schemas/availability-override.schema';
 import { SessionRequest, SessionRequestDocument, SessionRequestStatus } from '../models/schemas/session-request.schema';
 import { BlockedSlot, BlockedSlotDocument } from '../models/schemas/blocked-slot.schema';
-import { Session, SessionDocument, SessionStatus } from '../models/schemas/session.schema';
+import { Session, SessionDocument, SessionStatus, SessionType } from '../models/schemas/session.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { CreateAvailabilityRuleDto } from './dto/create-availability-rule.dto';
 import { UpdateAvailabilityRuleDto } from './dto/update-availability-rule.dto';
@@ -833,6 +833,8 @@ export class BookingService {
       currency,
       status: SessionRequestStatus.PENDING_PAYMENT,
       expires_at: expiresAt,
+      session_title: dto.session_title,
+      session_type: dto.session_type,
     });
 
     // Create blocked slot with session request ID
@@ -1132,6 +1134,8 @@ export class BookingService {
       status: SessionStatus.CONFIRMED,
       session_request_id: request._id,
       notes: dto.notes || null,
+      session_title: request.session_title,
+      session_type: request.session_type,
     });
 
     // Update session request status to CONFIRMED (linked to session)

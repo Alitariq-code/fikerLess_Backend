@@ -12,6 +12,11 @@ export enum SessionStatus {
   NO_SHOW = 'NO_SHOW',
 }
 
+export enum SessionType {
+  VIDEO_CALL = 'video call',
+  AUDIO_CALL = 'audio call',
+}
+
 @Schema({ collection: 'sessions', timestamps: true })
 export class Session {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
@@ -58,6 +63,12 @@ export class Session {
 
   @Prop({ type: Date, default: null })
   cancelled_at?: Date; // When session was cancelled
+
+  @Prop()
+  session_title?: string; // Title/name of the session
+
+  @Prop({ type: String, enum: Object.values(SessionType) })
+  session_type?: SessionType; // Type of session: video call or audio call
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);

@@ -13,6 +13,11 @@ export enum SessionRequestStatus {
   EXPIRED = 'EXPIRED', // Payment not uploaded in time
 }
 
+export enum SessionType {
+  VIDEO_CALL = 'video call',
+  AUDIO_CALL = 'audio call',
+}
+
 @Schema({ collection: 'session_requests', timestamps: true })
 export class SessionRequest {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
@@ -53,6 +58,12 @@ export class SessionRequest {
 
   @Prop({ type: Types.ObjectId, ref: 'BlockedSlot' })
   blocked_slot_id?: Types.ObjectId; // Reference to the blocked slot
+
+  @Prop()
+  session_title?: string; // Title/name of the session
+
+  @Prop({ type: String, enum: Object.values(SessionType) })
+  session_type?: SessionType; // Type of session: video call or audio call
 }
 
 export const SessionRequestSchema = SchemaFactory.createForClass(SessionRequest);
