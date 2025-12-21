@@ -341,21 +341,32 @@ export class NotificationService {
     metadata?: Record<string, any>,
     cta_url?: string,
   ): Promise<void> {
-    // Create user notification directly without creating a template
-    // Direct notifications are user-specific and don't need templates
-    // They won't appear in the admin "Manage Notifications" template list
-    await this.userNotificationModel.create({
-      // template_id is omitted for direct notifications
-      user_id: new Types.ObjectId(userId),
-      status: 'unread',
-      payload: {
-        title,
-        body,
-        type,
-        metadata: metadata || {},
-        cta_url,
-      },
-    });
+    try {
+      // Create user notification directly without creating a template
+      // Direct notifications are user-specific and don't need templates
+      // They won't appear in the admin "Manage Notifications" template list
+      await this.userNotificationModel.create({
+        // template_id is omitted for direct notifications
+        user_id: new Types.ObjectId(userId),
+        status: 'unread',
+        payload: {
+          title,
+          body,
+          type,
+          metadata: metadata || {},
+          cta_url,
+        },
+      });
+    } catch (error: any) {
+      // If duplicate key error, it means notification already exists - that's okay
+      // This can happen when the same achievement is unlocked multiple times quickly
+      if (error.code === 11000) {
+        // Duplicate notification - silently ignore (already sent)
+        return;
+      }
+      // Re-throw other errors
+      throw error;
+    }
   }
 
   // Admin methods

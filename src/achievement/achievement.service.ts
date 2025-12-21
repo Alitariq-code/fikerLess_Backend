@@ -5,6 +5,9 @@ import { Achievement, AchievementDocument, AchievementConditionType } from '../m
 import { UserAchievement, UserAchievementDocument, UserAchievementStatus } from '../models/schemas/user-achievement.schema';
 import { ForumPost, ForumPostDocument } from '../models/schemas/forum-post.schema';
 import { ForumComment, ForumCommentDocument } from '../models/schemas/forum-comment.schema';
+import { Steps, StepsDocument } from '../models/schemas/steps.schema';
+import { Mood, MoodDocument } from '../models/schemas/mood.schema';
+import { Journal, JournalDocument } from '../models/schemas/journal.schema';
 import { NotificationService } from '../notification/notification.service';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { UpdateAchievementDto } from './dto/update-achievement.dto';
@@ -13,19 +16,242 @@ import { UpdateAchievementDto } from './dto/update-achievement.dto';
 export class AchievementService {
   private readonly logger = new Logger(AchievementService.name);
 
+  // Progress calculators map for generic achievement tracking
+  private readonly progressCalculators: Map<
+    AchievementConditionType,
+    (userId: string) => Promise<number>
+  > = new Map();
+
   constructor(
     @InjectModel(Achievement.name) private achievementModel: Model<AchievementDocument>,
     @InjectModel(UserAchievement.name) private userAchievementModel: Model<UserAchievementDocument>,
     @InjectModel(ForumPost.name) private forumPostModel: Model<ForumPostDocument>,
     @InjectModel(ForumComment.name) private forumCommentModel: Model<ForumCommentDocument>,
+    @InjectModel(Steps.name) private stepsModel: Model<StepsDocument>,
+    @InjectModel(Mood.name) private moodModel: Model<MoodDocument>,
+    @InjectModel(Journal.name) private journalModel: Model<JournalDocument>,
     private readonly notificationService: NotificationService,
-  ) {}
+  ) {
+    // Initialize progress calculators for each condition type
+    this.initializeProgressCalculators();
+  }
 
   /**
-   * Check and update streak-based achievements
+   * Initialize progress calculators for all condition types
+   * Add new condition types here and they'll be automatically tracked!
    */
-  async checkStreakAchievements(userId: string, currentStreak: number): Promise<void> {
+  private initializeProgressCalculators(): void {
+    // STREAK_DAYS: Calculate consecutive days with steps
+    this.progressCalculators.set(
+      AchievementConditionType.STREAK_DAYS,
+      async (userId: string) => this.calculateStreak(userId),
+    );
+
+    // FORUM_HELPS: Count helpful forum comments
+    this.progressCalculators.set(
+      AchievementConditionType.FORUM_HELPS,
+      async (userId: string) => this.countForumHelps(userId),
+    );
+
+    // STEPS_TOTAL: Calculate total steps ever
+    this.progressCalculators.set(
+      AchievementConditionType.STEPS_TOTAL,
+      async (userId: string) => this.calculateTotalSteps(userId),
+    );
+
+    // MOOD_DAYS: Count days with mood entries
+    this.progressCalculators.set(
+      AchievementConditionType.MOOD_DAYS,
+      async (userId: string) => this.countMoodDays(userId),
+    );
+
+    // JOURNAL_DAYS: Count days with journal entries
+    this.progressCalculators.set(
+      AchievementConditionType.JOURNAL_DAYS,
+      async (userId: string) => this.countJournalDays(userId),
+    );
+  }
+
+  /**
+   * 🎯 GENERIC METHOD: Check ALL achievements for a user
+   * This automatically tracks ANY achievement in the database!
+   * 
+   * @param userId - User ID to check achievements for
+   * @param conditionTypes - Optional: Only check specific condition types (for performance)
+   */
+  async checkAllAchievements(
+    userId: string,
+    conditionTypes?: AchievementConditionType[],
+  ): Promise<void> {
     try {
+      // Build query for active achievements
+      const query: any = { is_active: true };
+      
+      // If specific condition types provided, filter by them
+      if (conditionTypes && conditionTypes.length > 0) {
+        query.condition_type = { $in: conditionTypes };
+      }
+
+      // Get all active achievements (matching condition types if specified)
+      const achievements = await this.achievementModel.find(query).exec();
+
+      if (achievements.length === 0) {
+        return;
+      }
+
+      // Group achievements by condition type for efficient calculation
+      const achievementsByType = new Map<AchievementConditionType, AchievementDocument[]>();
+      
+      for (const achievement of achievements) {
+        const conditionType = achievement.condition_type;
+        if (!achievementsByType.has(conditionType)) {
+          achievementsByType.set(conditionType, []);
+        }
+        achievementsByType.get(conditionType)!.push(achievement);
+      }
+
+      // Process each condition type
+      for (const [conditionType, typeAchievements] of achievementsByType) {
+        const calculator = this.progressCalculators.get(conditionType);
+        
+        if (!calculator) {
+          this.logger.warn(
+            `No progress calculator found for condition type: ${conditionType}. ` +
+            `Achievement tracking skipped for ${typeAchievements.length} achievement(s).`
+          );
+          continue;
+        }
+
+        try {
+          // Calculate current progress for this condition type
+          const currentProgress = await calculator(userId);
+
+          // Update all achievements of this type
+          for (const achievement of typeAchievements) {
+            await this.updateAchievementProgress(
+              userId,
+              achievement._id.toString(),
+              currentProgress,
+              achievement.condition_value,
+            );
+          }
+        } catch (error) {
+          this.logger.error(
+            `Error calculating progress for condition type ${conditionType} for user ${userId}:`,
+            error,
+          );
+          // Continue with other condition types even if one fails
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Error checking all achievements for user ${userId}:`, error);
+    }
+  }
+
+  /**
+   * 🚀 MAIN ENTRY POINT: Check achievements after user action
+   * Call this from any service when user performs an action
+   * 
+   * @param userId - User ID
+   * @param triggerTypes - Condition types that might be affected by this action
+   *                      (for performance - only check relevant achievements)
+   */
+  async checkAchievementsAfterAction(
+    userId: string,
+    triggerTypes?: AchievementConditionType[],
+  ): Promise<void> {
+    // Fire and forget - don't block the main operation
+    this.checkAllAchievements(userId, triggerTypes).catch((error) => {
+      this.logger.error(`Background achievement check failed for user ${userId}:`, error);
+    });
+  }
+
+  // ==================== PROGRESS CALCULATORS ====================
+
+  /**
+   * Calculate streak (consecutive days with steps > 0)
+   */
+  private async calculateStreak(userId: string): Promise<number> {
+    try {
+      const userIdObj = new Types.ObjectId(userId);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let streak = 0;
+      let currentDate = new Date(today);
+
+      while (true) {
+        const steps = await this.stepsModel.findOne({
+          user_id: userIdObj,
+          date: {
+            $gte: currentDate,
+            $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
+          },
+        }).lean().exec();
+
+        if (steps && steps.steps > 0) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    } catch (error) {
+      this.logger.error(`Error calculating streak for user ${userId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Calculate total steps ever recorded
+   */
+  private async calculateTotalSteps(userId: string): Promise<number> {
+    try {
+      const userIdObj = new Types.ObjectId(userId);
+      const allSteps = await this.stepsModel.find({ user_id: userIdObj }).lean().exec();
+      return allSteps.reduce((total, step) => total + (step.steps || 0), 0);
+    } catch (error) {
+      this.logger.error(`Error calculating total steps for user ${userId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Count days with mood entries
+   */
+  private async countMoodDays(userId: string): Promise<number> {
+    try {
+      const userIdObj = new Types.ObjectId(userId);
+      const count = await this.moodModel.countDocuments({ user_id: userIdObj }).exec();
+      return count;
+    } catch (error) {
+      this.logger.error(`Error counting mood days for user ${userId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Count days with journal entries
+   */
+  private async countJournalDays(userId: string): Promise<number> {
+    try {
+      const userIdObj = new Types.ObjectId(userId);
+      const count = await this.journalModel.countDocuments({ user_id: userIdObj }).exec();
+      return count;
+    } catch (error) {
+      this.logger.error(`Error counting journal days for user ${userId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * @deprecated Use checkAchievementsAfterAction() instead
+   * Kept for backward compatibility
+   */
+  async checkStreakAchievements(userId: string, currentStreak?: number): Promise<void> {
+    if (currentStreak !== undefined) {
+      // If streak provided, use it directly (for performance)
       const achievements = await this.achievementModel.find({
         condition_type: AchievementConditionType.STREAK_DAYS,
         is_active: true,
@@ -39,38 +265,23 @@ export class AchievementService {
           achievement.condition_value,
         );
       }
-    } catch (error) {
-      this.logger.error(`Error checking streak achievements for user ${userId}:`, error);
+    } else {
+      // Otherwise use generic method
+      await this.checkAllAchievements(userId, [AchievementConditionType.STREAK_DAYS]);
     }
   }
 
   /**
-   * Check and update forum-based achievements
+   * @deprecated Use checkAchievementsAfterAction() instead
+   * Kept for backward compatibility
    */
   async checkForumAchievements(userId: string): Promise<void> {
-    try {
-      const helpCount = await this.countForumHelps(userId);
-      
-      const achievements = await this.achievementModel.find({
-        condition_type: AchievementConditionType.FORUM_HELPS,
-        is_active: true,
-      }).exec();
-
-      for (const achievement of achievements) {
-        await this.updateAchievementProgress(
-          userId,
-          achievement._id.toString(),
-          helpCount,
-          achievement.condition_value,
-        );
-      }
-    } catch (error) {
-      this.logger.error(`Error checking forum achievements for user ${userId}:`, error);
-    }
+    await this.checkAllAchievements(userId, [AchievementConditionType.FORUM_HELPS]);
   }
 
   /**
    * Count how many times user helped others in forum
+   * Public for testing purposes
    */
   async countForumHelps(userId: string): Promise<number> {
     try {

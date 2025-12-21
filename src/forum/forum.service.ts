@@ -13,6 +13,7 @@ import { UpdateForumPostDto } from './dto/update-forum-post.dto';
 import { ArticleCategory } from '../models/schemas/article.schema';
 import { NotificationService } from '../notification/notification.service';
 import { AchievementService } from '../achievement/achievement.service';
+import { AchievementConditionType } from '../models/schemas/achievement.schema';
 
 @Injectable()
 export class ForumService {
@@ -440,20 +441,12 @@ export class ForumService {
 
     // Check forum achievements (user is helping someone else) - only for top-level comments
     if (!dto.parent_comment_id && post.user_id.toString() !== userId) {
-      this.checkAchievementsAsync(userId);
+      this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.FORUM_HELPS]);
     }
 
     return await this.formatCommentResponse(comment, userId);
   }
 
-  private async checkAchievementsAsync(userId: string): Promise<void> {
-    try {
-      await this.achievementService.checkForumAchievements(userId);
-    } catch (error) {
-      // Don't fail the main operation if achievement check fails
-      this.logger.error(`Error checking forum achievements for user ${userId}:`, error);
-    }
-  }
 
   async updateComment(userId: string, commentId: string, dto: UpdateCommentDto): Promise<any> {
     // Validate ObjectId format

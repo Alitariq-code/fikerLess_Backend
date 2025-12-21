@@ -6,7 +6,6 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "test:password-flows": "ts-node scripts/test-password-flows.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -24,16 +23,7 @@
     "import:internships": "ts-node scripts/import-internships.ts",
     "create:admin": "ts-node scripts/create-admin.ts",
     "create:dummy-users": "ts-node scripts/create-dummy-users.ts",
-    "seed:achievements": "ts-node scripts/seed-achievements.ts",
-    "test:achievements": "ts-node scripts/test-achievements.ts",
-    "test:forum-comments": "ts-node scripts/test-forum-comments.ts",
-    "test:forum-complete": "ts-node scripts/test-forum-complete.ts",
-    "test:wellness-complete": "ts-node scripts/test-wellness-complete.ts",
-    "test:complete-system": "ts-node scripts/test-complete-system.ts",
-    "test:booking-availability": "ts-node scripts/test-booking-availability.ts",
-    "test:booking-slots-sessions": "ts-node scripts/test-booking-slots-sessions.ts",
-    "test:booking-complete-flow": "ts-node scripts/test-booking-complete-flow.ts",
-    "test:booking-admin-sessions": "ts-node scripts/test-booking-admin-sessions.ts"
+    "seed:achievements": "ts-node scripts/seed-achievements.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

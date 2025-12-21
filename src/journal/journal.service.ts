@@ -5,15 +5,14 @@ import { Journal, JournalDocument } from '../models/schemas/journal.schema';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import { UpdateJournalDto } from './dto/update-journal.dto';
 import { AchievementService } from '../achievement/achievement.service';
-import { Steps, StepsDocument } from '../models/schemas/steps.schema';
 import { GoalsService } from '../goals/goals.service';
 import { GoalCategory } from '../models/schemas/goal.schema';
+import { AchievementConditionType } from '../models/schemas/achievement.schema';
 
 @Injectable()
 export class JournalService {
   constructor(
     @InjectModel(Journal.name) private journalModel: Model<JournalDocument>,
-    @InjectModel(Steps.name) private stepsModel: Model<StepsDocument>,
     @Inject(forwardRef(() => AchievementService))
     private readonly achievementService: AchievementService,
     @Inject(forwardRef(() => GoalsService))
@@ -42,7 +41,7 @@ export class JournalService {
       await existing.save();
 
       // Check achievements after updating journal (async, don't block response)
-      this.checkAchievementsAsync(userId);
+      this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.STREAK_DAYS, AchievementConditionType.JOURNAL_DAYS]);
       
       // Update Meditation goals (async, don't block response)
       this.updateGoalsAsync(userId);
@@ -65,7 +64,7 @@ export class JournalService {
     await journal.save();
 
     // Check achievements after saving journal (async, don't block response)
-    this.checkAchievementsAsync(userId);
+    this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.STREAK_DAYS, AchievementConditionType.JOURNAL_DAYS]);
     
     // Update Meditation goals (async, don't block response)
     this.updateGoalsAsync(userId);
@@ -77,17 +76,6 @@ export class JournalService {
     };
   }
 
-  private async checkAchievementsAsync(userId: string): Promise<void> {
-    try {
-      // Calculate streak from steps (same logic as StepsService)
-      const streak = await this.calculateStreakFromSteps(userId);
-      await this.achievementService.checkStreakAchievements(userId, streak);
-    } catch (error) {
-      // Don't fail the main operation if achievement check fails
-      console.error('Error checking achievements:', error);
-    }
-  }
-
   private async updateGoalsAsync(userId: string): Promise<void> {
     try {
       await this.goalsService.updateGoalProgress(userId, GoalCategory.MEDITATION);
@@ -95,29 +83,6 @@ export class JournalService {
       // Don't fail the main operation if goal update fails
       console.error('Error updating goals:', error);
     }
-  }
-
-  private async calculateStreakFromSteps(userId: string): Promise<number> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    let streak = 0;
-    let currentDate = new Date(today);
-
-    while (true) {
-      const steps = await this.stepsModel.findOne({
-        user_id: userId,
-        date: { $gte: currentDate, $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000) }
-      });
-
-      if (steps && steps.steps > 0) {
-        streak++;
-        currentDate.setDate(currentDate.getDate() - 1);
-      } else {
-        break;
-      }
-    }
-
-    return streak;
   }
 
   async getTodayJournal(userId: string) {

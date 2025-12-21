@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Steps, StepsDocument } from '../models/schemas/steps.schema';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { SyncStepsDto } from './dto/sync-steps.dto';
@@ -10,6 +10,7 @@ import { StepsCalculator } from '../utils/steps-calculator';
 import { AchievementService } from '../achievement/achievement.service';
 import { GoalsService } from '../goals/goals.service';
 import { GoalCategory } from '../models/schemas/goal.schema';
+import { AchievementConditionType } from '../models/schemas/achievement.schema';
 
 @Injectable()
 export class StepsService {
@@ -28,6 +29,7 @@ export class StepsService {
       throw new NotFoundException('User not found');
     }
 
+    const userIdObj = new Types.ObjectId(userId);
     const groupedByDate = this.groupByDate(dto.entries);
     const results = [];
     let created = 0;
@@ -44,7 +46,7 @@ export class StepsService {
       const caloriesBurned = totalCalories > 0 ? totalCalories : StepsCalculator.calculateCalories(totalSteps, userWeight);
 
       const existing = await this.stepsModel.findOne({
-        user_id: userId,
+        user_id: userIdObj,
         date: { $gte: new Date(dateStr), $lt: new Date(new Date(dateStr).getTime() + 24 * 60 * 60 * 1000) }
       });
 
@@ -67,7 +69,7 @@ export class StepsService {
         });
       } else {
         const newEntry = await this.stepsModel.create({
-          user_id: userId,
+          user_id: userIdObj,
           steps: totalSteps,
           date: date,
           calories_burned: caloriesBurned,
@@ -89,7 +91,7 @@ export class StepsService {
     }
 
     // Check achievements after syncing steps (async, don't block response)
-    this.checkAchievementsAsync(userId);
+    this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.STREAK_DAYS, AchievementConditionType.STEPS_TOTAL]);
     
     // Update Exercise goals (async, don't block response)
     this.updateGoalsAsync(userId);
@@ -115,8 +117,9 @@ export class StepsService {
     const distanceKm = dto.distance_km || StepsCalculator.calculateDistance(dto.steps);
     const caloriesBurned = dto.calories_burned || StepsCalculator.calculateCalories(dto.steps, userWeight);
 
+    const userIdObj = new Types.ObjectId(userId);
     const existing = await this.stepsModel.findOne({
-      user_id: userId,
+      user_id: userIdObj,
       date: { $gte: date, $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) }
     });
 
@@ -127,7 +130,7 @@ export class StepsService {
       await existing.save();
 
       // Check achievements after updating steps (async, don't block response)
-      this.checkAchievementsAsync(userId);
+      this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.STREAK_DAYS, AchievementConditionType.STEPS_TOTAL]);
       
       // Update Exercise goals (async, don't block response)
       this.updateGoalsAsync(userId);
@@ -149,7 +152,7 @@ export class StepsService {
     }
 
     const newEntry = await this.stepsModel.create({
-      user_id: userId,
+      user_id: userIdObj,
       steps: dto.steps,
       date: date,
       calories_burned: caloriesBurned,
@@ -158,7 +161,7 @@ export class StepsService {
     });
 
     // Check achievements after saving steps (async, don't block response)
-    this.checkAchievementsAsync(userId);
+    this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.STREAK_DAYS, AchievementConditionType.STEPS_TOTAL]);
     
     // Update Exercise goals (async, don't block response)
     this.updateGoalsAsync(userId);
@@ -179,15 +182,6 @@ export class StepsService {
     };
   }
 
-  private async checkAchievementsAsync(userId: string): Promise<void> {
-    try {
-      const streak = await this.calculateStreak(userId);
-      await this.achievementService.checkStreakAchievements(userId, streak);
-    } catch (error) {
-      // Don't fail the main operation if achievement check fails
-      console.error('Error checking achievements:', error);
-    }
-  }
 
   private async updateGoalsAsync(userId: string): Promise<void> {
     try {

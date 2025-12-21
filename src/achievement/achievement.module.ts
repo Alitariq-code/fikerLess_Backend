@@ -8,6 +8,9 @@ import { UserAchievement, UserAchievementSchema } from '../models/schemas/user-a
 import { User, UserSchema } from '../models/schemas/user.schema';
 import { ForumPost, ForumPostSchema } from '../models/schemas/forum-post.schema';
 import { ForumComment, ForumCommentSchema } from '../models/schemas/forum-comment.schema';
+import { Steps, StepsSchema } from '../models/schemas/steps.schema';
+import { Mood, MoodSchema } from '../models/schemas/mood.schema';
+import { Journal, JournalSchema } from '../models/schemas/journal.schema';
 import { NotificationModule } from '../notification/notification.module';
 
 @Module({
@@ -18,6 +21,9 @@ import { NotificationModule } from '../notification/notification.module';
       { name: User.name, schema: UserSchema },
       { name: ForumPost.name, schema: ForumPostSchema },
       { name: ForumComment.name, schema: ForumCommentSchema },
+      { name: Steps.name, schema: StepsSchema },
+      { name: Mood.name, schema: MoodSchema },
+      { name: Journal.name, schema: JournalSchema },
     ]),
     NotificationModule,
   ],
