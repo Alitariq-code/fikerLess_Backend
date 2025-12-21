@@ -370,6 +370,13 @@ export class BookingController {
     return this.bookingService.getUserSessions(userId, dto);
   }
 
+  @Get('wallet/summary')
+  @HttpCode(HttpStatus.OK)
+  async getWalletSummary(@Headers('authorization') token: string) {
+    const userId = await this.getUserIdFromToken(token);
+    return this.bookingService.getWalletSummary(userId);
+  }
+
   @Get('sessions/by-date')
   @HttpCode(HttpStatus.OK)
   async getSessionsByDate(

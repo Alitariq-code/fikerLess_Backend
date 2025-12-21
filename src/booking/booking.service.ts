@@ -1295,6 +1295,44 @@ export class BookingService {
   }
 
   /**
+   * Get wallet summary: total earnings and upcoming sessions count
+   */
+  async getWalletSummary(userId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const today = moment().format('YYYY-MM-DD');
+
+    const [totalEarnings, upcomingCount] = await Promise.all([
+      this.sessionModel.aggregate([
+        {
+          $match: {
+            user_id: userObjectId,
+            status: SessionStatus.COMPLETED,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+          },
+        },
+      ]),
+      this.sessionModel.countDocuments({
+        user_id: userObjectId,
+        status: SessionStatus.CONFIRMED,
+        date: { $gte: today },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        total_earnings: totalEarnings[0]?.total || 0,
+        upcoming_sessions: upcomingCount,
+      },
+    };
+  }
+
+  /**
    * Get user's sessions by specific date (optional) with optional status filter
    * If date is not provided, returns all sessions for the user
    */
