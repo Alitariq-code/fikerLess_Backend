@@ -34,6 +34,9 @@ export class SpecialistService {
       throw new BadRequestException('Missing required fields: full_name, designation, location, hourly_rate, and currency are required');
     }
 
+    const education = dto.education || [];
+    const certifications = dto.certifications || [];
+    
     const profile = await this.specialistModel.create({
       user_id: userId,
       full_name: dto.basic_info.full_name,
@@ -48,9 +51,13 @@ export class SpecialistService {
       total_reviews: 0,
       experience_years: dto.basic_info.experience_years ?? 0,
       profile_photo: dto.basic_info.profile_photo,
-      education: dto.education || [],
-      certifications: dto.certifications || [],
-      profile_completed: !!(dto.basic_info && dto.education && dto.certifications),
+      education: education,
+      certifications: certifications,
+      profile_completed: !!(
+        dto.basic_info?.full_name && 
+        education.length > 0 && 
+        certifications.length > 0
+      ),
     });
 
     return this.formatProfile(profile);
