@@ -10,8 +10,10 @@ import { BroadcastNotificationDto } from './dto/broadcast-notification.dto';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
 import { NotificationRequestDto } from './dto/notification-request.dto';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
 import { FirebaseService } from '../firebase/firebase.service';
 import { FcmToken, FcmTokenDocument } from '../models/schemas/fcm-token.schema';
+import { NotificationSettings, NotificationSettingsDocument } from '../models/schemas/notification-settings.schema';
 import * as admin from 'firebase-admin';
 
 @Injectable()
@@ -21,6 +23,7 @@ export class NotificationService {
     @InjectModel(UserNotification.name) private userNotificationModel: Model<UserNotificationDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(FcmToken.name) private fcmTokenModel: Model<FcmTokenDocument>,
+    @InjectModel(NotificationSettings.name) private notificationSettingsModel: Model<NotificationSettingsDocument>,
     private readonly firebaseService: FirebaseService,
   ) {}
 
@@ -502,6 +505,36 @@ export class NotificationService {
         upsert: true, 
         new: true 
       }
+    );
+  }
+
+  async getNotificationSettings(userId: string): Promise<NotificationSettingsDocument> {
+    const userIdObj = new Types.ObjectId(userId);
+    let settings = await this.notificationSettingsModel.findOne({ user_id: userIdObj }).exec();
+    
+    if (!settings) {
+      settings = await this.notificationSettingsModel.create({
+        user_id: userIdObj,
+        email_notifications: true,
+        sms_notifications: false,
+        appointment_reminders: true,
+        payment_notifications: true,
+      });
+    }
+    
+    return settings;
+  }
+
+  async updateNotificationSettings(
+    userId: string,
+    dto: UpdateNotificationSettingsDto,
+  ): Promise<NotificationSettingsDocument> {
+    const userIdObj = new Types.ObjectId(userId);
+    
+    return await this.notificationSettingsModel.findOneAndUpdate(
+      { user_id: userIdObj },
+      { $set: dto },
+      { upsert: true, new: true },
     );
   }
 }

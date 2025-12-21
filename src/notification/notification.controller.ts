@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
 import { UpsertFcmTokenDto } from './dto/upsert-fcm-token.dto';
 import { getUserFromToken } from '../utils/utils';
 import { User, UserDocument } from '../models/schemas/user.schema';
@@ -69,6 +70,32 @@ export class NotificationController {
     return {
       success: true,
       data: result,
+    };
+  }
+
+  @Get('settings')
+  @HttpCode(HttpStatus.OK)
+  async getSettings(@Headers('authorization') token: string) {
+    const userId = await this.getUserIdFromToken(token);
+    const settings = await this.notificationService.getNotificationSettings(userId);
+    return {
+      success: true,
+      data: settings,
+    };
+  }
+
+  @Patch('settings')
+  @HttpCode(HttpStatus.OK)
+  async updateSettings(
+    @Headers('authorization') token: string,
+    @Body() dto: UpdateNotificationSettingsDto,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    const settings = await this.notificationService.updateNotificationSettings(userId, dto);
+    return {
+      success: true,
+      message: 'Notification settings updated successfully',
+      data: settings,
     };
   }
 

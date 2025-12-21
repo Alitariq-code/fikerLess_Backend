@@ -8,6 +8,7 @@ import { NotificationTemplate, NotificationTemplateSchema } from '../models/sche
 import { UserNotification, UserNotificationSchema } from '../models/schemas/user-notification.schema';
 import { User, UserSchema } from '../models/schemas/user.schema';
 import { FcmToken, FcmTokenSchema } from '../models/schemas/fcm-token.schema';
+import { NotificationSettings, NotificationSettingsSchema } from '../models/schemas/notification-settings.schema';
 import { FirebaseModule } from '../firebase/firebase.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { FirebaseModule } from '../firebase/firebase.module';
       { name: UserNotification.name, schema: UserNotificationSchema },
       { name: User.name, schema: UserSchema },
       { name: FcmToken.name, schema: FcmTokenSchema },
+      { name: NotificationSettings.name, schema: NotificationSettingsSchema },
     ]),
     FirebaseModule,
   ],

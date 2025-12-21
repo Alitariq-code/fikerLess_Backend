@@ -1773,6 +1773,68 @@
 					}
 				},
 				{
+					"name": "User - Get Notification Settings",
+					"request": {
+						"method": "GET",
+						"description": "Gets the notification preferences for the authenticated user. Creates default settings if they don't exist.",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/notifications/settings",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"settings"
+							]
+						}
+					}
+				},
+				{
+					"name": "User - Update Notification Settings",
+					"request": {
+						"method": "PATCH",
+						"description": "Updates notification preferences for the authenticated user. All fields are optional - only provided fields will be updated.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_notifications\": true,\n    \"sms_notifications\": false,\n    \"appointment_reminders\": true,\n    \"payment_notifications\": true\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/notifications/settings",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"settings"
+							]
+						}
+					}
+				},
+				{
 					"name": "User - Unread Count",
 					"request": {
 						"method": "GET",
