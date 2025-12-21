@@ -65,7 +65,8 @@ export class SpecialistService {
   }
 
   async getProfile(userId: string) {
-    const profile = await this.specialistModel.findOne({ user_id: userId });
+    const userIdObj = new Types.ObjectId(userId);
+    const profile = await this.specialistModel.findOne({ user_id: userIdObj });
     if (!profile) {
       throw new NotFoundException('Specialist profile not found');
     }
@@ -74,7 +75,8 @@ export class SpecialistService {
   }
 
   async updateProfile(userId: string, dto: UpdateSpecialistProfileDto) {
-    const profile = await this.specialistModel.findOne({ user_id: userId });
+    const userIdObj = new Types.ObjectId(userId);
+    const profile = await this.specialistModel.findOne({ user_id: userIdObj });
     if (!profile) {
       throw new NotFoundException('Specialist profile not found');
     }
