@@ -33,6 +33,7 @@ import { CreateSessionRequestDto } from './dto/create-session-request.dto';
 import { ApproveSessionRequestDto } from './dto/approve-session-request.dto';
 import { RejectSessionRequestDto } from './dto/reject-session-request.dto';
 import { GetSessionsDto } from './dto/get-sessions.dto';
+import { GetSessionsByDateDto } from './dto/get-sessions-by-date.dto';
 import { getUserFromToken } from '../utils/utils';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -367,6 +368,16 @@ export class BookingController {
   ) {
     const userId = await this.getUserIdFromToken(token);
     return this.bookingService.getUserSessions(userId, dto);
+  }
+
+  @Get('sessions/by-date')
+  @HttpCode(HttpStatus.OK)
+  async getSessionsByDate(
+    @Headers('authorization') token: string,
+    @Query() dto: GetSessionsByDateDto,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    return this.bookingService.getSessionsByDate(userId, dto.date, dto.status);
   }
 
   @Get('sessions/doctor/:doctorId')

@@ -1295,6 +1295,40 @@ export class BookingService {
   }
 
   /**
+   * Get user's sessions by specific date (optional) with optional status filter
+   * If date is not provided, returns all sessions for the user
+   */
+  async getSessionsByDate(userId: string, date?: string, status?: SessionStatus) {
+    const userObjectId = new Types.ObjectId(userId);
+    const query: any = { 
+      user_id: userObjectId,
+    };
+
+    // Add date filter only if date is provided
+    if (date) {
+      query.date = date;
+    }
+
+    // Add status filter if provided
+    if (status) {
+      query.status = status;
+    }
+
+    const sessions = await this.sessionModel
+      .find(query)
+      .populate('doctor_id', 'first_name last_name email phone')
+      .populate('user_id', 'first_name last_name email phone')
+      .sort({ date: -1, start_time: 1 }) // Sort by date descending, then by time ascending
+      .lean();
+
+    return {
+      success: true,
+      data: sessions,
+      count: sessions.length,
+    };
+  }
+
+  /**
    * Get doctor's sessions
    */
   async getDoctorSessions(doctorId: string, dto: GetSessionsDto) {
