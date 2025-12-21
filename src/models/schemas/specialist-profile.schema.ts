@@ -45,6 +45,9 @@ export class SpecialistProfile {
   @Prop()
   profile_photo?: string;
 
+  @Prop()
+  about?: string;
+
   @Prop({ type: [{ degree: String, institute_name: String }], default: [] })
   education: Array<{ degree: string; institute_name: string }>;
 

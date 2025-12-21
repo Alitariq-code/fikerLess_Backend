@@ -52,6 +52,7 @@ export class SpecialistService {
       total_reviews: 0,
       experience_years: dto.basic_info.experience_years ?? 0,
       profile_photo: dto.basic_info.profile_photo,
+      about: dto.basic_info.about,
       education: education,
       certifications: certifications,
       profile_completed: !!(
@@ -112,6 +113,9 @@ export class SpecialistService {
       }
       if (dto.basic_info.profile_photo !== undefined) {
         profile.profile_photo = dto.basic_info.profile_photo;
+      }
+      if (dto.basic_info.about !== undefined) {
+        profile.about = dto.basic_info.about;
       }
     }
 
@@ -320,6 +324,7 @@ export class SpecialistService {
       total_reviews: profile.total_reviews,
       experience_years: profile.experience_years,
       profile_photo: profile.profile_photo || null,
+      about: profile.about || null,
       education: profile.education,
       certifications: profile.certifications,
       profile_completed: profile.profile_completed,
@@ -343,6 +348,7 @@ export class SpecialistService {
         total_reviews: profile.total_reviews,
         experience_years: profile.experience_years,
         profile_photo: profile.profile_photo || null,
+        about: profile.about || null,
       },
     };
   }

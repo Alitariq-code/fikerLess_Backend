@@ -62,6 +62,10 @@ export class BasicInfoDto {
   @IsString()
   @IsOptional()
   profile_photo?: string;
+
+  @IsString()
+  @IsOptional()
+  about?: string;
 }
 
 export class CreateSpecialistProfileDto {
