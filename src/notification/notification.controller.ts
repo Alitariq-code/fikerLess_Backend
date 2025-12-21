@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
+import { UpsertFcmTokenDto } from './dto/upsert-fcm-token.dto';
 import { getUserFromToken } from '../utils/utils';
 import { User, UserDocument } from '../models/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -128,6 +129,24 @@ export class NotificationController {
     return {
       success: true,
       message: 'All notifications cleared',
+    };
+  }
+
+  @Post('fcm-token')
+  @HttpCode(HttpStatus.OK)
+  async upsertFcmToken(
+    @Headers('authorization') token: string,
+    @Body() dto: UpsertFcmTokenDto,
+  ) {
+    const userId = await this.getUserIdFromToken(token);
+    const fcmToken = await this.notificationService.upsertFcmToken(userId, dto.fcm_token);
+    return {
+      success: true,
+      message: 'FCM token saved successfully',
+      data: {
+        user_id: fcmToken.user_id.toString(),
+        fcm_token: fcmToken.fcm_token,
+      },
     };
   }
 

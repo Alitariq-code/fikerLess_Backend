@@ -1738,6 +1738,41 @@
 					}
 				},
 				{
+					"name": "User - Upsert FCM Token",
+					"request": {
+						"method": "POST",
+						"description": "Upserts (creates or updates) the FCM token for the authenticated user. Used to register device tokens for push notifications.",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fcm_token\": \"your-fcm-token-here\"\n}"
+						},
+						"url": {
+							"raw": "https://fikrless.com/api/v1/notifications/fcm-token",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"fcm-token"
+							]
+						}
+					}
+				},
+				{
 					"name": "User - Unread Count",
 					"request": {
 						"method": "GET",

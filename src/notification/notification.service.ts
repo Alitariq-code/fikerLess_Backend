@@ -11,6 +11,7 @@ import { SendNotificationDto } from './dto/send-notification.dto';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
 import { NotificationRequestDto } from './dto/notification-request.dto';
 import { FirebaseService } from '../firebase/firebase.service';
+import { FcmToken, FcmTokenDocument } from '../models/schemas/fcm-token.schema';
 import * as admin from 'firebase-admin';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class NotificationService {
     @InjectModel(NotificationTemplate.name) private templateModel: Model<NotificationTemplateDocument>,
     @InjectModel(UserNotification.name) private userNotificationModel: Model<UserNotificationDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(FcmToken.name) private fcmTokenModel: Model<FcmTokenDocument>,
     private readonly firebaseService: FirebaseService,
   ) {}
 
@@ -485,6 +487,22 @@ export class NotificationService {
     await this.userNotificationModel.bulkWrite(operations, { ordered: false });
 
     return { success: true, message: 'Notification sent successfully', recipients: targetUsers.length };
+  }
+
+  async upsertFcmToken(userId: string, fcmToken: string): Promise<FcmTokenDocument> {
+    const userIdObj = new Types.ObjectId(userId);
+    
+    return await this.fcmTokenModel.findOneAndUpdate(
+      { user_id: userIdObj },
+      { 
+        user_id: userIdObj,
+        fcm_token: fcmToken.trim(),
+      },
+      { 
+        upsert: true, 
+        new: true 
+      }
+    );
   }
 }
 
