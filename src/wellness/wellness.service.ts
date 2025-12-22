@@ -109,7 +109,8 @@ export class WellnessService {
     today.setHours(0, 0, 0, 0);
     const day = today.getDay();
     const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    const monday = new Date(today.setDate(diff));
+    const monday = new Date(today);
+    monday.setDate(diff);
     return monday;
   }
 
@@ -164,15 +165,19 @@ export class WellnessService {
    */
   async getProgress(userId: string): Promise<any> {
     try {
+      const userIdObj = new Types.ObjectId(userId);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       // Get today's steps
+      const todayEnd = new Date(today);
+      todayEnd.setDate(todayEnd.getDate() + 1);
+      
       const todaySteps = await this.stepsModel.findOne({
-        user_id: userId,
+        user_id: userIdObj,
         date: {
           $gte: today,
-          $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+          $lt: todayEnd,
         },
       }).lean().exec();
 
@@ -190,7 +195,7 @@ export class WellnessService {
 
       const weekSteps = await this.stepsModel
         .find({
-          user_id: userId,
+          user_id: userIdObj,
           date: {
             $gte: weekStart,
             $lt: weekEnd,
@@ -207,14 +212,17 @@ export class WellnessService {
       for (let i = 0; i < 7; i++) {
         const date = new Date(weekStart);
         date.setDate(date.getDate() + i);
-        const dayName = daysOfWeek[i]; // Use index for correct order
+        date.setHours(0, 0, 0, 0);
+        const dayName = daysOfWeek[i];
         const dateStr = date.toISOString().split('T')[0];
 
         const daySteps = weekSteps.find(
           (s) => {
             const stepDate = new Date(s.date);
             stepDate.setHours(0, 0, 0, 0);
-            return stepDate.getTime() === date.getTime();
+            const compareDate = new Date(date);
+            compareDate.setHours(0, 0, 0, 0);
+            return stepDate.getTime() === compareDate.getTime();
           }
         );
 
@@ -390,17 +398,21 @@ export class WellnessService {
    * Calculate streak (same logic as StepsService)
    */
   private async calculateStreak(userId: string): Promise<number> {
+    const userIdObj = new Types.ObjectId(userId);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     let streak = 0;
     let currentDate = new Date(today);
 
     while (true) {
+      const currentDateEnd = new Date(currentDate);
+      currentDateEnd.setDate(currentDateEnd.getDate() + 1);
+      
       const steps = await this.stepsModel.findOne({
-        user_id: userId,
+        user_id: userIdObj,
         date: {
           $gte: currentDate,
-          $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
+          $lt: currentDateEnd,
         },
       }).lean().exec();
 
