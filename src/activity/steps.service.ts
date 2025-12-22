@@ -193,16 +193,35 @@ export class StepsService {
   }
 
   async getSteps(userId: string, date?: string) {
+    const userIdObj = new Types.ObjectId(userId);
     const targetDate = date ? new Date(date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
 
+    const targetDateEnd = new Date(targetDate);
+    targetDateEnd.setDate(targetDateEnd.getDate() + 1);
+
     const steps = await this.stepsModel.findOne({
-      user_id: userId,
-      date: { $gte: targetDate, $lt: new Date(targetDate.getTime() + 24 * 60 * 60 * 1000) }
+      user_id: userIdObj,
+      date: { $gte: targetDate, $lt: targetDateEnd }
     });
 
+    // Return default response if no steps found instead of throwing error
     if (!steps) {
-      throw new NotFoundException('No steps data found for this date');
+      const defaultGoal = 10000;
+      return {
+        id: null,
+        user_id: userId,
+        steps: 0,
+        date: targetDate.toISOString().split('T')[0],
+        calories_burned: 0,
+        distance_km: 0,
+        goal: defaultGoal,
+        percentage: '0.00',
+        goal_achieved: false,
+        remaining_steps: defaultGoal,
+        created_at: null,
+        updated_at: null
+      };
     }
 
     return {
@@ -222,7 +241,8 @@ export class StepsService {
   }
 
   async getHistory(userId: string, period: string = 'daily', startDate?: string, endDate?: string, limit: number = 30, page: number = 1) {
-    const query: any = { user_id: userId };
+    const userIdObj = new Types.ObjectId(userId);
+    const query: any = { user_id: userIdObj };
 
     if (startDate && endDate) {
       query.date = {
@@ -373,7 +393,8 @@ export class StepsService {
   }
 
   async getStats(userId: string, period: number = 30, startDate?: string, endDate?: string) {
-    const query: any = { user_id: userId };
+    const userIdObj = new Types.ObjectId(userId);
+    const query: any = { user_id: userIdObj };
 
     if (startDate && endDate) {
       query.date = {
@@ -422,9 +443,10 @@ export class StepsService {
   }
 
   async getCurrentStreak(userId: string) {
+    const userIdObj = new Types.ObjectId(userId);
     const streak = await this.calculateStreak(userId);
     const longestStreak = await this.calculateLongestStreak(userId);
-    const allSteps = await this.stepsModel.find({ user_id: userId }).sort({ date: -1 });
+    const allSteps = await this.stepsModel.find({ user_id: userIdObj }).sort({ date: -1 });
 
     const lastActivity = allSteps.length > 0 ? allSteps[0] : null;
     const today = new Date();
@@ -530,15 +552,19 @@ export class StepsService {
   }
 
   private async calculateStreak(userId: string): Promise<number> {
+    const userIdObj = new Types.ObjectId(userId);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     let streak = 0;
     let currentDate = new Date(today);
 
     while (true) {
+      const currentDateEnd = new Date(currentDate);
+      currentDateEnd.setDate(currentDateEnd.getDate() + 1);
+      
       const steps = await this.stepsModel.findOne({
-        user_id: userId,
-        date: { $gte: currentDate, $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000) }
+        user_id: userIdObj,
+        date: { $gte: currentDate, $lt: currentDateEnd }
       });
 
       if (steps && steps.steps > 0) {
@@ -553,7 +579,8 @@ export class StepsService {
   }
 
   private async calculateLongestStreak(userId: string): Promise<number> {
-    const allSteps = await this.stepsModel.find({ user_id: userId }).sort({ date: 1 });
+    const userIdObj = new Types.ObjectId(userId);
+    const allSteps = await this.stepsModel.find({ user_id: userIdObj }).sort({ date: 1 });
     if (allSteps.length === 0) return 0;
 
     let longestStreak = 0;
@@ -576,7 +603,8 @@ export class StepsService {
   }
 
   private async calculateTrend(userId: string): Promise<string> {
-    const allSteps = await this.stepsModel.find({ user_id: userId }).sort({ date: -1 }).limit(14);
+    const userIdObj = new Types.ObjectId(userId);
+    const allSteps = await this.stepsModel.find({ user_id: userIdObj }).sort({ date: -1 }).limit(14);
     if (allSteps.length < 7) return 'stable';
 
     const recent = allSteps.slice(0, 7);
