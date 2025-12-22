@@ -51,10 +51,35 @@ export class StepsService {
       });
 
       if (existing) {
-        // Accumulate steps instead of replacing (mobile app sends increments)
-        existing.steps = existing.steps + totalSteps;
-        existing.calories_burned = (existing.calories_burned || 0) + caloriesBurned;
-        existing.distance_km = (existing.distance_km || 0) + distanceKm;
+        // Smart step accumulation logic:
+        // - If incoming steps > current steps: Only add the difference (treat as new total)
+        // - If current steps >= incoming steps: Add incoming steps (treat as increment)
+        let stepsToAdd: number;
+        let caloriesToAdd: number;
+        let distanceToAdd: number;
+
+        if (totalSteps > existing.steps) {
+          // Incoming steps represent a new total, only add the difference
+          stepsToAdd = totalSteps - existing.steps;
+          
+          // Calculate calories and distance for the difference in steps
+          const stepDifference = stepsToAdd;
+          caloriesToAdd = totalCalories > 0 
+            ? caloriesBurned - (existing.calories_burned || 0)
+            : StepsCalculator.calculateCalories(stepDifference, userWeight);
+          distanceToAdd = totalDistance > 0
+            ? distanceKm - (existing.distance_km || 0)
+            : StepsCalculator.calculateDistance(stepDifference);
+        } else {
+          // Incoming steps are incremental, add them directly
+          stepsToAdd = totalSteps;
+          caloriesToAdd = caloriesBurned;
+          distanceToAdd = distanceKm;
+        }
+
+        existing.steps = existing.steps + stepsToAdd;
+        existing.calories_burned = (existing.calories_burned || 0) + caloriesToAdd;
+        existing.distance_km = (existing.distance_km || 0) + distanceToAdd;
         await existing.save();
         updated++;
         results.push({
