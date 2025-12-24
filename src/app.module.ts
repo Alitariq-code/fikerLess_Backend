@@ -24,6 +24,7 @@ import { UserAdminModule } from './user/user-admin.module';
 import { UploadModule } from './upload/upload.module';
 import { ContactModule } from './contact/contact.module';
 import { BookingModule } from './booking/booking.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { BookingModule } from './booking/booking.module';
     UploadModule,
     ContactModule,
     BookingModule,
+    DashboardModule,
   ],
   providers: [
     {
