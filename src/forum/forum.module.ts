@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ForumController } from './forum.controller';
+import { ForumAdminController } from './forum-admin.controller';
 import { ForumService } from './forum.service';
 import { ForumPost, ForumPostSchema } from '../models/schemas/forum-post.schema';
 import { ForumLike, ForumLikeSchema } from '../models/schemas/forum-like.schema';
@@ -22,7 +23,7 @@ import { AchievementModule } from '../achievement/achievement.module';
     NotificationModule,
     forwardRef(() => AchievementModule),
   ],
-  controllers: [ForumController],
+  controllers: [ForumController, ForumAdminController],
   providers: [ForumService],
   exports: [ForumService],
 })

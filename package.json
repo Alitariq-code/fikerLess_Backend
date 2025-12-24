@@ -24,12 +24,16 @@
     "create:admin": "ts-node scripts/create-admin.ts",
     "create:dummy-users": "ts-node scripts/create-dummy-users.ts",
     "seed:achievements": "ts-node scripts/seed-achievements.ts",
-    "test:fcm-token": "ts-node scripts/test-fcm-token.ts",
-    "test:notification-settings": "ts-node scripts/test-notification-settings.ts",
-    "test:sessions-by-date": "ts-node scripts/test-sessions-by-date.ts",
-    "test:wallet-summary": "ts-node scripts/test-wallet-summary.ts",
-    "test:session-file-upload": "ts-node scripts/test-session-file-upload.ts",
-    "test:session-details": "ts-node scripts/test-session-details.ts"
+    "test:achievements": "ts-node scripts/test-achievements.ts",
+    "test:forum-comments": "ts-node scripts/test-forum-comments.ts",
+    "test:forum-complete": "ts-node scripts/test-forum-complete.ts",
+    "test:forum-admin": "ts-node scripts/test-forum-admin.ts",
+    "test:wellness-complete": "ts-node scripts/test-wellness-complete.ts",
+    "test:complete-system": "ts-node scripts/test-complete-system.ts",
+    "test:booking-availability": "ts-node scripts/test-booking-availability.ts",
+    "test:booking-slots-sessions": "ts-node scripts/test-booking-slots-sessions.ts",
+    "test:booking-complete-flow": "ts-node scripts/test-booking-complete-flow.ts",
+    "test:booking-admin-sessions": "ts-node scripts/test-booking-admin-sessions.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

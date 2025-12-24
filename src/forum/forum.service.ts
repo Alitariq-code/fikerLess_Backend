@@ -724,5 +724,354 @@ export class ForumService {
       },
     };
   }
+
+  // ==================== Admin Methods ====================
+
+  /**
+   * Get all posts for admin (like Facebook news feed)
+   */
+  async getAllPostsForAdmin(
+    category?: string,
+    search?: string,
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<any> {
+    const pageNum = Math.max(1, page);
+    const limitNum = Math.min(100, Math.max(1, limit));
+    const skip = (pageNum - 1) * limitNum;
+    
+    const filter: any = {};
+    
+    if (category) {
+      filter.category = category;
+    }
+    
+    if (search && search.trim()) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [posts, total] = await Promise.all([
+      this.forumPostModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .populate('user_id', 'first_name last_name email username')
+        .skip(skip)
+        .limit(limitNum)
+        .exec(),
+      this.forumPostModel.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      data: posts.map(post => {
+        const user = (post as any).user_id;
+        const formatted = this.formatPostResponse(post);
+        // Add full user info for admin
+        formatted.user = user ? {
+          _id: user._id.toString(),
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          username: user.username,
+        } : null;
+        return formatted;
+      }),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        total_pages: Math.ceil(total / limitNum),
+      },
+    };
+  }
+
+  /**
+   * Get post by ID for admin (with full details)
+   */
+  async getPostByIdForAdmin(postId: string): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
+      throw new NotFoundException('Invalid post ID format');
+    }
+
+    const post = await this.forumPostModel
+      .findById(postId)
+      .populate('user_id', 'first_name last_name email username')
+      .exec();
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const user = (post as any).user_id;
+    const formatted = this.formatPostResponse(post);
+    formatted.user = user ? {
+      _id: user._id.toString(),
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      username: user.username,
+    } : null;
+
+    return formatted;
+  }
+
+  /**
+   * Update any post as admin (no ownership check)
+   */
+  async updatePostAsAdmin(postId: string, dto: UpdateForumPostDto): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
+      throw new NotFoundException('Invalid post ID format');
+    }
+
+    const post = await this.forumPostModel.findById(postId).exec();
+    
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    // Admin can update any field
+    if (dto.title !== undefined) {
+      post.title = dto.title;
+    }
+    if (dto.description !== undefined) {
+      post.description = dto.description;
+    }
+    if (dto.category !== undefined) {
+      post.category = dto.category;
+    }
+    if (dto.is_anonymous !== undefined) {
+      post.is_anonymous = dto.is_anonymous;
+    }
+
+    await post.save();
+    return this.formatPostResponse(post);
+  }
+
+  /**
+   * Delete any post as admin (no ownership check)
+   */
+  async deletePostAsAdmin(postId: string): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
+      throw new NotFoundException('Invalid post ID format');
+    }
+
+    const post = await this.forumPostModel.findById(postId).exec();
+    
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    // Delete all associated likes
+    await this.forumLikeModel.deleteMany({ post_id: postId }).exec();
+
+    // Delete all associated comments and their likes
+    const comments = await this.forumCommentModel.find({ post_id: postId }).exec();
+    const commentIds = comments.map(c => c._id);
+    
+    if (commentIds.length > 0) {
+      await this.forumCommentLikeModel.deleteMany({ comment_id: { $in: commentIds } }).exec();
+    }
+    
+    await this.forumCommentModel.deleteMany({ post_id: postId }).exec();
+
+    // Delete the post
+    await post.deleteOne();
+
+    return { message: 'Post deleted successfully' };
+  }
+
+  /**
+   * Get all comments for a post (admin view)
+   */
+  async getCommentsForAdmin(postId: string, page: number = 1, limit: number = 50): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
+      throw new NotFoundException('Invalid post ID format');
+    }
+
+    const post = await this.forumPostModel.findById(postId).exec();
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const pageNum = Math.max(1, page);
+    const limitNum = Math.min(100, Math.max(1, limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get all comments (including nested)
+    const [comments, total] = await Promise.all([
+      this.forumCommentModel
+        .find({ post_id: postId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .populate('user_id', 'first_name last_name email username')
+        .populate('parent_comment_id')
+        .exec(),
+      this.forumCommentModel.countDocuments({ post_id: postId }).exec(),
+    ]);
+
+    return {
+      data: await Promise.all(
+        comments.map(async (comment) => {
+          const user = (comment as any).user_id;
+          const formatted = await this.formatCommentResponse(comment);
+          formatted.user = user ? {
+            _id: user._id.toString(),
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            username: user.username,
+          } : null;
+          return formatted;
+        })
+      ),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        total_pages: Math.ceil(total / limitNum),
+      },
+    };
+  }
+
+  /**
+   * Get comment by ID for admin
+   */
+  async getCommentByIdForAdmin(commentId: string): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(commentId)) {
+      throw new NotFoundException('Invalid comment ID format');
+    }
+
+    const comment = await this.forumCommentModel
+      .findById(commentId)
+      .populate('user_id', 'first_name last_name email username')
+      .populate('post_id', 'title')
+      .populate('parent_comment_id')
+      .exec();
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    const user = (comment as any).user_id;
+    const formatted = await this.formatCommentResponse(comment);
+    formatted.user = user ? {
+      _id: user._id.toString(),
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      username: user.username,
+    } : null;
+
+    return formatted;
+  }
+
+  /**
+   * Update any comment as admin (no ownership check)
+   */
+  async updateCommentAsAdmin(commentId: string, dto: UpdateCommentDto): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(commentId)) {
+      throw new NotFoundException('Invalid comment ID format');
+    }
+
+    const comment = await this.forumCommentModel.findById(commentId).exec();
+    
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    if (dto.content) {
+      comment.content = dto.content;
+    }
+    await comment.save();
+    
+    return await this.formatCommentResponse(comment);
+  }
+
+  /**
+   * Delete any comment as admin (no ownership check)
+   */
+  async deleteCommentAsAdmin(commentId: string): Promise<any> {
+    if (!/^[0-9a-fA-F]{24}$/.test(commentId)) {
+      throw new NotFoundException('Invalid comment ID format');
+    }
+
+    const comment = await this.forumCommentModel.findById(commentId).exec();
+    
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    // Update comment count on post (only for top-level comments)
+    if (!comment.parent_comment_id) {
+      const post = await this.forumPostModel.findById(comment.post_id).exec();
+      if (post) {
+        post.comments_count = Math.max(0, post.comments_count - 1);
+        await post.save();
+      }
+    }
+
+    // Delete all replies to this comment first
+    const replies = await this.forumCommentModel.find({ parent_comment_id: comment._id }).exec();
+    const replyIds = replies.map(r => r._id);
+    
+    // Delete all likes for this comment and its replies
+    const allCommentIds = [comment._id, ...replyIds];
+    await this.forumCommentLikeModel.deleteMany({ comment_id: { $in: allCommentIds } }).exec();
+
+    // Delete all replies
+    await this.forumCommentModel.deleteMany({ parent_comment_id: comment._id }).exec();
+
+    // Delete the comment
+    await comment.deleteOne();
+    
+    return { message: 'Comment deleted successfully' };
+  }
+
+  /**
+   * Get forum statistics for admin
+   */
+  async getForumStatsForAdmin(): Promise<any> {
+    const [
+      totalPosts,
+      totalComments,
+      totalLikes,
+      totalUsers,
+      postsToday,
+      commentsToday,
+    ] = await Promise.all([
+      this.forumPostModel.countDocuments().exec(),
+      this.forumCommentModel.countDocuments().exec(),
+      this.forumLikeModel.countDocuments().exec(),
+      this.forumPostModel.distinct('user_id').exec(),
+      this.forumPostModel.countDocuments({
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+      }).exec(),
+      this.forumCommentModel.countDocuments({
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+      }).exec(),
+    ]);
+
+    // Get category breakdown
+    const categoryBreakdown = await this.forumPostModel.aggregate([
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    return {
+      total_posts: totalPosts,
+      total_comments: totalComments,
+      total_likes: totalLikes,
+      total_active_users: totalUsers.length,
+      posts_today: postsToday,
+      comments_today: commentsToday,
+      category_breakdown: categoryBreakdown.map(item => ({
+        category: item._id || 'Uncategorized',
+        count: item.count,
+      })),
+    };
+  }
 }
 
