@@ -13,7 +13,6 @@ import { UpdateForumPostDto } from './dto/update-forum-post.dto';
 import { ArticleCategory } from '../models/schemas/article.schema';
 import { NotificationService } from '../notification/notification.service';
 import { AchievementService } from '../achievement/achievement.service';
-import { AchievementConditionType } from '../models/schemas/achievement.schema';
 
 @Injectable()
 export class ForumService {
@@ -441,12 +440,20 @@ export class ForumService {
 
     // Check forum achievements (user is helping someone else) - only for top-level comments
     if (!dto.parent_comment_id && post.user_id.toString() !== userId) {
-      this.achievementService.checkAchievementsAfterAction(userId, [AchievementConditionType.FORUM_HELPS]);
+      this.checkAchievementsAsync(userId);
     }
 
     return await this.formatCommentResponse(comment, userId);
   }
 
+  private async checkAchievementsAsync(userId: string): Promise<void> {
+    try {
+      await this.achievementService.checkForumAchievements(userId);
+    } catch (error) {
+      // Don't fail the main operation if achievement check fails
+      this.logger.error(`Error checking forum achievements for user ${userId}:`, error);
+    }
+  }
 
   async updateComment(userId: string, commentId: string, dto: UpdateCommentDto): Promise<any> {
     // Validate ObjectId format
@@ -564,6 +571,7 @@ export class ForumService {
       description: post.description,
       category: post.category,
       is_anonymous: post.is_anonymous,
+      admin_post: (post as any).admin_post || false,
       author: authorName,
       likes_count: post.likes_count,
       comments_count: post.comments_count,
@@ -574,7 +582,7 @@ export class ForumService {
   }
 
   private async formatCommentResponse(
-    comment: ForumCommentDocument,
+    comment: ForumCommentDocument | any,
     userId?: string,
     likedCommentIds?: Set<string>
   ): Promise<any> {
@@ -597,18 +605,33 @@ export class ForumService {
       }
     }
 
+    // Handle parent_comment_id - it might be an ObjectId, a populated object, or already a string
+    let parentCommentId: string | null = null;
+    if (comment.parent_comment_id) {
+      if (typeof comment.parent_comment_id === 'string') {
+        parentCommentId = comment.parent_comment_id;
+      } else if (comment.parent_comment_id._id) {
+        // It's a populated object
+        parentCommentId = comment.parent_comment_id._id.toString();
+      } else if (comment.parent_comment_id.toString) {
+        // It's an ObjectId
+        parentCommentId = comment.parent_comment_id.toString();
+      }
+    }
+
     return {
-      _id: comment._id,
-      post_id: comment.post_id,
-      parent_comment_id: comment.parent_comment_id ? comment.parent_comment_id.toString() : null,
+      _id: comment._id?.toString() || comment._id,
+      post_id: comment.post_id?.toString() || comment.post_id,
+      parent_comment_id: parentCommentId,
       content: comment.content,
       is_anonymous: comment.is_anonymous,
+      admin_comment: (comment as any).admin_comment || false,
       author: authorName,
       likes_count: comment.likes_count || 0,
       is_liked: is_liked,
-      created_at: (comment as any).createdAt,
-      updated_at: (comment as any).updatedAt,
-      replies: [], // Will be populated by getComments
+      created_at: (comment as any).createdAt || comment.created_at,
+      updated_at: (comment as any).updatedAt || comment.updated_at,
+      replies: [], // Will be populated by getComments or frontend
     };
   }
 
@@ -731,6 +754,7 @@ export class ForumService {
    * Get all posts for admin (like Facebook news feed)
    */
   async getAllPostsForAdmin(
+    adminId: string,
     category?: string,
     search?: string,
     page: number = 1,
@@ -764,6 +788,14 @@ export class ForumService {
       this.forumPostModel.countDocuments(filter).exec(),
     ]);
 
+    // Check which posts are liked by admin
+    const postIds = posts.map(p => p._id.toString());
+    const likes = await this.forumLikeModel.find({
+      post_id: { $in: postIds },
+      user_id: adminId,
+    }).exec();
+    const likedPostIds = new Set(likes.map(like => like.post_id.toString()));
+
     return {
       data: posts.map(post => {
         const user = (post as any).user_id;
@@ -776,6 +808,8 @@ export class ForumService {
           email: user.email,
           username: user.username,
         } : null;
+        // Add is_liked status for admin
+        formatted.is_liked = likedPostIds.has(post._id.toString());
         return formatted;
       }),
       pagination: {
@@ -790,7 +824,7 @@ export class ForumService {
   /**
    * Get post by ID for admin (with full details)
    */
-  async getPostByIdForAdmin(postId: string): Promise<any> {
+  async getPostByIdForAdmin(adminId: string, postId: string): Promise<any> {
     if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
       throw new NotFoundException('Invalid post ID format');
     }
@@ -804,6 +838,10 @@ export class ForumService {
       throw new NotFoundException('Post not found');
     }
 
+    // Check if admin liked this post
+    const like = await this.forumLikeModel.findOne({ post_id: postId, user_id: adminId }).exec();
+    const is_liked = !!like;
+
     const user = (post as any).user_id;
     const formatted = this.formatPostResponse(post);
     formatted.user = user ? {
@@ -813,6 +851,7 @@ export class ForumService {
       email: user.email,
       username: user.username,
     } : null;
+    formatted.is_liked = is_liked;
 
     return formatted;
   }
@@ -903,11 +942,11 @@ export class ForumService {
     const [comments, total] = await Promise.all([
       this.forumCommentModel
         .find({ post_id: postId })
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: 1 }) // Sort by oldest first to maintain conversation order
         .skip(skip)
         .limit(limitNum)
         .populate('user_id', 'first_name last_name email username')
-        .populate('parent_comment_id')
+        // Don't populate parent_comment_id - we only need the ID string, not the full object
         .exec(),
       this.forumCommentModel.countDocuments({ post_id: postId }).exec(),
     ]);
@@ -1028,6 +1067,80 @@ export class ForumService {
     await comment.deleteOne();
     
     return { message: 'Comment deleted successfully' };
+  }
+
+  /**
+   * Create a post as admin (with admin_post flag)
+   */
+  async createPostAsAdmin(adminId: string, dto: CreateForumPostDto): Promise<any> {
+    const post = new this.forumPostModel({
+      user_id: adminId,
+      title: dto.title,
+      description: dto.description,
+      category: dto.category || undefined,
+      is_anonymous: dto.is_anonymous || false,
+      admin_post: true, // Mark as admin post
+      likes_count: 0,
+      comments_count: 0,
+      views: 0,
+    });
+    await post.save();
+    return this.formatPostResponse(post);
+  }
+
+  /**
+   * Create a comment as admin (with admin_comment flag)
+   */
+  async createCommentAsAdmin(adminId: string, postId: string, dto: CreateCommentDto): Promise<any> {
+    // Validate ObjectId format
+    if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
+      throw new NotFoundException('Invalid post ID format');
+    }
+
+    const post = await this.forumPostModel.findById(postId).exec();
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    // If parent_comment_id is provided, validate it's a reply to a comment
+    let parentComment: ForumCommentDocument | null = null;
+    if (dto.parent_comment_id) {
+      if (!/^[0-9a-fA-F]{24}$/.test(dto.parent_comment_id)) {
+        throw new BadRequestException('Invalid parent comment ID format');
+      }
+
+      parentComment = await this.forumCommentModel.findById(dto.parent_comment_id).exec();
+      if (!parentComment) {
+        throw new NotFoundException('Parent comment not found');
+      }
+
+      // Ensure parent comment belongs to the same post
+      if (parentComment.post_id.toString() !== postId) {
+        throw new BadRequestException('Parent comment does not belong to this post');
+      }
+
+      // Admin can reply to any comment at any nesting level (unlimited nesting)
+      // No restriction on parent_comment_id for admin
+    }
+
+    const comment = new this.forumCommentModel({
+      post_id: postId,
+      user_id: adminId,
+      content: dto.content,
+      is_anonymous: dto.is_anonymous || false,
+      parent_comment_id: dto.parent_comment_id ? new Types.ObjectId(dto.parent_comment_id) : undefined,
+      admin_comment: true, // Mark as admin comment
+      likes_count: 0,
+    });
+    await comment.save();
+
+    // Update comment count on post (only for top-level comments)
+    if (!dto.parent_comment_id) {
+      post.comments_count += 1;
+      await post.save();
+    }
+
+    return await this.formatCommentResponse(comment);
   }
 
   /**

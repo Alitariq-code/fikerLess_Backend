@@ -26,6 +26,9 @@ export class ForumComment {
   // Likes functionality
   @Prop({ type: Number, default: 0 })
   likes_count: number;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  admin_comment: boolean;
 }
 
 export const ForumCommentSchema = SchemaFactory.createForClass(ForumComment);

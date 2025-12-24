@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Put,
   Delete,
   Param,
@@ -15,6 +16,8 @@ import {
 import { ForumService } from './forum.service';
 import { UpdateForumPostDto } from './dto/update-forum-post.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CreateForumPostDto } from './dto/create-forum-post.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { getUserFromToken } from '../utils/utils';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../models/schemas/user.schema';
@@ -42,6 +45,25 @@ export class ForumAdminController {
   }
 
   /**
+   * Create a new post as admin - Admin only
+   * POST /api/v1/forum/admin/posts
+   */
+  @Post('posts')
+  @HttpCode(HttpStatus.CREATED)
+  async createPost(
+    @Headers('authorization') token: string,
+    @Body() dto: CreateForumPostDto,
+  ) {
+    const adminId = await this.ensureAdmin(token);
+    const post = await this.forumService.createPostAsAdmin(adminId, dto);
+    return {
+      success: true,
+      message: 'Post created successfully',
+      data: post,
+    };
+  }
+
+  /**
    * Get all posts (like Facebook news feed) - Admin only
    * GET /api/v1/forum/admin/posts
    */
@@ -54,10 +76,10 @@ export class ForumAdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    await this.ensureAdmin(token);
+    const adminId = await this.ensureAdmin(token);
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 50;
-    const result = await this.forumService.getAllPostsForAdmin(category, search, pageNum, limitNum);
+    const result = await this.forumService.getAllPostsForAdmin(adminId, category, search, pageNum, limitNum);
     return {
       success: true,
       ...result,
@@ -74,8 +96,8 @@ export class ForumAdminController {
     @Headers('authorization') token: string,
     @Param('id') id: string,
   ) {
-    await this.ensureAdmin(token);
-    const post = await this.forumService.getPostByIdForAdmin(id);
+    const adminId = await this.ensureAdmin(token);
+    const post = await this.forumService.getPostByIdForAdmin(adminId, id);
     return {
       success: true,
       data: post,
@@ -192,6 +214,44 @@ export class ForumAdminController {
   ) {
     await this.ensureAdmin(token);
     const result = await this.forumService.deleteCommentAsAdmin(id);
+    return {
+      success: true,
+      ...result,
+    };
+  }
+
+  /**
+   * Create a comment as admin - Admin only
+   * POST /api/v1/forum/admin/posts/:postId/comments
+   */
+  @Post('posts/:postId/comments')
+  @HttpCode(HttpStatus.CREATED)
+  async createComment(
+    @Headers('authorization') token: string,
+    @Param('postId') postId: string,
+    @Body() dto: CreateCommentDto,
+  ) {
+    const adminId = await this.ensureAdmin(token);
+    const comment = await this.forumService.createCommentAsAdmin(adminId, postId, dto);
+    return {
+      success: true,
+      message: 'Comment created successfully',
+      data: comment,
+    };
+  }
+
+  /**
+   * Toggle like on a post - Admin only
+   * POST /api/v1/forum/admin/posts/:id/like
+   */
+  @Post('posts/:id/like')
+  @HttpCode(HttpStatus.OK)
+  async toggleLike(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+  ) {
+    const adminId = await this.ensureAdmin(token);
+    const result = await this.forumService.toggleLike(adminId, id);
     return {
       success: true,
       ...result,

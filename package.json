@@ -6,6 +6,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "test:password-flows": "ts-node scripts/test-password-flows.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -28,6 +29,7 @@
     "test:forum-comments": "ts-node scripts/test-forum-comments.ts",
     "test:forum-complete": "ts-node scripts/test-forum-complete.ts",
     "test:forum-admin": "ts-node scripts/test-forum-admin.ts",
+    "add:forum-comments": "ts-node scripts/add-forum-test-comments.ts",
     "test:wellness-complete": "ts-node scripts/test-wellness-complete.ts",
     "test:complete-system": "ts-node scripts/test-complete-system.ts",
     "test:booking-availability": "ts-node scripts/test-booking-availability.ts",

@@ -35,6 +35,9 @@ export class ForumPost {
 
   @Prop({ type: Number, default: 0 })
   views: number;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  admin_post: boolean;
 }
 
 export const ForumPostSchema = SchemaFactory.createForClass(ForumPost);
