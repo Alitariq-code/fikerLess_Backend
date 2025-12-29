@@ -13,10 +13,13 @@ export class Mood {
 
   @Prop({
     type: String,
-    enum: ['happy', 'sad', 'anxious', 'tired', 'angry', 'calm'],
+    enum: ['happy', 'sad', 'anxious', 'tired', 'angry', 'calm', 'other'],
     required: true,
   })
   mood: string;
+
+  @Prop()
+  custom_mood?: string;
 
   @Prop()
   journal_entry?: string;

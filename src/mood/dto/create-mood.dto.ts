@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, Matches } from 'class-validator';
+import { IsString, IsEnum, IsOptional, Matches, ValidateIf, IsNotEmpty } from 'class-validator';
 
 export enum MoodType {
   HAPPY = 'happy',
@@ -7,11 +7,18 @@ export enum MoodType {
   TIRED = 'tired',
   ANGRY = 'angry',
   CALM = 'calm',
+  OTHER = 'other',
 }
 
 export class CreateMoodDto {
   @IsEnum(MoodType)
   mood: MoodType;
+
+  @ValidateIf((o) => o.mood === 'other')
+  @IsNotEmpty({ message: 'custom_mood is required when mood is "other"' })
+  @IsString()
+  @IsOptional()
+  custom_mood?: string;
 
   @IsString()
   @IsOptional()

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Mood, MoodDocument } from '../models/schemas/mood.schema';
@@ -20,6 +20,11 @@ export class MoodService {
   ) {}
 
   async createOrUpdateMood(userId: string, dto: CreateMoodDto) {
+    // Validate that custom_mood is provided when mood is 'other'
+    if (dto.mood === 'other' && (!dto.custom_mood || dto.custom_mood.trim() === '')) {
+      throw new BadRequestException('custom_mood is required when mood is "other"');
+    }
+
     const date = dto.date || new Date().toISOString().split('T')[0];
 
     const existing = await this.moodModel.findOne({
@@ -29,7 +34,14 @@ export class MoodService {
 
     if (existing) {
       if (dto.mood) existing.mood = dto.mood;
+      if (dto.custom_mood !== undefined) existing.custom_mood = dto.custom_mood;
       if (dto.journal_entry !== undefined) existing.journal_entry = dto.journal_entry;
+      
+      // Validate custom_mood when updating to 'other'
+      if (existing.mood === 'other' && (!existing.custom_mood || existing.custom_mood.trim() === '')) {
+        throw new BadRequestException('custom_mood is required when mood is "other"');
+      }
+      
       await existing.save();
 
       // Check achievements after updating mood (async, don't block response)
@@ -49,8 +61,14 @@ export class MoodService {
       user_id: userId,
       date,
       mood: dto.mood,
+      custom_mood: dto.custom_mood,
       journal_entry: dto.journal_entry,
     });
+
+    // Validate custom_mood when creating with 'other'
+    if (mood.mood === 'other' && (!mood.custom_mood || mood.custom_mood.trim() === '')) {
+      throw new BadRequestException('custom_mood is required when mood is "other"');
+    }
 
     await mood.save();
 
@@ -137,7 +155,13 @@ export class MoodService {
     }
 
     if (dto.mood !== undefined) mood.mood = dto.mood;
+    if (dto.custom_mood !== undefined) mood.custom_mood = dto.custom_mood;
     if (dto.journal_entry !== undefined) mood.journal_entry = dto.journal_entry;
+
+    // Validate custom_mood when updating to 'other'
+    if (mood.mood === 'other' && (!mood.custom_mood || mood.custom_mood.trim() === '')) {
+      throw new BadRequestException('custom_mood is required when mood is "other"');
+    }
 
     await mood.save();
 
@@ -178,6 +202,7 @@ export class MoodService {
       user_id: mood.user_id.toString(),
       date: mood.date,
       mood: mood.mood,
+      custom_mood: mood.custom_mood || null,
       journal_entry: mood.journal_entry || null,
       created_at: (mood as any).createdAt,
       updated_at: (mood as any).updatedAt,
