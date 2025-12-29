@@ -28,8 +28,8 @@ export class CreateSessionRequestDto {
   end_time: string;
 
   @IsString()
-  @IsOptional()
-  session_title?: string;
+  @IsNotEmpty({ message: 'session_title is required' })
+  session_title: string;
 
   @IsEnum(SessionType)
   @IsOptional()
