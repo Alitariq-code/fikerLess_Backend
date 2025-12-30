@@ -9,6 +9,7 @@ export enum GoalCategory {
   READ_ARTICLE = 'Read an Article',
   MEDITATION = 'Meditation',
   MOOD_TRACKING = 'Mood Tracking',
+  OTHER = 'Other',
 }
 
 export enum GoalFrequency {
@@ -36,6 +37,9 @@ export class Goal {
     index: true,
   })
   category: GoalCategory;
+
+  @Prop()
+  custom_category?: string;
 
   @Prop({
     type: String,

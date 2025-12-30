@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsEnum, IsOptional, MinLength, MaxLength, ValidateIf, IsNotEmpty } from 'class-validator';
 import { GoalCategory, GoalFrequency } from '../../models/schemas/goal.schema';
 
 export class UpdateGoalDto {
@@ -11,6 +11,12 @@ export class UpdateGoalDto {
   @IsOptional()
   @IsEnum(GoalCategory, { message: 'Invalid category' })
   category?: GoalCategory;
+
+  @ValidateIf((o) => o.category === 'Other')
+  @IsNotEmpty({ message: 'custom_category is required when category is "Other"' })
+  @IsString()
+  @IsOptional()
+  custom_category?: string;
 
   @IsOptional()
   @IsEnum(GoalFrequency, { message: 'Invalid frequency' })

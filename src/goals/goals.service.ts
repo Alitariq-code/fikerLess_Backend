@@ -14,15 +14,26 @@ export class GoalsService {
   ) {}
 
   async createGoal(userId: string, dto: CreateGoalDto): Promise<any> {
+    // Validate that custom_category is provided when category is 'Other'
+    if (dto.category === 'Other' && (!dto.custom_category || dto.custom_category.trim() === '')) {
+      throw new BadRequestException('custom_category is required when category is "Other"');
+    }
+
     const goal = new this.goalModel({
       user_id: userId,
       title: dto.title,
       category: dto.category,
+      custom_category: dto.custom_category,
       frequency: dto.frequency,
       status: GoalStatus.IN_PROGRESS,
       current_streak: 0,
       target_streak: dto.target_streak,
     });
+
+    // Validate custom_category when creating with 'Other'
+    if (goal.category === 'Other' && (!goal.custom_category || goal.custom_category.trim() === '')) {
+      throw new BadRequestException('custom_category is required when category is "Other"');
+    }
 
     await goal.save();
     return this.formatGoalResponse(goal);
@@ -87,8 +98,14 @@ export class GoalsService {
 
     if (dto.title !== undefined) goal.title = dto.title;
     if (dto.category !== undefined) goal.category = dto.category;
+    if (dto.custom_category !== undefined) goal.custom_category = dto.custom_category;
     if (dto.frequency !== undefined) goal.frequency = dto.frequency;
     if (dto.target_streak !== undefined) goal.target_streak = dto.target_streak;
+
+    // Validate custom_category when updating to 'Other'
+    if (goal.category === 'Other' && (!goal.custom_category || goal.custom_category.trim() === '')) {
+      throw new BadRequestException('custom_category is required when category is "Other"');
+    }
 
     await goal.save();
     return this.formatGoalResponse(goal);
@@ -225,6 +242,7 @@ export class GoalsService {
       _id: goal._id,
       title: goal.title,
       category: goal.category,
+      custom_category: goal.custom_category || null,
       frequency: goal.frequency,
       status: goal.status,
       current_streak: goal.current_streak,
