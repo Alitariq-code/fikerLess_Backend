@@ -45,7 +45,7 @@ export class UploadService {
   }
 
   getFileUrl(filename: string): string {
-    return `/api/uploads/images/${filename}`;
+    return `/uploads/images/${filename}`;
   }
 
   getMaxFileSize(): number {

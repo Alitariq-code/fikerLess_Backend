@@ -16,24 +16,37 @@ export class ArticleService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(SpecialistProfile.name) private specialistModel: Model<SpecialistProfileDocument>,
   ) {
-    // Get base URL from environment or use default
-    this.baseUrl = process.env.API_BASE_URL || process.env.BASE_URL || 'http://localhost:5002';
+    // Get base URL from environment or default to fikrless.com
+    this.baseUrl = process.env.API_BASE_URL || process.env.BASE_URL || 'https://fikrless.com';
   }
 
   /**
    * Format image URL to include base URL if it's a relative path
+   * Always converts /uploads/images/ to /api/uploads/images/
    */
   private formatImageUrl(url?: string): string | undefined {
     if (!url) return undefined;
     
-    // If already a full URL (starts with http:// or https://), return as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
+    let processedUrl = url;
+    
+    // Convert old /uploads/images/ paths to /api/uploads/images/
+    if (processedUrl.includes('/uploads/images/') && !processedUrl.includes('/api/uploads/images/')) {
+      processedUrl = processedUrl.replace('/uploads/images/', '/api/uploads/images/');
     }
     
-    // If it's a relative path, prepend base URL
-    // Remove leading slash if present to avoid double slashes
-    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    // If already a full URL (starts with http:// or https://), return with updated path
+    if (processedUrl.startsWith('http://') || processedUrl.startsWith('https://')) {
+      return processedUrl;
+    }
+    
+    // If it's a relative path, ensure it uses /api/uploads/images/ and prepend base URL
+    let cleanPath = processedUrl.startsWith('/') ? processedUrl : `/${processedUrl}`;
+    
+    // Ensure /api/uploads/images/ path is used
+    if (cleanPath.startsWith('/uploads/images/')) {
+      cleanPath = cleanPath.replace('/uploads/images/', '/api/uploads/images/');
+    }
+    
     return `${this.baseUrl}${cleanPath}`;
   }
 
