@@ -9,11 +9,41 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
 export class ArticleService {
+  private readonly baseUrl: string;
+
   constructor(
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(SpecialistProfile.name) private specialistModel: Model<SpecialistProfileDocument>,
-  ) {}
+  ) {
+    // Get base URL from environment or use default
+    this.baseUrl = process.env.API_BASE_URL || process.env.BASE_URL || 'http://localhost:5002';
+  }
+
+  /**
+   * Format image URL to include base URL if it's a relative path
+   */
+  private formatImageUrl(url?: string): string | undefined {
+    if (!url) return undefined;
+    
+    // If already a full URL (starts with http:// or https://), return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If it's a relative path, prepend base URL
+    // Remove leading slash if present to avoid double slashes
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    return `${this.baseUrl}${cleanPath}`;
+  }
+
+  /**
+   * Format array of image URLs
+   */
+  private formatImageUrls(urls?: string[]): string[] {
+    if (!urls || urls.length === 0) return [];
+    return urls.map(url => this.formatImageUrl(url) || url).filter(Boolean) as string[];
+  }
 
   private calculateReadTime(content: string): number {
     const wordsPerMinute = 200;
@@ -29,8 +59,8 @@ export class ArticleService {
       title: article.title,
       category: article.category,
       content: includeContent ? article.content : undefined,
-      featured_image_url: article.featured_image_url,
-      image_urls: article.image_urls || [],
+      featured_image_url: this.formatImageUrl(article.featured_image_url),
+      image_urls: this.formatImageUrls(article.image_urls),
       status: article.status,
       published_at: article.published_at,
       views: article.views,
@@ -52,7 +82,7 @@ export class ArticleService {
       author: {
         _id: article.specialist_id.toString(),
         name: specialist?.full_name || user?.email || 'Unknown',
-        profile_photo: specialist?.profile_photo,
+        profile_photo: this.formatImageUrl(specialist?.profile_photo),
         designation: specialist?.designation,
       },
     };
@@ -355,8 +385,8 @@ export class ArticleService {
           title: article.title,
           category: article.category,
           content: article.content,
-          featured_image_url: article.featured_image_url,
-          image_urls: article.image_urls || [],
+          featured_image_url: this.formatImageUrl(article.featured_image_url),
+          image_urls: this.formatImageUrls(article.image_urls),
           status: article.status,
           published_at: article.published_at,
           views: article.views || 0,
@@ -365,7 +395,7 @@ export class ArticleService {
           author: {
             _id: article.specialist_id.toString(),
             name: specialist?.full_name || user?.email || 'Unknown',
-            profile_photo: specialist?.profile_photo,
+            profile_photo: this.formatImageUrl(specialist?.profile_photo),
             designation: specialist?.designation,
           },
           created_at: (article as any).createdAt,
