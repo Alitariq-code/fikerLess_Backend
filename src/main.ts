@@ -16,10 +16,19 @@ async function bootstrap() {
   // Serve static files from public directory
   // Use process.cwd() to get project root (works in both dev and prod)
   const publicPath = join(process.cwd(), 'public');
+  
+  // Serve uploads/images from /api/uploads/images/
+  const uploadsImagesPath = join(publicPath, 'uploads', 'images');
+  app.useStaticAssets(uploadsImagesPath, {
+    prefix: '/api/uploads/images',
+  });
+  
+  // Serve other static files from root
   app.useStaticAssets(publicPath, {
     prefix: '/',
   });
   logger.log(`📁 Serving static files from: ${publicPath}`);
+  logger.log(`📁 Serving upload images from: ${uploadsImagesPath} at /api/uploads/images/`);
   
   // CORS configuration - allow all origins in development
   app.enableCors({
