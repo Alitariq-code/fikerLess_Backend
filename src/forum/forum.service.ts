@@ -38,7 +38,7 @@ export class ForumService {
       is_anonymous: dto.is_anonymous || false,
     });
     await post.save();
-    return this.formatPostResponse(post);
+    return this.formatPostResponse(post, userId);
   }
 
   async getPosts(category?: string, page: number = 1, limit: number = 10, userId?: string): Promise<any> {
@@ -76,7 +76,7 @@ export class ForumService {
 
     return {
       data: posts.map(post => {
-        const formatted = this.formatPostResponse(post);
+        const formatted = this.formatPostResponse(post, userId);
         if (userId) {
           formatted.is_liked = likedPostIds.has(post._id.toString());
         }
@@ -117,7 +117,7 @@ export class ForumService {
       is_liked = !!like;
     }
 
-    const response = this.formatPostResponse(post);
+    const response = this.formatPostResponse(post, userId);
     if (userId) {
       response.is_liked = is_liked;
     }
@@ -166,7 +166,7 @@ export class ForumService {
 
     return {
       data: posts.map(post => {
-        const formatted = this.formatPostResponse(post);
+        const formatted = this.formatPostResponse(post, userId);
         if (userId) {
           formatted.is_liked = likedPostIds.has(post._id.toString());
         }
@@ -559,11 +559,14 @@ export class ForumService {
     }
   }
 
-  private formatPostResponse(post: ForumPostDocument): any {
+  private formatPostResponse(post: ForumPostDocument, userId?: string): any {
     const user = (post as any).user_id;
     const authorName = post.is_anonymous 
       ? `Anonymous_user_${(post.user_id?.toString() || post._id?.toString() || '000').slice(-3)}`
       : user ? `${user.first_name} ${user.last_name}`.trim() || user.email : 'Unknown';
+
+    // Check if this post belongs to the current user
+    const is_user_post = userId ? post.user_id.toString() === userId : false;
 
     return {
       _id: post._id,
@@ -578,6 +581,7 @@ export class ForumService {
       views: post.views,
       created_at: (post as any).createdAt,
       updated_at: (post as any).updatedAt,
+      is_user_post: is_user_post,
     };
   }
 
@@ -668,7 +672,7 @@ export class ForumService {
     }
 
     await post.save();
-    return this.formatPostResponse(post);
+    return this.formatPostResponse(post, userId);
   }
 
   // Step 3: Delete Post
@@ -735,7 +739,7 @@ export class ForumService {
 
     return {
       data: posts.map(post => {
-        const formatted = this.formatPostResponse(post);
+        const formatted = this.formatPostResponse(post, userId);
         formatted.is_liked = likedPostIds.has(post._id.toString());
         return formatted;
       }),
@@ -799,7 +803,7 @@ export class ForumService {
     return {
       data: posts.map(post => {
         const user = (post as any).user_id;
-        const formatted = this.formatPostResponse(post);
+        const formatted = this.formatPostResponse(post, adminId);
         // Add full user info for admin
         formatted.user = user ? {
           _id: user._id.toString(),
@@ -843,7 +847,7 @@ export class ForumService {
     const is_liked = !!like;
 
     const user = (post as any).user_id;
-    const formatted = this.formatPostResponse(post);
+    const formatted = this.formatPostResponse(post, adminId);
     formatted.user = user ? {
       _id: user._id.toString(),
       first_name: user.first_name,
@@ -859,7 +863,7 @@ export class ForumService {
   /**
    * Update any post as admin (no ownership check)
    */
-  async updatePostAsAdmin(postId: string, dto: UpdateForumPostDto): Promise<any> {
+  async updatePostAsAdmin(adminId: string, postId: string, dto: UpdateForumPostDto): Promise<any> {
     if (!/^[0-9a-fA-F]{24}$/.test(postId)) {
       throw new NotFoundException('Invalid post ID format');
     }
@@ -885,7 +889,7 @@ export class ForumService {
     }
 
     await post.save();
-    return this.formatPostResponse(post);
+    return this.formatPostResponse(post, adminId);
   }
 
   /**
@@ -1085,7 +1089,7 @@ export class ForumService {
       views: 0,
     });
     await post.save();
-    return this.formatPostResponse(post);
+    return this.formatPostResponse(post, adminId);
   }
 
   /**

@@ -115,8 +115,8 @@ export class ForumAdminController {
     @Param('id') id: string,
     @Body() dto: UpdateForumPostDto,
   ) {
-    await this.ensureAdmin(token);
-    const post = await this.forumService.updatePostAsAdmin(id, dto);
+    const adminId = await this.ensureAdmin(token);
+    const post = await this.forumService.updatePostAsAdmin(adminId, id, dto);
     return {
       success: true,
       message: 'Post updated successfully',
