@@ -566,7 +566,16 @@ export class ForumService {
       : user ? `${user.first_name} ${user.last_name}`.trim() || user.email : 'Unknown';
 
     // Check if this post belongs to the current user
-    const is_user_post = userId ? post.user_id.toString() === userId : false;
+    // Handle both populated (object) and unpopulated (ObjectId) user_id
+    let postUserId: string;
+    if (user && typeof user === 'object' && user._id) {
+      // user_id is populated (object with _id)
+      postUserId = user._id.toString();
+    } else {
+      // user_id is ObjectId
+      postUserId = (post.user_id as any).toString();
+    }
+    const is_user_post = userId ? postUserId === userId : false;
 
     return {
       _id: post._id,

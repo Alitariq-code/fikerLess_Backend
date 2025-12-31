@@ -17,7 +17,7 @@ export class User {
   @Prop({ default: '' })
   otp_token: string;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   is_email_verified: boolean;
 
   @Prop({ 
