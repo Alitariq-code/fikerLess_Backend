@@ -1677,21 +1677,53 @@ export class BookingService {
       }
     }
 
-    // Update notes if provided
+    // Update notes if provided (preserve existing notes if not provided)
     if (notes !== undefined) {
       session.notes = notes || null;
     }
 
-    await session.save();
+    // Ensure all required fields are preserved before saving
+    // Use updateOne to avoid validation issues with required fields
+    const updateData: any = {
+      status: status,
+    };
 
-    // Populate for response
-    await session.populate('doctor_id', 'first_name last_name email');
-    await session.populate('user_id', 'first_name last_name email');
+    if (status === SessionStatus.COMPLETED) {
+      updateData.completed_at = new Date();
+    }
+
+    if (status === SessionStatus.CANCELLED) {
+      updateData.cancelled_at = new Date();
+      if (cancellation_reason) {
+        updateData.cancellation_reason = cancellation_reason;
+      }
+    }
+
+    if (notes !== undefined) {
+      updateData.notes = notes || null;
+    }
+
+    // Use updateOne instead of save() to avoid validation issues
+    await this.sessionModel.updateOne(
+      { _id: sessionObjectId },
+      { $set: updateData }
+    );
+
+    // Fetch updated session with populated fields
+    const updatedSession = await this.sessionModel
+      .findById(sessionObjectId)
+      .populate('doctor_id', 'first_name last_name email')
+      .populate('user_id', 'first_name last_name email')
+      .lean();
+
+    if (!updatedSession) {
+      throw new NotFoundException('Session not found after update');
+    }
 
     return {
       success: true,
       message: `Session status updated to ${status}`,
-      data: session,
+      data: updatedSession,
     };
   }
 }
