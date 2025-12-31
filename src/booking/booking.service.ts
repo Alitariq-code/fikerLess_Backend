@@ -1634,5 +1634,65 @@ export class BookingService {
       },
     };
   }
+
+  /**
+   * Update session status (admin only)
+   */
+  async updateSessionStatus(adminId: string, sessionId: string, status: SessionStatus, notes?: string, cancellation_reason?: string) {
+    // Validate admin
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || admin.user_type !== 'admin') {
+      throw new ForbiddenException('Only admins can update session status');
+    }
+
+    const sessionObjectId = new Types.ObjectId(sessionId);
+    const session = await this.sessionModel.findById(sessionObjectId);
+
+    if (!session) {
+      throw new NotFoundException('Session not found');
+    }
+
+    // Validate status transition
+    if (session.status === SessionStatus.COMPLETED && status !== SessionStatus.COMPLETED) {
+      throw new BadRequestException('Cannot change status of a completed session');
+    }
+
+    if (session.status === SessionStatus.CANCELLED && status !== SessionStatus.CANCELLED) {
+      throw new BadRequestException('Cannot change status of a cancelled session');
+    }
+
+    // Update session status
+    session.status = status;
+
+    // Set completion date if marking as completed
+    if (status === SessionStatus.COMPLETED) {
+      session.completed_at = new Date();
+    }
+
+    // Set cancellation date and reason if cancelling
+    if (status === SessionStatus.CANCELLED) {
+      session.cancelled_at = new Date();
+      if (cancellation_reason) {
+        session.cancellation_reason = cancellation_reason;
+      }
+    }
+
+    // Update notes if provided
+    if (notes !== undefined) {
+      session.notes = notes || null;
+    }
+
+    await session.save();
+
+    // Populate for response
+    await session.populate('doctor_id', 'first_name last_name email');
+    await session.populate('user_id', 'first_name last_name email');
+
+    return {
+      success: true,
+      message: `Session status updated to ${status}`,
+      data: session,
+    };
+  }
 }
 

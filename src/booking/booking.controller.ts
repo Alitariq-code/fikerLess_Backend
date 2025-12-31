@@ -32,6 +32,7 @@ import { GetAvailableSlotsDto } from './dto/get-available-slots.dto';
 import { CreateSessionRequestDto } from './dto/create-session-request.dto';
 import { ApproveSessionRequestDto } from './dto/approve-session-request.dto';
 import { RejectSessionRequestDto } from './dto/reject-session-request.dto';
+import { UpdateSessionStatusDto } from './dto/update-session-status.dto';
 import { GetSessionsDto } from './dto/get-sessions.dto';
 import { GetSessionsByDateDto } from './dto/get-sessions-by-date.dto';
 import { getUserFromToken } from '../utils/utils';
@@ -368,6 +369,23 @@ export class BookingController {
   ) {
     const adminId = await this.getUserIdFromToken(token);
     return this.bookingService.getAllSessions(adminId, dto, page, limit);
+  }
+
+  @Put('admin/sessions/:id/status')
+  @HttpCode(HttpStatus.OK)
+  async updateSessionStatus(
+    @Headers('authorization') token: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateSessionStatusDto,
+  ) {
+    const adminId = await this.getUserIdFromToken(token);
+    return this.bookingService.updateSessionStatus(
+      adminId,
+      id,
+      dto.status,
+      dto.notes,
+      dto.cancellation_reason,
+    );
   }
 
   // ==================== Session Viewing Endpoints ====================

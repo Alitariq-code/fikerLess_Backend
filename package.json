@@ -24,6 +24,7 @@
     "import:internships": "ts-node scripts/import-internships.ts",
     "create:admin": "ts-node scripts/create-admin.ts",
     "test:forum-is-user-post": "ts-node scripts/test-forum-is-user-post.ts",
+    "test:booking-flow": "ts-node scripts/test-booking-flow.ts",
     "create:dummy-users": "ts-node scripts/create-dummy-users.ts",
     "seed:achievements": "ts-node scripts/seed-achievements.ts",
     "test:achievements": "ts-node scripts/test-achievements.ts",
