@@ -4352,6 +4352,55 @@
 							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"_id\": \"693d0b81cb2878051aaefde4\",\n        \"quote_english\": \"You are enough, exactly as you are.\",\n        \"quote_urdu\": \"\",\n        \"quranic_verse\": \"\",\n        \"today_quote\": true\n    }\n}"
 						}
 					]
+				},
+				{
+					"name": "Get Random Quote Images",
+					"request": {
+						"method": "GET",
+						"description": "Public endpoint. Returns 3 random quote image URLs. Each call returns different random images from the Quotes directory. The URLs are complete and can be used directly to display the images.\n\n**Response (200 OK):**\n```json\n{\n  \"success\": true,\n  \"data\": [\n    \"https://fikrless.com/api/quotes/1.png\",\n    \"https://fikrless.com/api/quotes/17.png\",\n    \"https://fikrless.com/api/quotes/23.png\"\n  ]\n}\n```\n\n**Note:** The images are served from the `/api/quotes/` path and can be accessed directly via the returned URLs.",
+						"header": [],
+						"url": {
+							"raw": "https://fikrless.com/api/v1/quote/images/random",
+							"protocol": "https",
+							"host": [
+								"fikrless",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"quote",
+								"images",
+								"random"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success 200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://fikrless.com/api/v1/quote/images/random",
+									"protocol": "https",
+									"host": ["fikrless", "com"],
+									"path": ["api", "v1", "quote", "images", "random"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        \"https://fikrless.com/api/quotes/1.png\",\n        \"https://fikrless.com/api/quotes/17.png\",\n        \"https://fikrless.com/api/quotes/23.png\"\n    ]\n}"
+						}
+					]
 				}
 			]
 		},

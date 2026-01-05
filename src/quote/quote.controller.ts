@@ -59,6 +59,16 @@ export class QuoteController {
     };
   }
 
+  @Get('images/random')
+  @HttpCode(HttpStatus.OK)
+  async getRandomQuoteImages() {
+    const imageUrls = await this.quoteService.getRandomQuoteImages();
+    return {
+      success: true,
+      data: imageUrls,
+    };
+  }
+
   // Admin endpoints
   @Get('admin/all')
   @HttpCode(HttpStatus.OK)

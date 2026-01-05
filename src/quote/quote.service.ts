@@ -4,14 +4,22 @@ import { Model } from 'mongoose';
 import { Quote, QuoteDocument } from '../models/schemas/quote.schema';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { readdir } from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class QuoteService {
   private readonly logger = new Logger(QuoteService.name);
+  private readonly baseUrl: string;
+  private readonly quotesDir: string;
 
   constructor(
     @InjectModel(Quote.name) private quoteModel: Model<QuoteDocument>,
-  ) {}
+  ) {
+    // Get base URL from environment or default to fikrless.com
+    this.baseUrl = process.env.API_BASE_URL || process.env.BASE_URL || 'https://fikrless.com';
+    this.quotesDir = join(process.cwd(), 'Quotes');
+  }
 
   async getTodayQuote(): Promise<any> {
     // Get today's date at midnight (YYYY-MM-DD)
@@ -253,6 +261,39 @@ export class QuoteService {
 
     await quote.deleteOne();
     return { success: true, message: 'Quote deleted successfully' };
+  }
+
+  /**
+   * Get 3 random quote images with complete URLs
+   */
+  async getRandomQuoteImages(): Promise<string[]> {
+    try {
+      // Read all files from Quotes directory
+      const files = await readdir(this.quotesDir);
+      
+      // Filter only PNG files
+      const imageFiles = files.filter(file => file.toLowerCase().endsWith('.png'));
+      
+      if (imageFiles.length === 0) {
+        this.logger.warn('No PNG images found in Quotes directory');
+        return [];
+      }
+
+      // If we have 3 or fewer images, return all of them
+      if (imageFiles.length <= 3) {
+        return imageFiles.map(file => `${this.baseUrl}/api/quotes/${file}`);
+      }
+
+      // Shuffle array and pick 3 random images
+      const shuffled = [...imageFiles].sort(() => Math.random() - 0.5);
+      const selectedImages = shuffled.slice(0, 3);
+
+      // Return complete URLs
+      return selectedImages.map(file => `${this.baseUrl}/api/quotes/${file}`);
+    } catch (error) {
+      this.logger.error(`Error reading quote images: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to retrieve quote images');
+    }
   }
 }
 

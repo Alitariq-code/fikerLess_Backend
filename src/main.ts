@@ -21,6 +21,13 @@ async function bootstrap() {
   });
   logger.log(`📁 Serving static files from: ${publicPath}`);
   
+  // Serve Quotes directory as static files
+  const quotesPath = join(process.cwd(), 'Quotes');
+  app.useStaticAssets(quotesPath, {
+    prefix: '/api/quotes',
+  });
+  logger.log(`📁 Serving quote images from: ${quotesPath} at /api/quotes`);
+  
   // CORS configuration - allow all origins in development
   app.enableCors({
     origin: (origin, callback) => {
