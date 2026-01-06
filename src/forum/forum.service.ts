@@ -464,7 +464,7 @@ export class ForumService {
         if (inAppNotifCreated) {
           this.logger.debug(`In-app notification created/updated for post ${postId} to user ${notificationRecipientId} (commented by ${userId})`);
         } else {
-          this.logger.warn(`Failed to create in-app notification for post ${postId} to user ${notificationRecipientId} (commented by ${userId})`);
+          this.logger.error(`Failed to create in-app notification for post ${postId} to user ${notificationRecipientId} (commented by ${userId}) - check logs above for details`);
         }
 
         // Facebook-style FCM push notification

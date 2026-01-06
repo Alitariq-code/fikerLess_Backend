@@ -572,36 +572,41 @@ export class NotificationService {
       // For forum notifications, check for exact duplicates (same post/comment + same liker/commenter)
       // This prevents duplicate notifications when the same user likes/comments multiple times
       // But allows multiple notifications from different users
+      // Skip duplicate checking for admin notifications (general, admin_*, etc.) - they should always create new
+      const isAdminNotification = type === 'general' || type.startsWith('admin_');
       let existing = null;
       
-      if (type === 'forum_like' && metadata?.post_id && metadata?.liker_id) {
-        // Check for existing like notification from same liker on same post
-        existing = await this.userNotificationModel.findOne({
-          user_id: userIdObj,
-          'payload.type': 'forum_like',
-          'payload.metadata.post_id': metadata.post_id,
-          'payload.metadata.liker_id': metadata.liker_id,
-          deleted_at: null,
-        }).exec();
-      } else if ((type === 'forum_comment' || type === 'forum_comment_reply') && metadata?.comment_id && metadata?.commenter_id) {
-        // Check for existing comment notification from same commenter on same comment
-        existing = await this.userNotificationModel.findOne({
-          user_id: userIdObj,
-          'payload.type': { $in: ['forum_comment', 'forum_comment_reply'] },
-          'payload.metadata.comment_id': metadata.comment_id,
-          'payload.metadata.commenter_id': metadata.commenter_id,
-          deleted_at: null,
-        }).exec();
-      }
+      if (!isAdminNotification) {
+        // Only check for duplicates for forum and achievement notifications
+        if (type === 'forum_like' && metadata?.post_id && metadata?.liker_id) {
+          // Check for existing like notification from same liker on same post
+          existing = await this.userNotificationModel.findOne({
+            user_id: userIdObj,
+            'payload.type': 'forum_like',
+            'payload.metadata.post_id': metadata.post_id,
+            'payload.metadata.liker_id': metadata.liker_id,
+            deleted_at: null,
+          }).exec();
+        } else if ((type === 'forum_comment' || type === 'forum_comment_reply') && metadata?.comment_id && metadata?.commenter_id) {
+          // Check for existing comment notification from same commenter on same comment
+          existing = await this.userNotificationModel.findOne({
+            user_id: userIdObj,
+            'payload.type': { $in: ['forum_comment', 'forum_comment_reply'] },
+            'payload.metadata.comment_id': metadata.comment_id,
+            'payload.metadata.commenter_id': metadata.commenter_id,
+            deleted_at: null,
+          }).exec();
+        }
 
-      if (existing) {
-        // Update existing notification to unread status and refresh content
-        existing.status = 'unread';
-        existing.read_at = null;
-        existing.payload = payload;
-        await existing.save();
-        this.logger.debug(`Direct notification updated for user ${userId} (type: ${type}, id: ${existing._id})`);
-        return true;
+        if (existing) {
+          // Update existing notification to unread status and refresh content
+          existing.status = 'unread';
+          existing.read_at = null;
+          existing.payload = payload;
+          await existing.save();
+          this.logger.debug(`Direct notification updated for user ${userId} (type: ${type}, id: ${existing._id})`);
+          return true;
+        }
       }
 
       // Create new notification if no duplicate found
@@ -615,8 +620,42 @@ export class NotificationService {
       this.logger.debug(`Direct notification created successfully for user ${userId} (type: ${type}, id: ${notification._id})`);
       return true;
     } catch (error: any) {
-      // If duplicate key error, try to update existing notification
+      // If duplicate key error, handle based on notification type
       if (error.code === 11000) {
+        const isAdminNotification = type === 'general' || type.startsWith('admin_');
+        const userIdObj = new Types.ObjectId(userId);
+        
+        // For admin notifications, don't update - create new with timestamp to make it unique
+        if (isAdminNotification) {
+          this.logger.debug(`Duplicate key error for admin notification (type: ${type}), creating new with unique metadata`);
+          try {
+            // Add timestamp to metadata to make it unique
+            const uniquePayload = {
+              title: title.trim(),
+              body: body.trim(),
+              type,
+              metadata: {
+                ...(metadata || {}),
+                created_at: new Date().toISOString(),
+                unique_id: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+              },
+              cta_url,
+            };
+            
+            const notification = await this.userNotificationModel.create({
+              user_id: userIdObj,
+              status: 'unread',
+              payload: uniquePayload,
+            });
+            this.logger.debug(`Admin notification created with unique ID for user ${userId} (type: ${type}, id: ${notification._id})`);
+            return true;
+          } catch (retryError: any) {
+            this.logger.error(`Failed to create admin notification with unique ID for user ${userId}: ${retryError.message}`);
+            return false;
+          }
+        }
+        
+        // For forum/achievement notifications, try to update existing
         this.logger.debug(`Duplicate notification detected for user ${userId} (type: ${type}), attempting to update`);
         try {
           // Try to find and update the existing notification
@@ -701,6 +740,7 @@ export class NotificationService {
   async sendNotificationAsAdmin(dto: SendNotificationDto) {
     // If sending to a single user
     if (dto.user_id) {
+      // Create in-app notification
       const created = await this.createDirectNotification(
         dto.user_id,
         dto.title,
@@ -709,9 +749,26 @@ export class NotificationService {
         dto.metadata,
         dto.cta_url,
       );
+      
       if (!created) {
-        this.logger.warn(`Failed to create notification for user ${dto.user_id}`);
+        this.logger.error(`Failed to create in-app notification for user ${dto.user_id}`);
+        // Still try to send FCM even if in-app fails
+      } else {
+        this.logger.debug(`In-app notification created for user ${dto.user_id} (admin send)`);
       }
+
+      // Always send FCM push notification for admin notifications
+      this.sendFcmPushNotification(
+        dto.user_id,
+        dto.title,
+        dto.body,
+        dto.type || 'general',
+        dto.metadata,
+        false, // Admin notifications don't check appointment_reminders
+      ).catch((fcmError) => {
+        this.logger.warn(`FCM push notification failed for user ${dto.user_id} (admin send): ${fcmError.message || fcmError}`);
+      });
+
       return { success: true, message: 'Notification sent successfully', recipients: 1 };
     }
 
