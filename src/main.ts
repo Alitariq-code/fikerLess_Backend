@@ -21,6 +21,13 @@ async function bootstrap() {
   });
   logger.log(`📁 Serving static files from: ${publicPath}`);
   
+  // Serve uploads/images directory via /api/uploads/images path
+  const uploadsImagesPath = join(process.cwd(), 'public', 'uploads', 'images');
+  app.useStaticAssets(uploadsImagesPath, {
+    prefix: '/api/uploads/images',
+  });
+  logger.log(`📁 Serving uploaded images from: ${uploadsImagesPath} at /api/uploads/images`);
+  
   // Serve Quotes directory as static files
   const quotesPath = join(process.cwd(), 'Quotes');
   app.useStaticAssets(quotesPath, {
