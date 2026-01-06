@@ -1155,7 +1155,45 @@ export class BookingService {
       const doctor = await this.userModel.findById(request.doctor_id);
       const user = await this.userModel.findById(request.user_id);
 
-      // Notify user
+      // Payment approved notification (in-app)
+      await this.notificationService.createDirectNotification(
+        request.user_id.toString(),
+        'Payment Approved',
+        `Your payment for the session with ${doctor?.first_name} ${doctor?.last_name} has been approved.`,
+        'payment_approved',
+        {
+          request_id: request._id.toString(),
+          session_id: session._id.toString(),
+          doctor_id: request.doctor_id.toString(),
+          date: request.date,
+          start_time: request.start_time,
+          amount: request.amount,
+          currency: request.currency,
+        },
+        `/sessions/${session._id}`,
+      );
+
+      // Payment approved FCM push notification
+      this.notificationService.sendFcmPushNotification(
+        request.user_id.toString(),
+        'Payment Approved',
+        `Your payment for the session with ${doctor?.first_name} ${doctor?.last_name} has been approved.`,
+        'payment_approved',
+        {
+          request_id: request._id.toString(),
+          session_id: session._id.toString(),
+          doctor_id: request.doctor_id.toString(),
+          date: request.date,
+          start_time: request.start_time,
+          amount: request.amount.toString(),
+          currency: request.currency,
+        },
+        true, // Check payment_notifications setting (using appointment_reminders for now)
+      ).catch((fcmError) => {
+        this.logger.warn(`FCM push notification failed for user ${request.user_id} (payment approved): ${fcmError.message}`);
+      });
+
+      // Notify user (in-app notification)
       await this.notificationService.createDirectNotification(
         request.user_id.toString(),
         'Session Approved',
@@ -1171,7 +1209,25 @@ export class BookingService {
         `/sessions/${session._id}`,
       );
 
-      // Notify doctor
+      // Send FCM push notification to user
+      this.notificationService.sendFcmPushNotification(
+        request.user_id.toString(),
+        'Session Approved',
+        `Your session with ${doctor?.first_name} ${doctor?.last_name} on ${request.date} at ${request.start_time} has been approved.`,
+        'booking',
+        {
+          session_id: session._id.toString(),
+          doctor_id: request.doctor_id.toString(),
+          date: request.date,
+          start_time: request.start_time,
+          end_time: request.end_time,
+        },
+        true, // Check appointment_reminders setting
+      ).catch((fcmError) => {
+        this.logger.warn(`FCM push notification failed for user ${request.user_id} (session approved): ${fcmError.message}`);
+      });
+
+      // Notify doctor (in-app notification)
       await this.notificationService.createDirectNotification(
         request.doctor_id.toString(),
         'New Session Booked',
@@ -1186,6 +1242,24 @@ export class BookingService {
         },
         `/sessions/${session._id}`,
       );
+
+      // Send FCM push notification to doctor
+      this.notificationService.sendFcmPushNotification(
+        request.doctor_id.toString(),
+        'New Session Booked',
+        `${user?.first_name} ${user?.last_name} has booked a session with you on ${request.date} at ${request.start_time}.`,
+        'booking',
+        {
+          session_id: session._id.toString(),
+          user_id: request.user_id.toString(),
+          date: request.date,
+          start_time: request.start_time,
+          end_time: request.end_time,
+        },
+        true, // Check appointment_reminders setting
+      ).catch((fcmError) => {
+        this.logger.warn(`FCM push notification failed for doctor ${request.doctor_id} (session approved): ${fcmError.message}`);
+      });
     } catch (error) {
       this.logger.error(`Failed to send notifications for approved session: ${error.message}`);
       // Don't fail the approval if notification fails
@@ -1240,6 +1314,8 @@ export class BookingService {
     // Send notification to user
     try {
       const doctor = await this.userModel.findById(request.doctor_id);
+      
+      // In-app notification
       await this.notificationService.createDirectNotification(
         request.user_id.toString(),
         'Session Request Rejected',
@@ -1253,6 +1329,23 @@ export class BookingService {
         },
         null,
       );
+
+      // Send FCM push notification to user
+      this.notificationService.sendFcmPushNotification(
+        request.user_id.toString(),
+        'Session Request Rejected',
+        `Your session request with ${doctor?.first_name} ${doctor?.last_name} on ${request.date} at ${request.start_time} has been rejected. Reason: ${dto.reason}`,
+        'booking',
+        {
+          request_id: request._id.toString(),
+          doctor_id: request.doctor_id.toString(),
+          date: request.date,
+          rejection_reason: dto.reason,
+        },
+        true, // Check appointment_reminders setting
+      ).catch((fcmError) => {
+        this.logger.warn(`FCM push notification failed for user ${request.user_id} (session rejected): ${fcmError.message}`);
+      });
     } catch (error) {
       this.logger.error(`Failed to send rejection notification: ${error.message}`);
       // Don't fail the rejection if notification fails

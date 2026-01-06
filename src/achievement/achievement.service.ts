@@ -431,6 +431,7 @@ export class AchievementService {
       if (userAchievement && userAchievement.status === UserAchievementStatus.UNLOCKED && !wasUnlocked) {
         const achievement = await this.achievementModel.findById(achievementId).exec();
         if (achievement) {
+          // In-app notification
           await this.notificationService.createDirectNotification(
             userId,
             `Achievement Unlocked: ${achievement.name}`,
@@ -443,6 +444,22 @@ export class AchievementService {
             },
             '/profile/achievements',
           );
+
+          // Facebook-style FCM push notification
+          this.notificationService.sendFcmPushNotification(
+            userId,
+            `🏆 ${achievement.name}`,
+            `You've unlocked "${achievement.description}"!`,
+            'achievement_unlock',
+            {
+              achievement_id: achievementId,
+              achievement_name: achievement.name,
+              achievement_icon: achievement.icon,
+            },
+            false, // Achievement notifications don't check appointment_reminders
+          ).catch((fcmError) => {
+            this.logger.warn(`FCM push notification failed for user ${userId} (achievement unlock): ${fcmError.message}`);
+          });
         }
       }
     } catch (error) {
@@ -672,6 +689,7 @@ export class AchievementService {
 
       // Send notification when achievement is claimed
       try {
+        // In-app notification
         await this.notificationService.createDirectNotification(
           userId,
           `Achievement Claimed: ${achievement.name}`,
@@ -685,6 +703,24 @@ export class AchievementService {
           },
           '/profile/achievements',
         );
+
+        // Facebook-style FCM push notification
+        this.notificationService.sendFcmPushNotification(
+          userId,
+          `🎉 ${achievement.name} Claimed!`,
+          `You earned ${achievement.xp_reward} XP!`,
+          'achievement_claimed',
+          {
+            achievement_id: achievementId,
+            achievement_name: achievement.name,
+            achievement_icon: achievement.icon,
+            xp_reward: achievement.xp_reward.toString(),
+          },
+          false, // Achievement notifications don't check appointment_reminders
+        ).catch((fcmError) => {
+          this.logger.warn(`FCM push notification failed for user ${userId} (achievement claimed): ${fcmError.message}`);
+        });
+
         this.logger.debug(`Notification sent for claimed achievement ${achievementId} to user ${userId}`);
       } catch (error) {
         // Don't fail the claim operation if notification fails

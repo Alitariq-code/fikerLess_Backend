@@ -230,6 +230,8 @@ export class ForumService {
             : `User_${userId.slice(-6)}`;
           
           const postTitle = post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title;
+          
+          // In-app notification
           await this.notificationService.createDirectNotification(
             post.user_id.toString(),
             `${likerName} liked your post`,
@@ -238,10 +240,26 @@ export class ForumService {
             { post_id: postId, liker_id: userId, liker_name: likerName },
             `/forum/posts/${postId}`,
           );
-      } catch (error) {
-        // Don't fail the like operation if notification fails
-        this.logger.error(`Failed to send like notification for post ${postId} to user ${post.user_id}:`, error);
-      }
+
+          // Facebook-style FCM push notification
+          this.notificationService.sendFcmPushNotification(
+            post.user_id.toString(),
+            `${likerName} liked your post`,
+            postTitle,
+            'forum_like',
+            {
+              post_id: postId,
+              liker_id: userId,
+              liker_name: likerName,
+            },
+            false, // Forum notifications don't check appointment_reminders
+          ).catch((fcmError) => {
+            this.logger.warn(`FCM push notification failed for user ${post.user_id} (post like): ${fcmError.message}`);
+          });
+        } catch (error) {
+          // Don't fail the like operation if notification fails
+          this.logger.error(`Failed to send like notification for post ${postId} to user ${post.user_id}:`, error);
+        }
       }
 
       return { is_liked: true, likes_count: post.likes_count };
@@ -419,6 +437,7 @@ export class ForumService {
     // Send notification if recipient exists and is not the commenter
     if (notificationRecipientId && notificationRecipientId !== userId) {
       try {
+        // In-app notification
         await this.notificationService.createDirectNotification(
           notificationRecipientId,
           notificationTitle,
@@ -432,6 +451,32 @@ export class ForumService {
           },
           `/forum/posts/${postId}`,
         );
+
+        // Facebook-style FCM push notification
+        // For comments, show a cleaner message
+        const fcmTitle = dto.parent_comment_id 
+          ? notificationTitle // "John replied to your comment"
+          : notificationTitle; // "John commented on your post"
+        
+        const fcmBody = comment.content.length > 80 
+          ? comment.content.substring(0, 80) + '...' 
+          : comment.content;
+
+        this.notificationService.sendFcmPushNotification(
+          notificationRecipientId,
+          fcmTitle,
+          fcmBody,
+          notificationType,
+          { 
+            post_id: postId, 
+            comment_id: comment._id.toString(),
+            parent_comment_id: dto.parent_comment_id || null,
+            commenter_id: userId,
+          },
+          false, // Forum notifications don't check appointment_reminders
+        ).catch((fcmError) => {
+          this.logger.warn(`FCM push notification failed for user ${notificationRecipientId} (forum comment): ${fcmError.message}`);
+        });
       } catch (error) {
         // Don't fail the comment operation if notification fails
         this.logger.error(`Failed to send comment notification:`, error);

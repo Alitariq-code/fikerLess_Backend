@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { NotificationTemplate, NotificationTemplateDocument } from '../models/schemas/notification-template.schema';
@@ -18,6 +18,8 @@ import * as admin from 'firebase-admin';
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name);
+
   constructor(
     @InjectModel(NotificationTemplate.name) private templateModel: Model<NotificationTemplateDocument>,
     @InjectModel(UserNotification.name) private userNotificationModel: Model<UserNotificationDocument>,
@@ -335,6 +337,195 @@ export class NotificationService {
     } catch (error) {
       console.error('Error sending notification: ', error);
       throw error;
+    }
+  }
+
+  /**
+   * Send FCM push notification to a user by user ID
+   * This is a production-ready helper method that handles:
+   * - FCM token retrieval
+   * - Notification settings check
+   * - Error handling (graceful failures)
+   * - Proper logging
+   * 
+   * @param userId - User ID to send notification to
+   * @param title - Notification title
+   * @param body - Notification body
+   * @param type - Notification type (e.g., 'booking', 'forum', 'achievement', 'payment_approved', 'payment_reminder')
+   * @param metadata - Additional metadata to include in the notification
+   * @param checkAppointmentReminders - Whether to check appointment_reminders or payment_notifications setting (default: false)
+   * @returns Promise<boolean> - Returns true if notification was sent successfully, false otherwise
+   */
+  async sendFcmPushNotification(
+    userId: string,
+    title: string,
+    body: string,
+    type: string = 'general',
+    metadata?: Record<string, any>,
+    checkAppointmentReminders: boolean = false,
+  ): Promise<boolean> {
+    try {
+      // Input validation
+      if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        this.logger.warn('FCM notification skipped: invalid userId provided');
+        return false;
+      }
+
+      if (!Types.ObjectId.isValid(userId)) {
+        this.logger.warn(`FCM notification skipped: invalid userId format: ${userId}`);
+        return false;
+      }
+
+      // Validate title and body
+      if (!title || typeof title !== 'string' || title.trim() === '') {
+        this.logger.warn(`FCM notification skipped for user ${userId}: empty or invalid title`);
+        return false;
+      }
+
+      if (!body || typeof body !== 'string' || body.trim() === '') {
+        this.logger.warn(`FCM notification skipped for user ${userId}: empty or invalid body`);
+        return false;
+      }
+
+      const userIdObj = new Types.ObjectId(userId);
+
+      // Check notification settings if required
+      if (checkAppointmentReminders) {
+        const settings = await this.notificationSettingsModel.findOne({ user_id: userIdObj }).exec();
+        if (settings) {
+          // Check payment_notifications for payment-related notifications
+          if (type === 'payment_approved' || type === 'payment_reminder') {
+            if (!settings.payment_notifications) {
+              this.logger.debug(`FCM notification skipped for user ${userId}: payment_notifications is disabled`);
+              return false;
+            }
+          } else {
+            // Check appointment_reminders for booking-related notifications
+            if (!settings.appointment_reminders) {
+              this.logger.debug(`FCM notification skipped for user ${userId}: appointment_reminders is disabled`);
+              return false;
+            }
+          }
+        }
+      }
+
+      // Get user's FCM token
+      const fcmTokenDoc = await this.fcmTokenModel.findOne({ user_id: userIdObj }).exec();
+      if (!fcmTokenDoc || !fcmTokenDoc.fcm_token || !fcmTokenDoc.fcm_token.trim()) {
+        this.logger.debug(`FCM notification skipped for user ${userId}: no FCM token found`);
+        return false;
+      }
+
+      const messaging = this.firebaseService.getMessaging();
+
+      // Prepare notification data payload
+      const dataPayload: Record<string, string> = {
+        type,
+        notification_type: type,
+        ...(metadata || {}),
+      };
+
+      // Convert all metadata values to strings (FCM data payload requires string values)
+      // FCM has a limit of 4KB for the entire data payload
+      let totalSize = 0;
+      const maxPayloadSize = 4000; // 4KB limit
+      
+      Object.keys(dataPayload).forEach((key) => {
+        if (typeof dataPayload[key] !== 'string') {
+          dataPayload[key] = JSON.stringify(dataPayload[key]);
+        }
+        // Estimate size (rough calculation)
+        totalSize += key.length + dataPayload[key].length;
+      });
+
+      // If payload is too large, truncate or remove some metadata
+      if (totalSize > maxPayloadSize) {
+        this.logger.warn(`FCM data payload too large (${totalSize} bytes) for user ${userId}, truncating metadata`);
+        // Keep only essential fields
+        const essentialKeys = ['type', 'notification_type'];
+        const newPayload: Record<string, string> = {};
+        essentialKeys.forEach(key => {
+          if (dataPayload[key]) {
+            newPayload[key] = dataPayload[key];
+          }
+        });
+        // Add other keys until we hit the limit
+        Object.keys(dataPayload).forEach(key => {
+          if (!essentialKeys.includes(key) && newPayload[key] === undefined) {
+            const estimatedSize = key.length + dataPayload[key].length;
+            if (Object.values(newPayload).reduce((sum, val) => sum + val.length, 0) + estimatedSize < maxPayloadSize) {
+              newPayload[key] = dataPayload[key];
+            }
+          }
+        });
+        Object.assign(dataPayload, newPayload);
+      }
+
+      // Validate and sanitize FCM token
+      const fcmToken = fcmTokenDoc.fcm_token.trim();
+      if (!fcmToken || fcmToken.length < 10) {
+        this.logger.warn(`FCM notification skipped for user ${userId}: invalid token format`);
+        return false;
+      }
+
+      const message: admin.messaging.Message = {
+        data: dataPayload,
+        notification: {
+          title: title.trim().substring(0, 100), // FCM title limit
+          body: body.trim().substring(0, 200), // FCM body limit
+        },
+        token: fcmToken,
+        android: {
+          priority: 'high' as const,
+          notification: {
+            channelId: 'default',
+            sound: 'default',
+            priority: 'high' as const,
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1,
+            },
+          },
+        },
+      };
+
+      // Send notification
+      const response = await messaging.send(message);
+      this.logger.log(`FCM push notification sent successfully to user ${userId} (type: ${type}) - Message ID: ${response}`);
+      return true;
+    } catch (error: any) {
+      // Handle specific FCM errors
+      if (error.code === 'messaging/invalid-registration-token' || 
+          error.code === 'messaging/registration-token-not-registered' ||
+          error.code === 'messaging/invalid-argument') {
+        // Token is invalid or expired, remove it from database
+        this.logger.warn(`Invalid FCM token for user ${userId} (code: ${error.code}), removing from database`);
+        try {
+          if (Types.ObjectId.isValid(userId)) {
+            await this.fcmTokenModel.deleteOne({ user_id: new Types.ObjectId(userId) }).exec();
+          }
+        } catch (deleteError: any) {
+          this.logger.error(`Failed to delete invalid FCM token for user ${userId}:`, deleteError?.message || deleteError);
+        }
+        return false;
+      }
+
+      // Handle rate limiting errors
+      if (error.code === 'messaging/quota-exceeded' || error.code === 'messaging/unavailable') {
+        this.logger.warn(`FCM service unavailable or quota exceeded for user ${userId}: ${error.message}`);
+        return false;
+      }
+
+      // Log other errors but don't throw (graceful failure)
+      this.logger.error(
+        `Failed to send FCM push notification to user ${userId} (type: ${type}): ${error.message || error}`,
+        error.stack || error,
+      );
+      return false;
     }
   }
 
