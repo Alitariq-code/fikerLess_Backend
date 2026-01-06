@@ -538,29 +538,57 @@ export class NotificationService {
     cta_url?: string,
   ): Promise<void> {
     try {
+      // Validate userId
+      if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        this.logger.warn(`createDirectNotification: Invalid userId provided: ${userId}`);
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      if (!Types.ObjectId.isValid(userId)) {
+        this.logger.warn(`createDirectNotification: Invalid userId format: ${userId}`);
+        throw new Error(`Invalid userId format: ${userId}`);
+      }
+
+      // Validate title and body
+      if (!title || typeof title !== 'string' || title.trim() === '') {
+        this.logger.warn(`createDirectNotification: Invalid title for user ${userId}`);
+        throw new Error(`Invalid title: ${title}`);
+      }
+
+      if (!body || typeof body !== 'string' || body.trim() === '') {
+        this.logger.warn(`createDirectNotification: Invalid body for user ${userId}`);
+        throw new Error(`Invalid body: ${body}`);
+      }
+
       // Create user notification directly without creating a template
       // Direct notifications are user-specific and don't need templates
       // They won't appear in the admin "Manage Notifications" template list
-      await this.userNotificationModel.create({
+      const notification = await this.userNotificationModel.create({
         // template_id is omitted for direct notifications
         user_id: new Types.ObjectId(userId),
         status: 'unread',
         payload: {
-          title,
-          body,
+          title: title.trim(),
+          body: body.trim(),
           type,
           metadata: metadata || {},
           cta_url,
         },
       });
+      
+      this.logger.debug(`Direct notification created successfully for user ${userId} (type: ${type}, id: ${notification._id})`);
     } catch (error: any) {
       // If duplicate key error, it means notification already exists - that's okay
       // This can happen when the same achievement is unlocked multiple times quickly
       if (error.code === 11000) {
-        // Duplicate notification - silently ignore (already sent)
+        this.logger.debug(`Duplicate notification skipped for user ${userId} (type: ${type}) - already exists`);
         return;
       }
-      // Re-throw other errors
+      // Log and re-throw other errors
+      this.logger.error(
+        `Failed to create direct notification for user ${userId} (type: ${type}): ${error.message || error}`,
+        error.stack || error,
+      );
       throw error;
     }
   }

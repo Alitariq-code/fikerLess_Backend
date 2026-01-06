@@ -231,15 +231,25 @@ export class ForumService {
           
           const postTitle = post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title;
           
-          // In-app notification
-          await this.notificationService.createDirectNotification(
-            post.user_id.toString(),
-            `${likerName} liked your post`,
-            `${likerName} liked your post "${postTitle}"`,
-            'forum_like',
-            { post_id: postId, liker_id: userId, liker_name: likerName },
-            `/forum/posts/${postId}`,
-          );
+          // In-app notification - wrapped in separate try-catch for better error tracking
+          try {
+            await this.notificationService.createDirectNotification(
+              post.user_id.toString(),
+              `${likerName} liked your post`,
+              `${likerName} liked your post "${postTitle}"`,
+              'forum_like',
+              { post_id: postId, liker_id: userId, liker_name: likerName },
+              `/forum/posts/${postId}`,
+            );
+            this.logger.debug(`In-app notification created for post ${postId} to user ${post.user_id} (liked by ${userId})`);
+          } catch (notifError: any) {
+            // Log the specific error for in-app notification
+            this.logger.error(
+              `Failed to create in-app notification for post ${postId} to user ${post.user_id} (liked by ${userId}): ${notifError.message || notifError}`,
+              notifError.stack || notifError,
+            );
+            // Don't fail the like operation, but log the error clearly
+          }
 
           // Facebook-style FCM push notification
           this.notificationService.sendFcmPushNotification(
@@ -254,11 +264,14 @@ export class ForumService {
             },
             false, // Forum notifications don't check appointment_reminders
           ).catch((fcmError) => {
-            this.logger.warn(`FCM push notification failed for user ${post.user_id} (post like): ${fcmError.message}`);
+            this.logger.warn(`FCM push notification failed for user ${post.user_id} (post like): ${fcmError.message || fcmError}`);
           });
-        } catch (error) {
+        } catch (error: any) {
           // Don't fail the like operation if notification fails
-          this.logger.error(`Failed to send like notification for post ${postId} to user ${post.user_id}:`, error);
+          this.logger.error(
+            `Failed to send like notification for post ${postId} to user ${post.user_id}: ${error.message || error}`,
+            error.stack || error,
+          );
         }
       }
 
@@ -437,20 +450,30 @@ export class ForumService {
     // Send notification if recipient exists and is not the commenter
     if (notificationRecipientId && notificationRecipientId !== userId) {
       try {
-        // In-app notification
-        await this.notificationService.createDirectNotification(
-          notificationRecipientId,
-          notificationTitle,
-          notificationBody,
-          notificationType,
-          { 
-            post_id: postId, 
-            comment_id: comment._id.toString(),
-            parent_comment_id: dto.parent_comment_id || null,
-            commenter_id: userId,
-          },
-          `/forum/posts/${postId}`,
-        );
+        // In-app notification - wrapped in separate try-catch for better error tracking
+        try {
+          await this.notificationService.createDirectNotification(
+            notificationRecipientId,
+            notificationTitle,
+            notificationBody,
+            notificationType,
+            { 
+              post_id: postId, 
+              comment_id: comment._id.toString(),
+              parent_comment_id: dto.parent_comment_id || null,
+              commenter_id: userId,
+            },
+            `/forum/posts/${postId}`,
+          );
+          this.logger.debug(`In-app notification created for post ${postId} to user ${notificationRecipientId} (commented by ${userId})`);
+        } catch (notifError: any) {
+          // Log the specific error for in-app notification
+          this.logger.error(
+            `Failed to create in-app notification for post ${postId} to user ${notificationRecipientId} (commented by ${userId}): ${notifError.message || notifError}`,
+            notifError.stack || notifError,
+          );
+          // Don't fail the comment operation, but log the error clearly
+        }
 
         // Facebook-style FCM push notification
         // For comments, show a cleaner message
@@ -475,11 +498,14 @@ export class ForumService {
           },
           false, // Forum notifications don't check appointment_reminders
         ).catch((fcmError) => {
-          this.logger.warn(`FCM push notification failed for user ${notificationRecipientId} (forum comment): ${fcmError.message}`);
+          this.logger.warn(`FCM push notification failed for user ${notificationRecipientId} (forum comment): ${fcmError.message || fcmError}`);
         });
-      } catch (error) {
+      } catch (error: any) {
         // Don't fail the comment operation if notification fails
-        this.logger.error(`Failed to send comment notification:`, error);
+        this.logger.error(
+          `Failed to send comment notification: ${error.message || error}`,
+          error.stack || error,
+        );
       }
     }
 
