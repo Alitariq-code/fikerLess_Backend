@@ -10,6 +10,9 @@ export class UserNotification {
   @Prop({ type: Types.ObjectId, ref: NotificationTemplate.name, required: false })
   template_id?: Types.ObjectId; // Made optional for direct notifications
 
+  @Prop({ type: String, required: false, sparse: true })
+  notification_identifier?: string; // Unique identifier for direct notifications to bypass unique index
+
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   user_id: Types.ObjectId;
 
@@ -47,6 +50,16 @@ UserNotificationSchema.index(
   { 
     unique: true,
     partialFilterExpression: { template_id: { $exists: true, $ne: null } }
+  }
+);
+// Sparse unique index for direct notifications: only applies when notification_identifier exists
+// This allows multiple direct notifications by using unique identifiers
+UserNotificationSchema.index(
+  { notification_identifier: 1, user_id: 1 },
+  { 
+    unique: true,
+    sparse: true,
+    partialFilterExpression: { notification_identifier: { $exists: true, $ne: null } }
   }
 );
 UserNotificationSchema.index({ user_id: 1, status: 1, createdAt: -1 });

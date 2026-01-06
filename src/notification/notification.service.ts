@@ -599,14 +599,44 @@ export class NotificationService {
         }
 
         if (existing) {
+          // Generate notification identifier if not present (for backward compatibility)
+          let notificationIdentifier: string | undefined;
+          if (type === 'forum_like' && metadata?.post_id && metadata?.liker_id) {
+            notificationIdentifier = `forum_like_${userId}_${metadata.post_id}_${metadata.liker_id}`;
+          } else if ((type === 'forum_comment' || type === 'forum_comment_reply') && metadata?.comment_id && metadata?.commenter_id) {
+            notificationIdentifier = `forum_comment_${userId}_${metadata.comment_id}_${metadata.commenter_id}`;
+          }
+          
           // Update existing notification to unread status and refresh content
           existing.status = 'unread';
           existing.read_at = null;
           existing.payload = payload;
+          if (notificationIdentifier && !existing.notification_identifier) {
+            existing.notification_identifier = notificationIdentifier;
+          }
           await existing.save();
           this.logger.debug(`Direct notification updated for user ${userId} (type: ${type}, id: ${existing._id})`);
           return true;
         }
+      }
+
+      // Generate unique identifier for direct notifications to bypass unique index constraint
+      // For forum notifications, use deterministic identifier based on content (allows updates)
+      // For admin notifications, use random identifier (always creates new)
+      let notificationIdentifier: string | undefined;
+      
+      if (isAdminNotification) {
+        // Admin notifications: always generate new unique identifier
+        notificationIdentifier = `admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      } else if (type === 'forum_like' && metadata?.post_id && metadata?.liker_id) {
+        // Forum likes: deterministic identifier (allows updates if same user likes same post)
+        notificationIdentifier = `forum_like_${userId}_${metadata.post_id}_${metadata.liker_id}`;
+      } else if ((type === 'forum_comment' || type === 'forum_comment_reply') && metadata?.comment_id && metadata?.commenter_id) {
+        // Forum comments: deterministic identifier (allows updates if same user comments on same comment)
+        notificationIdentifier = `forum_comment_${userId}_${metadata.comment_id}_${metadata.commenter_id}`;
+      } else {
+        // Other notifications: generate unique identifier
+        notificationIdentifier = `${type}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       }
 
       // Create new notification if no duplicate found
@@ -614,6 +644,7 @@ export class NotificationService {
         // template_id is omitted for direct notifications
         user_id: userIdObj,
         status: 'unread',
+        notification_identifier: notificationIdentifier,
         payload,
       });
       
@@ -625,11 +656,12 @@ export class NotificationService {
         const isAdminNotification = type === 'general' || type.startsWith('admin_');
         const userIdObj = new Types.ObjectId(userId);
         
-        // For admin notifications, don't update - create new with timestamp to make it unique
+        // For admin notifications, don't update - create new with unique identifier
         if (isAdminNotification) {
-          this.logger.debug(`Duplicate key error for admin notification (type: ${type}), creating new with unique metadata`);
+          this.logger.debug(`Duplicate key error for admin notification (type: ${type}), creating new with unique identifier`);
           try {
-            // Add timestamp to metadata to make it unique
+            // Generate new unique identifier for admin notification
+            const uniqueIdentifier = `admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
             const uniquePayload = {
               title: title.trim(),
               body: body.trim(),
@@ -637,7 +669,6 @@ export class NotificationService {
               metadata: {
                 ...(metadata || {}),
                 created_at: new Date().toISOString(),
-                unique_id: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
               },
               cta_url,
             };
@@ -645,12 +676,13 @@ export class NotificationService {
             const notification = await this.userNotificationModel.create({
               user_id: userIdObj,
               status: 'unread',
+              notification_identifier: uniqueIdentifier,
               payload: uniquePayload,
             });
-            this.logger.debug(`Admin notification created with unique ID for user ${userId} (type: ${type}, id: ${notification._id})`);
+            this.logger.debug(`Admin notification created with unique identifier for user ${userId} (type: ${type}, id: ${notification._id})`);
             return true;
           } catch (retryError: any) {
-            this.logger.error(`Failed to create admin notification with unique ID for user ${userId}: ${retryError.message}`);
+            this.logger.error(`Failed to create admin notification with unique identifier for user ${userId}: ${retryError.message}`);
             return false;
           }
         }
