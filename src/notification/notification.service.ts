@@ -536,60 +536,121 @@ export class NotificationService {
     type: string = 'forum',
     metadata?: Record<string, any>,
     cta_url?: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
       // Validate userId
       if (!userId || typeof userId !== 'string' || userId.trim() === '') {
         this.logger.warn(`createDirectNotification: Invalid userId provided: ${userId}`);
-        throw new Error(`Invalid userId: ${userId}`);
+        return false;
       }
 
       if (!Types.ObjectId.isValid(userId)) {
         this.logger.warn(`createDirectNotification: Invalid userId format: ${userId}`);
-        throw new Error(`Invalid userId format: ${userId}`);
+        return false;
       }
 
       // Validate title and body
       if (!title || typeof title !== 'string' || title.trim() === '') {
         this.logger.warn(`createDirectNotification: Invalid title for user ${userId}`);
-        throw new Error(`Invalid title: ${title}`);
+        return false;
       }
 
       if (!body || typeof body !== 'string' || body.trim() === '') {
         this.logger.warn(`createDirectNotification: Invalid body for user ${userId}`);
-        throw new Error(`Invalid body: ${body}`);
+        return false;
       }
 
-      // Create user notification directly without creating a template
-      // Direct notifications are user-specific and don't need templates
-      // They won't appear in the admin "Manage Notifications" template list
+      const userIdObj = new Types.ObjectId(userId);
+      const payload = {
+        title: title.trim(),
+        body: body.trim(),
+        type,
+        metadata: metadata || {},
+        cta_url,
+      };
+
+      // For forum notifications, check for exact duplicates (same post/comment + same liker/commenter)
+      // This prevents duplicate notifications when the same user likes/comments multiple times
+      // But allows multiple notifications from different users
+      let existing = null;
+      
+      if (type === 'forum_like' && metadata?.post_id && metadata?.liker_id) {
+        // Check for existing like notification from same liker on same post
+        existing = await this.userNotificationModel.findOne({
+          user_id: userIdObj,
+          'payload.type': 'forum_like',
+          'payload.metadata.post_id': metadata.post_id,
+          'payload.metadata.liker_id': metadata.liker_id,
+          deleted_at: null,
+        }).exec();
+      } else if ((type === 'forum_comment' || type === 'forum_comment_reply') && metadata?.comment_id && metadata?.commenter_id) {
+        // Check for existing comment notification from same commenter on same comment
+        existing = await this.userNotificationModel.findOne({
+          user_id: userIdObj,
+          'payload.type': { $in: ['forum_comment', 'forum_comment_reply'] },
+          'payload.metadata.comment_id': metadata.comment_id,
+          'payload.metadata.commenter_id': metadata.commenter_id,
+          deleted_at: null,
+        }).exec();
+      }
+
+      if (existing) {
+        // Update existing notification to unread status and refresh content
+        existing.status = 'unread';
+        existing.read_at = null;
+        existing.payload = payload;
+        await existing.save();
+        this.logger.debug(`Direct notification updated for user ${userId} (type: ${type}, id: ${existing._id})`);
+        return true;
+      }
+
+      // Create new notification if no duplicate found
       const notification = await this.userNotificationModel.create({
         // template_id is omitted for direct notifications
-        user_id: new Types.ObjectId(userId),
+        user_id: userIdObj,
         status: 'unread',
-        payload: {
-          title: title.trim(),
-          body: body.trim(),
-          type,
-          metadata: metadata || {},
-          cta_url,
-        },
+        payload,
       });
       
       this.logger.debug(`Direct notification created successfully for user ${userId} (type: ${type}, id: ${notification._id})`);
+      return true;
     } catch (error: any) {
-      // If duplicate key error, it means notification already exists - that's okay
-      // This can happen when the same achievement is unlocked multiple times quickly
+      // If duplicate key error, try to update existing notification
       if (error.code === 11000) {
-        this.logger.debug(`Duplicate notification skipped for user ${userId} (type: ${type}) - already exists`);
-        return;
+        this.logger.debug(`Duplicate notification detected for user ${userId} (type: ${type}), attempting to update`);
+        try {
+          // Try to find and update the existing notification
+          const existing = await this.userNotificationModel.findOne({
+            user_id: new Types.ObjectId(userId),
+            'payload.type': type,
+            deleted_at: null,
+          }).sort({ createdAt: -1 }).exec();
+
+          if (existing) {
+            existing.status = 'unread';
+            existing.read_at = null;
+            existing.payload = {
+              title: title.trim(),
+              body: body.trim(),
+              type,
+              metadata: metadata || {},
+              cta_url,
+            };
+            await existing.save();
+            this.logger.debug(`Duplicate notification updated for user ${userId} (type: ${type})`);
+            return true;
+          }
+        } catch (updateError: any) {
+          this.logger.warn(`Failed to update duplicate notification for user ${userId}: ${updateError.message}`);
+        }
+        return false;
       }
-      // Log and re-throw other errors
+      // Log and return false for other errors (don't throw to prevent breaking the main operation)
       this.logger.error(
         `Failed to create direct notification for user ${userId} (type: ${type}): ${error.message || error}`,
         error.stack || error,
       );
-      throw error;
+      return false;
     }
   }
 
@@ -640,7 +701,7 @@ export class NotificationService {
   async sendNotificationAsAdmin(dto: SendNotificationDto) {
     // If sending to a single user
     if (dto.user_id) {
-      await this.createDirectNotification(
+      const created = await this.createDirectNotification(
         dto.user_id,
         dto.title,
         dto.body,
@@ -648,6 +709,9 @@ export class NotificationService {
         dto.metadata,
         dto.cta_url,
       );
+      if (!created) {
+        this.logger.warn(`Failed to create notification for user ${dto.user_id}`);
+      }
       return { success: true, message: 'Notification sent successfully', recipients: 1 };
     }
 

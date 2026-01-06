@@ -231,24 +231,20 @@ export class ForumService {
           
           const postTitle = post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title;
           
-          // In-app notification - wrapped in separate try-catch for better error tracking
-          try {
-            await this.notificationService.createDirectNotification(
-              post.user_id.toString(),
-              `${likerName} liked your post`,
-              `${likerName} liked your post "${postTitle}"`,
-              'forum_like',
-              { post_id: postId, liker_id: userId, liker_name: likerName },
-              `/forum/posts/${postId}`,
-            );
-            this.logger.debug(`In-app notification created for post ${postId} to user ${post.user_id} (liked by ${userId})`);
-          } catch (notifError: any) {
-            // Log the specific error for in-app notification
-            this.logger.error(
-              `Failed to create in-app notification for post ${postId} to user ${post.user_id} (liked by ${userId}): ${notifError.message || notifError}`,
-              notifError.stack || notifError,
-            );
-            // Don't fail the like operation, but log the error clearly
+          // In-app notification - always attempt to create
+          const inAppNotifCreated = await this.notificationService.createDirectNotification(
+            post.user_id.toString(),
+            `${likerName} liked your post`,
+            `${likerName} liked your post "${postTitle}"`,
+            'forum_like',
+            { post_id: postId, liker_id: userId, liker_name: likerName },
+            `/forum/posts/${postId}`,
+          );
+
+          if (inAppNotifCreated) {
+            this.logger.debug(`In-app notification created/updated for post ${postId} to user ${post.user_id} (liked by ${userId})`);
+          } else {
+            this.logger.warn(`Failed to create in-app notification for post ${postId} to user ${post.user_id} (liked by ${userId})`);
           }
 
           // Facebook-style FCM push notification
@@ -450,29 +446,25 @@ export class ForumService {
     // Send notification if recipient exists and is not the commenter
     if (notificationRecipientId && notificationRecipientId !== userId) {
       try {
-        // In-app notification - wrapped in separate try-catch for better error tracking
-        try {
-          await this.notificationService.createDirectNotification(
-            notificationRecipientId,
-            notificationTitle,
-            notificationBody,
-            notificationType,
-            { 
-              post_id: postId, 
-              comment_id: comment._id.toString(),
-              parent_comment_id: dto.parent_comment_id || null,
-              commenter_id: userId,
-            },
-            `/forum/posts/${postId}`,
-          );
-          this.logger.debug(`In-app notification created for post ${postId} to user ${notificationRecipientId} (commented by ${userId})`);
-        } catch (notifError: any) {
-          // Log the specific error for in-app notification
-          this.logger.error(
-            `Failed to create in-app notification for post ${postId} to user ${notificationRecipientId} (commented by ${userId}): ${notifError.message || notifError}`,
-            notifError.stack || notifError,
-          );
-          // Don't fail the comment operation, but log the error clearly
+        // In-app notification - always attempt to create
+        const inAppNotifCreated = await this.notificationService.createDirectNotification(
+          notificationRecipientId,
+          notificationTitle,
+          notificationBody,
+          notificationType,
+          { 
+            post_id: postId, 
+            comment_id: comment._id.toString(),
+            parent_comment_id: dto.parent_comment_id || null,
+            commenter_id: userId,
+          },
+          `/forum/posts/${postId}`,
+        );
+
+        if (inAppNotifCreated) {
+          this.logger.debug(`In-app notification created/updated for post ${postId} to user ${notificationRecipientId} (commented by ${userId})`);
+        } else {
+          this.logger.warn(`Failed to create in-app notification for post ${postId} to user ${notificationRecipientId} (commented by ${userId})`);
         }
 
         // Facebook-style FCM push notification
