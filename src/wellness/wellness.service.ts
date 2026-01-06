@@ -25,6 +25,7 @@ export class WellnessService {
     @InjectModel(UserPlant.name) private userPlantModel: Model<UserPlantDocument>,
     @InjectModel(WeeklyGoal.name) private weeklyGoalModel: Model<WeeklyGoalDocument>,
     @InjectModel(UserAchievement.name) private userAchievementModel: Model<UserAchievementDocument>,
+    @InjectModel(Achievement.name) private achievementModel: Model<AchievementDocument>,
     @InjectModel(Steps.name) private stepsModel: Model<StepsDocument>,
   ) {}
 
@@ -352,38 +353,76 @@ export class WellnessService {
 
   /**
    * Get rewards data for Rewards tab
+   * Returns ALL achievements (locked, unlocked, claimed) with progress information
+   * Similar to getAllAchievements but formatted for the Rewards tab
    */
   async getRewards(userId: string): Promise<any> {
     try {
       const userIdObj = new Types.ObjectId(userId);
 
-      // Get all user achievements with achievement details
-      const userAchievements = await this.userAchievementModel
-        .find({
-          user_id: userIdObj,
-          status: { $in: [UserAchievementStatus.UNLOCKED, UserAchievementStatus.CLAIMED] },
-        })
-        .populate('achievement_id')
-        .sort({ unlocked_at: -1 })
+      // Get ALL active achievements (not just unlocked ones)
+      const allAchievements = await this.achievementModel
+        .find({ is_active: true })
+        .sort({ order: 1, createdAt: 1 })
         .lean()
         .exec();
 
-      const rewards = userAchievements
-        .filter((ua) => ua.unlocked_at) // Only include unlocked achievements
-        .map((ua) => {
-          const achievement = ua.achievement_id as any;
-          return {
-            id: achievement._id.toString(),
-            name: achievement.name,
-            description: achievement.description,
-            icon: achievement.icon,
-            status: ua.status,
-            is_claimable: ua.status === UserAchievementStatus.UNLOCKED,
-            xp_reward: achievement.xp_reward || 0,
-            unlocked_at: ua.unlocked_at,
-            claimed_at: ua.claimed_at || null,
-          };
-        });
+      // Get user's achievement progress for all achievements
+      const userAchievements = await this.userAchievementModel
+        .find({ user_id: userIdObj })
+        .lean()
+        .exec();
+
+      // Create a map for quick lookup
+      const userAchievementMap = new Map(
+        userAchievements.map(ua => [ua.achievement_id.toString(), ua])
+      );
+
+      // Combine achievements with user progress
+      const rewards = allAchievements.map((achievement) => {
+        const userAchievement = userAchievementMap.get(achievement._id.toString());
+
+        // Default values if no user achievement record exists
+        const progressCurrent = userAchievement?.progress_current || 0;
+        const progressTarget = userAchievement?.progress_target || achievement.condition_value;
+        const achievementStatus = userAchievement?.status || UserAchievementStatus.LOCKED;
+        const unlockedAt = userAchievement?.unlocked_at || null;
+        const claimedAt = userAchievement?.claimed_at || null;
+
+        const percentage = progressTarget > 0
+          ? Math.min(100, (progressCurrent / progressTarget) * 100)
+          : 0;
+
+        return {
+          id: achievement._id.toString(),
+          name: achievement.name,
+          description: achievement.description,
+          icon: achievement.icon,
+          status: achievementStatus,
+          is_claimable: achievementStatus === UserAchievementStatus.UNLOCKED,
+          progress: {
+            current: progressCurrent,
+            target: progressTarget,
+            percentage: Math.round(percentage * 100) / 100,
+          },
+          unlocked_at: unlockedAt,
+          claimed_at: claimedAt,
+          xp_reward: achievement.xp_reward || 0,
+        };
+      });
+
+      // Sort: unlocked/claimed first (by unlocked_at desc), then locked (by order)
+      rewards.sort((a, b) => {
+        // If both have unlocked_at, sort by unlocked_at (newest first)
+        if (a.unlocked_at && b.unlocked_at) {
+          return new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime();
+        }
+        // If only one is unlocked, unlocked comes first
+        if (a.unlocked_at && !b.unlocked_at) return -1;
+        if (!a.unlocked_at && b.unlocked_at) return 1;
+        // Both locked, maintain original order
+        return 0;
+      });
 
       return {
         rewards,
