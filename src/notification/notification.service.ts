@@ -640,8 +640,12 @@ export class NotificationService {
       }
 
       // Create new notification if no duplicate found
+      // Use a unique template_id (new ObjectId) for each direct notification to bypass unique index constraint
+      // The unique index on template_id + user_id will allow multiple notifications since each has a unique template_id
+      // The notification_identifier ensures we can identify and update duplicates for forum notifications if needed
+      const uniqueTemplateId = new Types.ObjectId(); // Generate unique ObjectId for this direct notification
       const notification = await this.userNotificationModel.create({
-        // template_id is omitted for direct notifications
+        template_id: uniqueTemplateId,
         user_id: userIdObj,
         status: 'unread',
         notification_identifier: notificationIdentifier,
@@ -673,7 +677,10 @@ export class NotificationService {
               cta_url,
             };
             
+            // Generate unique template_id for this admin notification
+            const uniqueTemplateId = new Types.ObjectId();
             const notification = await this.userNotificationModel.create({
+              template_id: uniqueTemplateId,
               user_id: userIdObj,
               status: 'unread',
               notification_identifier: uniqueIdentifier,
