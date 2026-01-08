@@ -634,9 +634,12 @@ export class ForumService {
     if (user && typeof user === 'object' && user._id) {
       // user_id is populated (object with _id)
       postUserId = user._id.toString();
-    } else {
+    } else if (post.user_id) {
       // user_id is ObjectId
       postUserId = (post.user_id as any).toString();
+    } else {
+      // user_id is null or undefined - handle gracefully
+      postUserId = '';
     }
     const is_user_post = userId ? postUserId === userId : false;
 
